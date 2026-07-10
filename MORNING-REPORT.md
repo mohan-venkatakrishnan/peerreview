@@ -9,9 +9,12 @@ with server-side privacy masking. All test data was cleaned up afterwards.
 Code is pushed to github.com/mohan-venkatakrishnan/peerreview.
 
 **One thing didn't finish: Amplify hosting** — AWS rate-limited `CreateApp`
-all night (a service-side throttle, nothing wrong with the config). A retry
-loop is running; if it hasn't succeeded by morning, run:
-`cd terraform && terraform apply` (it will pick up where it left off).
+persistently (12 retries over 2 hours, then confirmed via direct CLI; the
+Apps quota is 25 with only LaunchPad using 1, so this is an AWS-side account
+throttle, not config). A second retry loop runs every 30 min through the
+night. If it still fails by morning: run `cd terraform && terraform apply`
+manually; if it persists past ~24h, open an AWS support case for the Amplify
+CreateApp throttle (Service Quotas shows no cap reached).
 
 ## What exists in AWS now (all `peerreview-*`, LaunchPad untouched)
 - Cognito user pool + Google sign-in (hosted UI `peerreview-auth.auth.us-east-1.amazoncognito.com`)
