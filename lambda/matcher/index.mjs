@@ -109,6 +109,17 @@ export const handler = async () => {
             },
           },
           {
+            // mark the edge on the owner too — blocks the reverse A<->B match
+            // inside the reciprocity window (quid-pro-quo prevention)
+            Update: {
+              TableName: process.env.USERS_TABLE,
+              Key: { userId: product.userId },
+              UpdateExpression: 'SET recentPartners.#reviewer = :now',
+              ExpressionAttributeNames: { '#reviewer': reviewer.userId },
+              ExpressionAttributeValues: { ':now': nowIso },
+            },
+          },
+          {
             Update: {
               TableName: process.env.PRODUCTS_TABLE,
               Key: { userId: product.userId, productId: product.productId },
