@@ -1,0 +1,45 @@
+name: Deploy to Amplify
+
+# LaunchPad pattern: CI builds the app and pushes the built dist/ to Amplify
+# via manual deployment (no git connection on the Amplify side — fine-grained
+# PATs can't create the webhook Amplify's GitHub integration needs).
+#
+# Manual-only until the repo has these Actions secrets configured:
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AMPLIFY_APP_ID,
+#   VITE_COGNITO_USER_POOL_ID, VITE_COGNITO_CLIENT_ID, VITE_COGNITO_DOMAIN, VITE_API_URL
+# Then add `push: { branches: [main] }` to run on every push.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          VITE_AWS_REGION: us-east-1
+          VITE_COGNITO_USER_POOL_ID: ${{ secrets.VITE_COGNITO_USER_POOL_ID }}
+          VITE_COGNITO_CLIENT_ID: ${{ secrets.VITE_COGNITO_CLIENT_ID }}
+          VITE_COGNITO_DOMAIN: ${{ secrets.VITE_COGNITO_DOMAIN }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_SITE_URL: https://peerreview.tapdot.org
+          VITE_USE_MOCK: "false"
+      - name: Push dist to Amplify
+        run: |
+          cd dist && zip -r ../dist.zip . && cd ..
+          DEPLOY=$(aws amplify create-deployment --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main)
+          UPLOAD_URL=$(echo "$DEPLOY" | jq -r .zipUploadUrl)
+          JOB_ID=$(echo "$DEPLOY" | jq -r .jobId)
+          curl -s -H "Content-Type: application/zip" --upload-file dist.zip "$UPLOAD_URL"
+          aws amplify start-deployment --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --job-id "$JOB_ID"

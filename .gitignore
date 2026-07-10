@@ -1,0 +1,15 @@
+node_modules
+dist
+.vite-dev.log
+.env
+.env.local
+
+# terraform — state and tfvars carry secrets
+terraform/.terraform/
+terraform/terraform.tfstate*
+terraform/terraform.tfvars
+terraform/tfplan
+terraform/amplify-retry.log
+lambda/*.zip
+.DS_Store
+*.local

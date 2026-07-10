@@ -1,0 +1,79 @@
+import { useNavigate } from "react-router-dom";
+import { useTheme } from "../tokens/theme";
+import { useAppState } from "../state";
+import { BADGE_DEFS } from "../data/mock";
+import SealMark from "../components/SealMark";
+import BadgeIcon from "../components/BadgeIcon";
+import StateBadge from "../components/StateBadge";
+import { Card, GhostButton, StatBar } from "../components/ui";
+
+export default function Profile() {
+  const { c } = useTheme();
+  const { account, history, stats, badges } = useAppState();
+  const ratio = stats.received > 0 ? (stats.given / stats.received).toFixed(1) : "—";
+  const navigate = useNavigate();
+  return (
+    <>
+      <div className="fade-up" style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 36 }}>
+        <div style={{ position: "relative" }}>
+          {account.avatar
+            ? <div style={{ width: 88, height: 88, borderRadius: "50%", backgroundImage: `url(${account.avatar})`, backgroundSize: "cover", backgroundPosition: "center", border: `2px solid ${c.borderGold}` }} />
+            : <div style={{ width: 88, height: 88, borderRadius: "50%", background: `linear-gradient(135deg, ${c.gold}30, ${c.gold}70)`, border: `2px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 700, color: c.gold, fontFamily: "Playfair Display, serif" }}>{account.name[0]}</div>}
+          <div style={{ position: "absolute", bottom: -6, right: -6 }}><SealMark size={34} gold={c.gold} /></div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontFamily: "Playfair Display, serif", fontSize: 30, fontWeight: 700, color: c.text }}>{account.name}</h1>
+          <div style={{ fontSize: 13, color: c.textMuted, marginTop: 4 }}>Member since July 2026 · tapdot.org</div>
+          <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center" }}>
+            {badges.map(b => (
+              <div key={b} style={{ display: "flex", alignItems: "center", gap: 6, background: c.goldGlow, border: `1px solid ${c.borderGold}`, borderRadius: 12, padding: "5px 12px" }}>
+                <BadgeIcon type={b} size={16} gold={c.gold} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: c.gold }}>{BADGE_DEFS[b].name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <GhostButton size="sm" onClick={() => navigate("/app/settings")}>Edit profile</GhostButton>
+      </div>
+
+      <StatBar className="fade-up-d1" style={{ marginBottom: 28 }} items={[
+        { label: "Reviews given", value: String(stats.given) },
+        { label: "Reviews received", value: String(stats.received) },
+        { label: "Trust Score", value: `★ ${account.score}`, color: c.gold },
+        { label: "Give/get ratio", value: ratio, sub: "givers rank higher" },
+      ]} />
+
+      <Card className="fade-up-d2" style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 18 }}>Badges</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+          {Object.entries(BADGE_DEFS).map(([id, b]) => {
+            const earned = badges.includes(id);
+            return (
+              <div key={id} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 8, padding: "18px 12px", borderRadius: 12, background: earned ? c.goldGlow : c.bg, border: `1px solid ${earned ? c.borderGold : c.border}`, opacity: earned ? 1 : 0.45, transition: "all 0.2s" }}>
+                <BadgeIcon type={id} size={30} gold={earned ? c.gold : c.textMuted} showTooltip={false} />
+                <div style={{ fontSize: 12, fontWeight: 700, color: earned ? c.gold : c.textSub }}>{b.name}</div>
+                <div style={{ fontSize: 10, color: c.textMuted, lineHeight: 1.5 }}>{b.desc}</div>
+                {!earned && <div style={{ fontSize: 9, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Locked</div>}
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card className="fade-up-d3">
+        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 18 }}>Review history</div>
+        {history.map((r, i) => (
+          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < history.length - 1 ? `1px solid ${c.border}` : "none" }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: c.gold }}>{r.product[0]}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>{r.product}</div>
+              <div style={{ fontSize: 12, color: c.textMuted }}>by {r.developer} · {r.time}</div>
+            </div>
+            {r.rating && <span style={{ fontSize: 12, color: c.gold, fontWeight: 600 }}>rated ★ {r.rating}</span>}
+            <StateBadge state={r.state} />
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
