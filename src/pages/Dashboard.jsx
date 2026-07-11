@@ -27,7 +27,7 @@ export default function Dashboard() {
   return (
     <>
       {/* Header — greeting + trust ring */}
-      <div className="fade-up" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, marginBottom: 32 }}>
+      <div className="fade-up dash-head" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, marginBottom: 32 }}>
         <div>
           <div style={{ fontSize: 11, color: c.gold, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>Dashboard · {today()}</div>
           <h1 style={{ fontFamily: "Playfair Display, serif", fontSize: 32, fontWeight: 700, color: c.text, letterSpacing: "-0.02em" }}>{greeting()}, {account.name}</h1>
@@ -43,7 +43,7 @@ export default function Dashboard() {
         { label: "Leaderboard", value: stats.rank ? `#${stats.rank}` : "—", sub: stats.rank ? "keep giving to climb" : "review to get ranked" },
       ]} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
+      <div className="grid-main" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
         {/* Review queue */}
         <Card className="fade-up-d2" style={{ position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
           {assigned ? (

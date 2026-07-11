@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { ACCOUNTS, MY_PRODUCTS, ASSIGNED, INCOMING_REVIEWS, REVIEW_HISTORY, LEADERBOARD_FULL } from "./data/mock";
 import * as api from "./data/api";
 import { isAuthed, login, logout as authLogout } from "./data/auth";
@@ -36,8 +36,15 @@ export function AppStateProvider({ children }) {
   const [leaderboardRows, setLeaderboardRows] = useState(USE_MOCK ? LEADERBOARD_FULL : []);
   const [loading, setLoading] = useState(!USE_MOCK);
   const [loadError, setLoadError] = useState(null);
+  const [saveError, setSaveError] = useState(null); // background writes: banner, never a full-screen takeover
 
   const SAMPLE_LB = LEADERBOARD_FULL.map(r => ({ ...r, sample: true }));
+
+  // Version counter guarding every fetch-then-set (web-app-craft: a slow
+  // response landing after a local edit must never wipe the edit).
+  const meVersion = useRef(0);
+  const pendingMePatch = useRef(null);
+  const mePatchTimer = useRef(null);
 
   const loadData = async () => {
     if (USE_MOCK) return;
@@ -49,11 +56,13 @@ export function AppStateProvider({ children }) {
     if (!isAuthed()) { setLoading(false); return; }
     setLoading(true);
     setLoadError(null);
+    const version = meVersion.current;
     try {
       const [meData, products, assignment, incoming] = await Promise.all([
         api.getMe(), api.getProducts(), api.getAssignment(), api.getIncoming(),
       ]);
-      setMe(meData);
+      // a local edit happened while this was in flight — its response wins
+      if (meVersion.current === version) setMe(meData);
       setRealProducts(products);
       setRealAssigned(assignment.assigned);
       setRealSubmitted(assignment.submitted);
@@ -130,7 +139,33 @@ export function AppStateProvider({ children }) {
     return saved;
   };
 
-  const updateProfile = async (patch) => {
+  /* Server profile writes: optimistic local set immediately, PUT debounced
+     (a name typed letter-by-letter is one request, not twelve), and the
+     response is discarded if a newer local write happened meanwhile. */
+  const flushMePatch = async () => {
+    const patch = pendingMePatch.current;
+    pendingMePatch.current = null;
+    if (!patch) return;
+    meVersion.current += 1;
+    const version = meVersion.current;
+    try {
+      const server = await api.updateMe(patch);
+      if (meVersion.current === version) setMe(server);
+      setSaveError(null);
+    } catch (e) {
+      setSaveError(e.message);
+    }
+  };
+
+  const queueMePatch = (server) => {
+    meVersion.current += 1; // local write wins over any in-flight response
+    setMe(m => (m ? { ...m, ...server } : m));
+    pendingMePatch.current = { ...(pendingMePatch.current ?? {}), ...server };
+    clearTimeout(mePatchTimer.current);
+    mePatchTimer.current = setTimeout(flushMePatch, 600);
+  };
+
+  const updateProfile = (patch) => {
     if (USE_MOCK) {
       const next = { ...account, ...patch };
       setAccountState(next);
@@ -145,18 +180,18 @@ export function AppStateProvider({ children }) {
     const server = {};
     if (patch.name !== undefined) server.name = patch.name;
     if (patch.matching !== undefined) server.matching = patch.matching;
-    if (Object.keys(server).length) setMe(await api.updateMe(server));
+    if (Object.keys(server).length) queueMePatch(server);
   };
 
-  const setPrivacy = async (updater) => {
+  const setPrivacy = (updater) => {
     const next = typeof updater === "function" ? updater(USE_MOCK ? privacy : (me?.privacy ?? privacy)) : updater;
     if (USE_MOCK) { setPrivacyState(next); return; }
-    setMe(await api.updateMe({ privacy: next }));
+    queueMePatch({ privacy: next });
   };
 
-  const setMatching = async (matching) => {
+  const setMatching = (matching) => {
     setProductForm(f => ({ ...f, matching }));
-    if (!USE_MOCK) setMe(await api.updateMe({ matching }));
+    if (!USE_MOCK) queueMePatch({ matching });
   };
 
   const switchAccount = (id) => {
@@ -181,6 +216,7 @@ export function AppStateProvider({ children }) {
     <AppStateContext.Provider value={{
       useMock: USE_MOCK,
       loading, loadError, loadData,
+      saveError, clearSaveError: () => setSaveError(null),
       // data
       account: unifiedAccount, me, stats,
       badges: USE_MOCK ? ["seal", "bolt", "shield"] : (me?.badges ?? []),

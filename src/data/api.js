@@ -15,10 +15,22 @@ const apiFetch = async (path, options = {}) => {
       ...options.headers,
     },
   });
-  if (res.status === 401) { login(); throw new Error("Session expired"); }
+  if (res.status === 401) { login(); throw new Error("Your session expired — signing you back in…"); }
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(body.message || `Request failed (${res.status})`), { code: body.code, status: res.status });
+  if (!res.ok) throw Object.assign(new Error(body.message || FRIENDLY[res.status] || `Something went wrong (${res.status}) — try again.`), { code: body.code, status: res.status });
   return body;
+};
+
+/* Status codes become human sentences in ONE place (web-app-craft) */
+const FRIENDLY = {
+  400: "That didn't look right — check the fields and try again.",
+  403: "Your plan doesn't allow that yet.",
+  404: "We couldn't find that.",
+  409: "That was already handled — refresh to see the latest.",
+  429: "Too many requests — give it a few seconds.",
+  500: "Something broke on our side — try again in a moment.",
+  502: "The server hiccuped — try again in a moment.",
+  503: "PeerReview is briefly unavailable — try again in a moment.",
 };
 
 const timeAgo = (iso) => {

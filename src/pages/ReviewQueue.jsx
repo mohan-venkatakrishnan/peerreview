@@ -51,7 +51,7 @@ export default function ReviewQueue() {
     <>
       <PageTitle eyebrow="Review Queue" title="Your assignment" sub="Review this product genuinely on its store listing, then paste your review link below." />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div className="grid-main" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         {/* Product card */}
         {assigned && (
           <Card className="fade-up-d1">

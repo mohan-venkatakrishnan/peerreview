@@ -47,7 +47,7 @@ export default function Products() {
 
       {products.map((p, i) => (
         <Card key={p.id} className={`fade-up-d${Math.min(i + 1, 3)}`} style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div className="wrap-sm" style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 52, height: 52, borderRadius: 12, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: c.gold, fontWeight: 700 }}>{p.name[0]}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: c.text }}>{p.name}</div>

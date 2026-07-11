@@ -69,6 +69,7 @@ export const handler = async () => {
     const owner = users.find(u => u.userId === product.userId);
     const requireCategory = owner?.matching === 'category' && !!product.category;
     const candidates = users.filter(u =>
+      !String(u.userId).startsWith('pending#') && // parked entitlements, not people
       u.userId !== product.userId &&
       !u.activeAssignmentId &&
       (u.expiredCount ?? 0) < MAX_EXPIRIES &&

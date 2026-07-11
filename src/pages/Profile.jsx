@@ -14,7 +14,7 @@ export default function Profile() {
   const navigate = useNavigate();
   return (
     <>
-      <div className="fade-up" style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 36 }}>
+      <div className="fade-up wrap-sm" style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 36 }}>
         <div style={{ position: "relative" }}>
           {account.avatar
             ? <div style={{ width: 88, height: 88, borderRadius: "50%", backgroundImage: `url(${account.avatar})`, backgroundSize: "cover", backgroundPosition: "center", border: `2px solid ${c.borderGold}` }} />

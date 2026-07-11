@@ -57,7 +57,7 @@ export function Input({ label, value, onChange, placeholder, mono }) {
 export function StatBar({ items, className, style }) {
   const { c } = useTheme();
   return (
-    <Card className={className} style={{ padding: 0, overflow: "hidden", display: "grid", gridTemplateColumns: `repeat(${items.length}, 1fr)`, ...style }}>
+    <Card className={`statbar ${className ?? ""}`} style={{ padding: 0, overflow: "hidden", display: "grid", gridTemplateColumns: `repeat(${items.length}, 1fr)`, ...style }}>
       {items.map((s, i) => (
         <div key={s.label} style={{ padding: "20px 24px", borderLeft: i > 0 ? `1px solid ${c.border}` : "none" }}>
           <div style={{ fontSize: 10, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{s.label}</div>

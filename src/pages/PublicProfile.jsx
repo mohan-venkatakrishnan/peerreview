@@ -65,7 +65,7 @@ export default function PublicProfile() {
           <div style={{ position: "absolute", right: 24, top: 20, opacity: 0.15 }}><SealMark size={72} animated gold={c.gold} /></div>
           <div style={{ position: "absolute", left: 32, top: 24, fontSize: 11, color: c.gold, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}>Reviewer profile · Rank #{p.rank}</div>
         </div>
-        <div style={{ padding: "0 32px 28px", display: "flex", gap: 24, alignItems: "flex-end", marginTop: -44 }}>
+        <div className="wrap-sm" style={{ padding: "0 32px 28px", display: "flex", gap: 24, alignItems: "flex-end", marginTop: -44 }}>
           <div style={{ position: "relative" }}>
             <div style={{
               width: 96, height: 96, borderRadius: "50%",

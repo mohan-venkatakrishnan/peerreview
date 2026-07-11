@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, DeleteCommand, GetCommand, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
@@ -46,6 +46,25 @@ export const handler = async (event) => {
     if (Item) return respond(200, PUBLIC_FIELDS(Item));
 
     const fresh = NEW_USER(userId, claims.email ?? '', claims.name);
+
+    // claim any entitlement parked by the payment webhook before signup
+    if (fresh.email) {
+      const { Items = [] } = await client.send(new QueryCommand({
+        TableName: process.env.USERS_TABLE,
+        IndexName: 'email-index',
+        KeyConditionExpression: 'email = :e',
+        ExpressionAttributeValues: { ':e': fresh.email.toLowerCase() },
+      })).catch(() => ({ Items: [] }));
+      const parked = Items.find(i => String(i.userId).startsWith('pending#'));
+      if (parked?.plan) {
+        fresh.plan = parked.plan;
+        await client.send(new DeleteCommand({
+          TableName: process.env.USERS_TABLE,
+          Key: { userId: parked.userId },
+        })).catch(() => {});
+      }
+    }
+
     await client.send(new PutCommand({
       TableName: process.env.USERS_TABLE,
       Item: fresh,

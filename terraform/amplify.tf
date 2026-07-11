@@ -6,6 +6,14 @@ resource "aws_amplify_app" "peerreview" {
   provider = aws.uswest2
   name     = "peerreview"
 
+  # Explicit 200 rewrite for extensionless SPA routes FIRST — the 404-200
+  # fallback alone renders fine but serves HTTP 404 to crawlers/unfurlers.
+  custom_rule {
+    source = "</^[^.]+$/>"
+    status = "200"
+    target = "/index.html"
+  }
+
   custom_rule {
     source = "/<*>"
     status = "404-200"

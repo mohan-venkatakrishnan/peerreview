@@ -53,6 +53,42 @@ function GlobalStyles() {
     input:focus, select:focus, textarea:focus { outline: none; border-color: ${c.gold} !important; }
     .fx-lite .fade-up, .fx-lite .fade-up-d1, .fx-lite .fade-up-d2, .fx-lite .fade-up-d3 { animation: none; opacity: 1; }
     .fx-lite .float, .fx-lite .stamp-in { animation: none; }
+    /* overflow-x: clip, NEVER hidden — hidden silently kills position:sticky */
+    html, body { overflow-x: clip; }
+    /* Instant custom tooltip (native title has a fixed ~1s delay) */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute; bottom: calc(100% + 8px); right: 0;
+      background: ${c.surface}; color: ${c.text}; border: 1px solid ${c.borderGold};
+      border-radius: 8px; padding: 8px 12px; font-size: 12px; line-height: 1.5;
+      width: max-content; max-width: 260px; z-index: 90; text-align: left;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); pointer-events: none;
+    }
+    /* Responsive: works at 390px; sidebar becomes a bottom icon bar */
+    @media (max-width: 900px) {
+      aside.side-nav {
+        top: auto !important; bottom: 0 !important; left: 0; right: 0;
+        width: 100% !important; height: 60px !important;
+        flex-direction: row !important; align-items: center !important;
+        padding: 4px 6px !important;
+        border-right: none !important; border-top: 1px solid ${c.border};
+        z-index: 60 !important;
+      }
+      .side-nav .side-search, .side-nav .side-footer { display: none !important; }
+      .side-nav .side-brand { margin-bottom: 0 !important; padding: 0 6px !important; }
+      .side-nav .side-brand span { display: none; }
+      .side-nav nav { display: flex !important; flex: 1; justify-content: space-around; align-items: center; }
+      .side-nav nav > div { margin-bottom: 0 !important; padding: 9px !important; border: none !important; }
+      .side-nav .nav-label { display: none !important; }
+      main.main-pane { margin-left: 0 !important; padding: 24px 16px 92px !important; max-width: 100% !important; }
+      .grid-main { grid-template-columns: 1fr !important; }
+      .statbar { grid-template-columns: 1fr 1fr !important; }
+      .statbar > div { border-left: none !important; border-top: 1px solid ${c.border}; }
+      .statbar > div:first-child, .statbar > div:nth-child(2) { border-top: none; }
+      .wrap-sm { flex-wrap: wrap !important; }
+      .dash-head { flex-wrap: wrap; }
+    }
   `;
   return <style>{css}</style>;
 }
