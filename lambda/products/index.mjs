@@ -4,7 +4,8 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCom
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-/* Closed platform list — product LISTING url patterns (auto-detect) */
+/* Supported platform LISTING url patterns (auto-detect). Curated set of real
+   product/store pages with public reviews — expand as new ones are added. */
 const PLATFORMS = [
   { name: 'Chrome Web Store', re: /^(https:\/\/)?chromewebstore\.google\.com\/detail\/[\w-]+/i },
   { name: 'Firefox Add-ons', re: /^(https:\/\/)?addons\.mozilla\.org\/.*firefox\/addon\/[\w.-]+/i },
@@ -12,6 +13,12 @@ const PLATFORMS = [
   { name: 'Product Hunt', re: /^(https:\/\/)?(www\.)?producthunt\.com\/(products|posts)\/[\w-]+/i },
   { name: 'Google Play Store', re: /^(https:\/\/)?play\.google\.com\/store\/apps\/details\?id=[\w.]+/i },
   { name: 'Apple App Store', re: /^(https:\/\/)?apps\.apple\.com\/[a-z]{2}\/app\/[\w-]+\/id\d+/i },
+  { name: 'VS Code Marketplace', re: /^(https:\/\/)?marketplace\.visualstudio\.com\/items\?itemName=[\w.-]+/i },
+  { name: 'JetBrains Marketplace', re: /^(https:\/\/)?plugins\.jetbrains\.com\/plugin\/[\w.-]+/i },
+  { name: 'Shopify App Store', re: /^(https:\/\/)?apps\.shopify\.com\/[\w-]+/i },
+  { name: 'WordPress Plugins', re: /^(https:\/\/)?wordpress\.org\/plugins\/[\w-]+/i },
+  { name: 'G2', re: /^(https:\/\/)?(www\.)?g2\.com\/products\/[\w-]+/i },
+  { name: 'Capterra', re: /^(https:\/\/)?(www\.)?capterra\.com\/(p|software|reviews)\/[\w/-]+/i },
 ];
 const PLAN_LIMITS = { free: 5, pro: 10, studio: Infinity };
 

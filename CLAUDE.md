@@ -30,6 +30,12 @@ The core loop:
 - Product Hunt
 - Google Play Store
 - Apple App Store
+- VS Code Marketplace
+- JetBrains Marketplace
+- Shopify App Store
+- WordPress Plugins
+- G2
+- Capterra
 
 Platform is auto-detected from the listing URL during onboarding. A product cannot be listed without a valid listing URL on one of these.
 

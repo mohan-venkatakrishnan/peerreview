@@ -92,7 +92,7 @@ export const BADGE_DEFS = {
   sun: { name: "Early Bird", desc: "Dawn reviewer", how: "Submit a verified review between 5am and 8am.", group: "Explorer" },
 };
 
-export const PLATFORMS = ["Chrome Web Store", "Firefox Add-ons", "Edge Add-ons", "Product Hunt", "Google Play Store", "Apple App Store"];
+export const PLATFORMS = ["Chrome Web Store", "Firefox Add-ons", "Edge Add-ons", "Product Hunt", "Google Play Store", "Apple App Store", "VS Code Marketplace", "JetBrains Marketplace", "Shopify App Store", "WordPress Plugins", "G2", "Capterra"];
 
 /* Listing-URL patterns per platform — client-side mirror of the backend's */
 export const PLATFORM_PATTERNS = [
@@ -102,6 +102,12 @@ export const PLATFORM_PATTERNS = [
   { name: "Product Hunt", re: /^(https:\/\/)?(www\.)?producthunt\.com\/(products|posts)\/[\w-]+/i },
   { name: "Google Play Store", re: /^(https:\/\/)?play\.google\.com\/store\/apps\/details\?id=[\w.]+/i },
   { name: "Apple App Store", re: /^(https:\/\/)?apps\.apple\.com\/[a-z]{2}\/app\/[\w-]+\/id\d+/i },
+  { name: "VS Code Marketplace", re: /^(https:\/\/)?marketplace\.visualstudio\.com\/items\?itemName=[\w.-]+/i },
+  { name: "JetBrains Marketplace", re: /^(https:\/\/)?plugins\.jetbrains\.com\/plugin\/[\w.-]+/i },
+  { name: "Shopify App Store", re: /^(https:\/\/)?apps\.shopify\.com\/[\w-]+/i },
+  { name: "WordPress Plugins", re: /^(https:\/\/)?wordpress\.org\/plugins\/[\w-]+/i },
+  { name: "G2", re: /^(https:\/\/)?(www\.)?g2\.com\/products\/[\w-]+/i },
+  { name: "Capterra", re: /^(https:\/\/)?(www\.)?capterra\.com\/(p|software|reviews)\/[\w/-]+/i },
 ];
 export const detectPlatform = (url) => PLATFORM_PATTERNS.find(p => p.re.test(String(url ?? "").trim()))?.name ?? null;
 
@@ -109,7 +115,7 @@ export const detectPlatform = (url) => PLATFORM_PATTERNS.find(p => p.re.test(Str
 export const LANDING_STATS = [
   { value: "1 : 1", label: "Reviews given to received" },
   { value: "100%", label: "Human-verified reviews" },
-  { value: "6", label: "Platforms: Chrome, Firefox, Edge, PH, Play, App Store" },
+  { value: "12", label: "Supported platforms & stores" },
   { value: "$0", label: "To join and list your first product" },
 ];
 

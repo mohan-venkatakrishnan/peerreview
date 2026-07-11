@@ -12,6 +12,12 @@ const REVIEW_PATTERNS = {
   'Product Hunt': /^(https:\/\/)?(www\.)?producthunt\.com\/(products|posts)\/[\w-]+/i,
   'Google Play Store': /^(https:\/\/)?play\.google\.com\/store\/apps\/details\?id=[\w.]+/i,
   'Apple App Store': /^(https:\/\/)?apps\.apple\.com\/[a-z]{2}\/app\/[\w-]+\/id\d+/i,
+  'VS Code Marketplace': /^(https:\/\/)?marketplace\.visualstudio\.com\/items\?itemName=[\w.-]+/i,
+  'JetBrains Marketplace': /^(https:\/\/)?plugins\.jetbrains\.com\/plugin\/[\w.-]+/i,
+  'Shopify App Store': /^(https:\/\/)?apps\.shopify\.com\/[\w-]+/i,
+  'WordPress Plugins': /^(https:\/\/)?wordpress\.org\/plugins\/[\w-]+/i,
+  'G2': /^(https:\/\/)?(www\.)?g2\.com\/products\/[\w-]+/i,
+  'Capterra': /^(https:\/\/)?(www\.)?capterra\.com\/(p|software|reviews)\/[\w/-]+/i,
 };
 
 const getCurrent = async (reviewerId) => {
