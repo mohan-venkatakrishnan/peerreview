@@ -83,15 +83,28 @@ export const handler = async () => {
   for (const product of pool) {
     // each product carries its own matching preference now
     const requireCategory = (product.matching ?? 'category') === 'category' && !!product.category;
-    const candidates = users.filter(u =>
-      !String(u.userId).startsWith('pending#') && // parked entitlements, not people
+    // Hard constraints — never relaxed: real person, not the owner, free,
+    // not banned for expiries, category (if the owner requires it).
+    const baseEligible = (u) =>
+      !String(u.userId).startsWith('pending#') &&
       u.userId !== product.userId &&
       !u.activeAssignmentId &&
       (u.expiredCount ?? 0) < MAX_EXPIRIES &&
+      (!requireCategory || (u.categories ?? []).includes(product.category));
+
+    // Tiered selection so a small pool never deadlocks. Prefer a fresh, non-
+    // reciprocal reviewer; fall back to relaxing anti-reciprocity, then the
+    // has-not-reviewed-before rule, rather than leaving a product unmatched.
+    let candidates = users.filter(u => baseEligible(u) &&
       !(product.reviewerIds ?? []).includes(u.userId) &&
-      !((u.recentPartners ?? {})[product.userId] > cutoff) && // anti quid-pro-quo
-      (!requireCategory || (u.categories ?? []).includes(product.category))
-    );
+      !((u.recentPartners ?? {})[product.userId] > cutoff));
+    if (!candidates.length) {
+      candidates = users.filter(u => baseEligible(u) &&
+        !(product.reviewerIds ?? []).includes(u.userId));
+    }
+    if (!candidates.length) {
+      candidates = users.filter(u => baseEligible(u));
+    }
     if (!candidates.length) continue;
 
     // fairness: least-recently-assigned first

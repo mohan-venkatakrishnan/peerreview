@@ -82,7 +82,17 @@ export function AppStateProvider({ children }) {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+    if (USE_MOCK) return;
+    // Keep the queue/incoming fresh without a manual reload: poll every 30s,
+    // and refetch the moment the tab regains focus.
+    const iv = setInterval(() => { if (isAuthed()) loadData(); }, 30000);
+    const onFocus = () => { if (document.visibilityState === 'visible' && isAuthed()) loadData(); };
+    document.addEventListener('visibilitychange', onFocus);
+    window.addEventListener('focus', onFocus);
+    return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onFocus); window.removeEventListener('focus', onFocus); };
+  }, []);
 
   /* ---------- unified surface ---------- */
   // QA affordance (mock only): localStorage 'peerreview-qa-products' = N
