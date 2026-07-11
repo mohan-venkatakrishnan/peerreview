@@ -53,16 +53,16 @@ export function AppStateProvider({ children }) {
   const pendingMePatch = useRef(null);
   const mePatchTimer = useRef(null);
 
-  const loadData = async () => {
+  // silent=true for background refreshes (poll / tab focus): update data in
+  // place with no loading takeover and no error screen — the initial load is
+  // the only one that shows the spinner.
+  const loadData = async (silent = false) => {
     if (USE_MOCK) return;
-    // The leaderboard endpoint is public — load it signed-out too. Empty pool
-    // pre-launch shows the sample cohort (labelled in the table).
     api.getLeaderboard()
       .then(lb => setLeaderboardRows(lb.length ? lb : SAMPLE_LB))
       .catch(() => setLeaderboardRows(SAMPLE_LB));
     if (!isAuthed()) { setLoading(false); return; }
-    setLoading(true);
-    setLoadError(null);
+    if (!silent) { setLoading(true); setLoadError(null); }
     const version = meVersion.current;
     try {
       const [meData, products, assignment, incoming] = await Promise.all([
@@ -75,10 +75,11 @@ export function AppStateProvider({ children }) {
       setRealSubmitted(assignment.submitted);
       setRealHistory(assignment.history);
       setRealIncoming(incoming);
+      if (!silent) setLoadError(null);
     } catch (e) {
-      setLoadError(e.message);
+      if (!silent) setLoadError(e.message); // background failures keep stale data, no takeover
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -87,8 +88,8 @@ export function AppStateProvider({ children }) {
     if (USE_MOCK) return;
     // Keep the queue/incoming fresh without a manual reload: poll every 30s,
     // and refetch the moment the tab regains focus.
-    const iv = setInterval(() => { if (isAuthed()) loadData(); }, 30000);
-    const onFocus = () => { if (document.visibilityState === 'visible' && isAuthed()) loadData(); };
+    const iv = setInterval(() => { if (isAuthed()) loadData(true); }, 30000);
+    const onFocus = () => { if (document.visibilityState === 'visible' && isAuthed()) loadData(true); };
     document.addEventListener('visibilitychange', onFocus);
     window.addEventListener('focus', onFocus);
     return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onFocus); window.removeEventListener('focus', onFocus); };
@@ -129,32 +130,32 @@ export function AppStateProvider({ children }) {
       setTimeout(() => { setMockVerified(v => [...v, id]); setStampAnimating(null); }, 500);
       return;
     }
-    try { await api.verifyReview(id, rating); await loadData(); }
+    try { await api.verifyReview(id, rating); await loadData(true); }
     finally { setStampAnimating(null); }
   };
 
   const flagReview = async (id, reason) => {
     if (USE_MOCK) { setMockFlagged(f => [...f, id]); return; }
     await api.flagReview(id, reason);
-    await loadData();
+    await loadData(true);
   };
 
   const submitReview = async (link, text) => {
     if (USE_MOCK) { setMockSubmitted(true); return; }
     await api.submitReview(link, text);
-    await loadData();
+    await loadData(true);
   };
 
   const skipAssignment = async () => {
     if (USE_MOCK) return;
     await api.skipAssignment();
-    await loadData();
+    await loadData(true);
   };
 
   const saveProduct = async (form) => {
     if (USE_MOCK) return { ok: true };
     const saved = await api.saveProduct(form);
-    await loadData();
+    await loadData(true);
     return saved;
   };
 
