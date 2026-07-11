@@ -37,9 +37,9 @@ function GlobalStyles() {
     @keyframes glow { 0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.15); } 50% { box-shadow: 0 0 36px rgba(201,168,76,0.3); } }
     @keyframes spotlightIn { from { opacity: 0; transform: translateY(-12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
     @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes drift1 { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(24px, -18px); } 66% { transform: translate(-16px, 14px); } }
-    @keyframes drift2 { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(-28px, 20px); } 66% { transform: translate(18px, -12px); } }
-    @keyframes drift3 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(20px, -24px); } }
+    @keyframes drift1 { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(48px, -36px); } 66% { transform: translate(-34px, 30px); } }
+    @keyframes drift2 { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(-56px, 40px); } 66% { transform: translate(38px, -26px); } }
+    @keyframes drift3 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(44px, -50px); } }
     @keyframes twinkle { 0%, 100% { opacity: 0.12; transform: scale(0.85); } 50% { opacity: 0.9; transform: scale(1.15); } }
     .fade-up { animation: fadeUp 0.55s ease forwards; }
     .fade-up-d1 { animation: fadeUp 0.55s ease 0.08s forwards; opacity: 0; }
@@ -62,7 +62,7 @@ function GlobalStyles() {
       position: absolute; bottom: calc(100% + 8px); right: 0;
       background: ${c.surface}; color: ${c.text}; border: 1px solid ${c.borderGold};
       border-radius: 8px; padding: 8px 12px; font-size: 12px; line-height: 1.5;
-      width: max-content; max-width: 260px; z-index: 90; text-align: left;
+      width: max-content; max-width: 240px; z-index: 90; text-align: left; white-space: normal;
       box-shadow: 0 8px 24px rgba(0,0,0,0.4); pointer-events: none;
     }
     /* Loading/error states center in the VISIBLE pane (viewport minus sidebar),

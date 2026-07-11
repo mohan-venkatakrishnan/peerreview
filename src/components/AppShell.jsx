@@ -11,7 +11,7 @@ import { Avatar, SwitchAccountDialog } from "./ui";
 const APP_PAGES = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", path: "/app" },
   { id: "review-queue", label: "Review Queue", icon: "review", path: "/app/review" },
-  { id: "my-reviews", label: "My Product", icon: "product", path: "/app/product" },
+  { id: "my-reviews", label: "Incoming Reviews", icon: "review", path: "/app/product" },
   { id: "profile", label: "Profile", icon: "profile", path: "/app/profile" },
   { id: "leaderboard-app", label: "Leaderboard", icon: "ladder", path: "/app/leaderboard" },
   { id: "products", label: "My Products", icon: "products", path: "/app/products" },

@@ -8,7 +8,7 @@ const makeStars = (n, seed) => {
   const r = rng(seed);
   return Array.from({ length: n }, () => ({
     left: r() * 100, top: r() * 100,
-    size: 5 + r() * 7, delay: r() * 5, dur: 2.5 + r() * 4,
+    size: 5 + r() * 7, delay: r() * 3, dur: 1.1 + r() * 1.9,
     bright: r() > 0.62,
   }));
 };
@@ -99,9 +99,9 @@ export default function ParallaxBackdrop({ intensity = 1 }) {
         </div>
       </div>
       {/* Golden shining review stars — three parallax depths */}
-      <StarLayer layerRef={farRef} stars={STARS_FAR} drift="drift2" dur={44 / intensity} gold={c.gold} lite={lite} scale={0.8} />
-      <StarLayer layerRef={midRef} stars={STARS_MID} drift="drift1" dur={26 / intensity} gold={c.gold} lite={lite} />
-      <StarLayer layerRef={nearRef} stars={STARS_NEAR} drift="drift3" dur={16 / intensity} gold={c.gold} lite={lite} scale={1.5} />
+      <StarLayer layerRef={farRef} stars={STARS_FAR} drift="drift2" dur={22 / intensity} gold={c.gold} lite={lite} scale={0.8} />
+      <StarLayer layerRef={midRef} stars={STARS_MID} drift="drift1" dur={13 / intensity} gold={c.gold} lite={lite} />
+      <StarLayer layerRef={nearRef} stars={STARS_NEAR} drift="drift3" dur={8 / intensity} gold={c.gold} lite={lite} scale={1.5} />
     </div>
   );
 }

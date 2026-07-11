@@ -13,7 +13,7 @@ export default function Spotlight() {
   const SPOTLIGHT_INDEX = [
     { type: "Page", label: "Dashboard", nav: "dashboard", action: () => navigate("/app") },
     { type: "Page", label: "Review Queue", nav: "review", action: () => navigate("/app/review") },
-    { type: "Page", label: "My Product Reviews", nav: "product", action: () => navigate("/app/product") },
+    { type: "Page", label: "Incoming Reviews", nav: "review", action: () => navigate("/app/product") },
     { type: "Page", label: "Profile", nav: "profile", action: () => navigate("/app/profile") },
     { type: "Page", label: "Leaderboard", nav: "ladder", action: () => navigate("/app/leaderboard") },
     { type: "Page", label: "My Products", nav: "products", action: () => navigate("/app/products") },
