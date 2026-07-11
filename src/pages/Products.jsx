@@ -7,7 +7,7 @@ import { Card, GoldButton, GhostButton, PageTitle } from "../components/ui";
 
 export default function Products() {
   const { c } = useTheme();
-  const { plan, setPlan, products: allProducts, useMock } = useAppState();
+  const { plan, setPlan, products: allProducts, setProductForm, useMock } = useAppState();
   const navigate = useNavigate();
   const qa = useMock && Number(localStorage.getItem("peerreview-qa-products")) > 0;
   const tier = qa ? PLANS.studio : PLANS[plan];
@@ -55,15 +55,19 @@ export default function Products() {
               <div style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>{p.category} · {p.platform}</div>
               <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: c.textMuted, marginTop: 6 }}>{p.url}</div>
             </div>
-            <div style={{ display: "flex", gap: 24, textAlign: "center" }}>
-              {[["Received", p.reviews], ["Verified", p.verified], ["Pending", p.pending]].map(([l, v]) => (
+            <div style={{ display: "flex", gap: 24, textAlign: "center", alignItems: "center" }}>
+              {[["Reviews", p.reviews], ["Verified", p.verified]].map(([l, v]) => (
                 <div key={l}>
                   <div style={{ fontSize: 18, fontWeight: 700, color: c.gold, fontFamily: "Playfair Display, serif" }}>{v}</div>
                   <div style={{ fontSize: 10, color: c.textMuted }}>{l}</div>
                 </div>
               ))}
+              <span data-tip={p.pending ? "In the matching pool — waiting to be assigned to a reviewer." : "Not currently queued for a new review."}
+                style={{ fontSize: 10, fontWeight: 600, whiteSpace: "nowrap", color: p.pending ? c.pending : c.textMuted, background: (p.pending ? c.pending : c.textMuted) + "16", border: `1px solid ${(p.pending ? c.pending : c.textMuted)}30`, borderRadius: 8, padding: "4px 10px", cursor: "help" }}>
+                {p.pending ? "◷ In pool" : "Not queued"}
+              </span>
             </div>
-            <GhostButton size="sm">Edit</GhostButton>
+            <GhostButton size="sm" onClick={() => { setProductForm({ id: p.id, name: p.name, url: p.url, category: p.category, desc: p.description || "", platform: p.platform, matching: "category" }); navigate("/onboarding"); }}>Edit</GhostButton>
           </div>
         </Card>
       ))}

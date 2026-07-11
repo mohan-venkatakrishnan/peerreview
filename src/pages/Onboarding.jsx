@@ -17,6 +17,7 @@ export default function Onboarding() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const platform = detectPlatform(productForm.url);
+  const editing = !!productForm.id;
 
   const finish = async () => {
     if (saving) return;
@@ -53,7 +54,7 @@ export default function Onboarding() {
 
         {onboardStep === 0 && (
           <Card className="fade-up" style={{ padding: 36 }}>
-            <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: 24, fontWeight: 700, color: c.text, marginBottom: 6 }}>Add your product</h2>
+            <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: 24, fontWeight: 700, color: c.text, marginBottom: 6 }}>{editing ? "Edit your product" : "Add your product"}</h2>
             <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 28, lineHeight: 1.6 }}>Your product must have a live listing on a supported platform. We detect the platform from your URL.</p>
             <Input label="Product name" placeholder="e.g. CommentIQ" value={productForm.name} onChange={e => setProductForm({ ...productForm, name: e.target.value })} />
             <Input label="Store listing URL" placeholder="chromewebstore.google.com/detail/…" mono value={productForm.url} onChange={e => setProductForm({ ...productForm, url: e.target.value })} />
@@ -124,11 +125,11 @@ export default function Onboarding() {
             <div className="stamp-in" style={{ display: "inline-block", marginBottom: 24 }}>
               <SealMark size={80} gold={c.gold} />
             </div>
-            <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.text, marginBottom: 10 }}>You're in the pool</h2>
+            <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.text, marginBottom: 10 }}>{editing ? "Product updated" : "You're in the pool"}</h2>
             <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, marginBottom: 28, maxWidth: 360, margin: "0 auto 28px" }}>
-              <strong style={{ color: c.text }}>{productForm.name || "Your product"}</strong> is listed. You'll be assigned your first product to review shortly. Every review you give earns one back.
+              <strong style={{ color: c.text }}>{productForm.name || "Your product"}</strong> {editing ? "has been updated." : "is listed. You'll be assigned your first product to review shortly. Every review you give earns one back."}
             </p>
-            <GoldButton size="lg" onClick={() => navigate("/app")}>Go to dashboard →</GoldButton>
+            <GoldButton size="lg" onClick={() => navigate(editing ? "/app/products" : "/app")}>{editing ? "Back to my products →" : "Go to dashboard →"}</GoldButton>
           </Card>
         )}
       </div>
