@@ -3,7 +3,8 @@
 # only grants repo contents. CI (.github/workflows/deploy.yml) builds the app
 # and pushes the built dist/ via manual deployment instead.
 resource "aws_amplify_app" "peerreview" {
-  name = "peerreview"
+  provider = aws.uswest2
+  name     = "peerreview"
 
   custom_rule {
     source = "/<*>"
@@ -13,6 +14,7 @@ resource "aws_amplify_app" "peerreview" {
 }
 
 resource "aws_amplify_branch" "main" {
+  provider    = aws.uswest2
   app_id      = aws_amplify_app.peerreview.id
   branch_name = "main"
   framework   = "React"
@@ -23,6 +25,7 @@ resource "aws_amplify_branch" "main" {
 
 # DNS validation (GoDaddy CNAME) is a manual morning step — don't block apply
 resource "aws_amplify_domain_association" "peerreview" {
+  provider              = aws.uswest2
   app_id                = aws_amplify_app.peerreview.id
   domain_name           = var.root_domain
   wait_for_verification = false

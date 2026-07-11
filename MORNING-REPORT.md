@@ -8,13 +8,23 @@ verifies with rating → credit earned → trust recomputed → leaderboard rank
 with server-side privacy masking. All test data was cleaned up afterwards.
 Code is pushed to github.com/mohan-venkatakrishnan/peerreview.
 
-**One thing didn't finish: Amplify hosting** — AWS rate-limited `CreateApp`
-persistently (12 retries over 2 hours, then confirmed via direct CLI; the
-Apps quota is 25 with only LaunchPad using 1, so this is an AWS-side account
-throttle, not config). A second retry loop runs every 30 min through the
-night. If it still fails by morning: run `cd terraform && terraform apply`
-manually; if it persists past ~24h, open an AWS support case for the Amplify
-CreateApp throttle (Service Quotas shows no cap reached).
+**UPDATE — everything finished, including hosting.** us-east-1 throttled
+Amplify `CreateApp` for 7+ hours (account-level; quota not the issue), so the
+Amplify app was created in **us-west-2** instead — hosting region is
+irrelevant (CDN-served), and all data/auth stays us-east-1.
+
+**The site is LIVE (real mode, not mock): https://main.d1p9of17tenl4g.amplifyapp.com**
+Verified in a browser: landing renders, /app redirects to /signin, and
+"Continue with Google" walks Cognito → Google correctly.
+
+**Your ONE remaining task — GoDaddy DNS (2 min):**
+```
+Type: CNAME   Name: peerreview   Value: d2h2ab92s9yzvv.cloudfront.net
+```
+Amplify then verifies the domain and issues the certificate automatically
+(status is PENDING_VERIFICATION until the record exists). After that,
+https://peerreview.tapdot.org is live — its callback URL is already
+registered in Cognito.
 
 ## What exists in AWS now (all `peerreview-*`, LaunchPad untouched)
 - Cognito user pool + Google sign-in (hosted UI `peerreview-auth.auth.us-east-1.amazoncognito.com`)

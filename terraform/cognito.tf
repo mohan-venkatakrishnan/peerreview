@@ -52,16 +52,16 @@ resource "aws_cognito_user_pool_client" "web" {
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
 
-  # TODO(amplify): re-add "https://main.<amplify default_domain>/auth/callback"
-  # once the Amplify app exists — CreateApp is currently rate-limited.
   callback_urls = [
     "http://localhost:5180/auth/callback",
     "https://${var.subdomain_prefix}.${var.root_domain}/auth/callback",
+    "https://main.${aws_amplify_app.peerreview.default_domain}/auth/callback",
   ]
 
   logout_urls = [
     "http://localhost:5180",
     "https://${var.subdomain_prefix}.${var.root_domain}",
+    "https://main.${aws_amplify_app.peerreview.default_domain}",
   ]
 
   supported_identity_providers = ["Google"]

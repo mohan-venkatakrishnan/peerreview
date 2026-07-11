@@ -20,3 +20,15 @@ provider "aws" {
     tags = { App = "peerreview", Environment = "production" }
   }
 }
+
+# Amplify CreateApp is persistently throttled for this account in us-east-1
+# (confirmed over ~7h; us-west-2 works). Hosting region doesn't matter — the
+# app is served from Amplify's CDN either way.
+provider "aws" {
+  alias  = "uswest2"
+  region = "us-west-2"
+
+  default_tags {
+    tags = { App = "peerreview", Environment = "production" }
+  }
+}

@@ -17,7 +17,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: us-east-1
+      AWS_DEFAULT_REGION: us-west-2 # Amplify app lives in us-west-2 (us-east-1 CreateApp throttle)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
