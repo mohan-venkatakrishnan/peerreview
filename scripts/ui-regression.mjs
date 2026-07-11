@@ -61,6 +61,8 @@ for (const vp of VIEWPORTS) {
       const m = await page.evaluate(() => {
         const de = document.scrollingElement;
         const overflow = de.scrollWidth - window.innerWidth;
+        // white-screen sentinel: a crashed React tree leaves #root empty
+        const rootEmpty = (document.getElementById("root")?.childElementCount ?? 0) === 0;
         // widest element that pokes past the viewport
         let worst = null, worstW = window.innerWidth + 1;
         for (const el of document.querySelectorAll("body *")) {
@@ -77,11 +79,13 @@ for (const vp of VIEWPORTS) {
           hasNav: !!nav,
           navBox: nav ? { top: Math.round(nav.getBoundingClientRect().top), h: Math.round(nav.getBoundingClientRect().height) } : null,
           bodyText: document.body.innerText.length,
+          rootEmpty,
         };
       });
 
       const tags = [];
       if (m.overflow > 1) { fail(`${pg.key}: horizontal overflow ${m.overflow}px` + (m.worst ? ` (widest: ${m.worst.sel} → ${m.worst.right}px)` : "")); tags.push("overflow"); }
+      if (m.rootEmpty) { fail(`${pg.key}: WHITE SCREEN — React root is empty (component crashed)`); tags.push("whitescreen"); }
       if (m.bodyText < 40) { fail(`${pg.key}: page nearly empty (${m.bodyText} chars) — render error?`); tags.push("empty"); }
       if (errors.length) { fail(`${pg.key}: JS error — ${errors[0]}`); tags.push("js"); }
       // app pages must show the nav; on ≤900px it's the bottom bar

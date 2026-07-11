@@ -41,6 +41,7 @@ export const INCOMING_REVIEWS = [
 ];
 
 export const REVIEW_HISTORY = [
+  { id: 5, product: "SidePeek", developer: "Ana W.", state: "submitted", time: "1 hour ago", rating: null },
   { id: 1, product: "TabStash", developer: "Miguel S.", state: "verified", time: "2 days ago", rating: 5 },
   { id: 2, product: "QuickNote", developer: "Sana P.", state: "verified", time: "5 days ago", rating: 4 },
   { id: 3, product: "DevTimer", developer: "Chris O.", state: "pending", time: "6 days ago", rating: null },

@@ -92,7 +92,7 @@ export const getAssignment = async () => {
       id: h.assignmentId ?? i,
       product: h.productName ?? "Product",
       developer: "",
-      state: h.state === "skipped" || h.state === "expired" ? "pending" : h.state,
+      state: h.state, // StateBadge renders every state (submitted/skipped/expired/verified/flagged)
       time: timeAgo(h.submittedAt ?? h.assignedAt),
       rating: h.ownerRating ?? null,
     })),
