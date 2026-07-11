@@ -11,6 +11,12 @@ export default function MyProduct() {
   const { incoming, products, stats, stampAnimating, verifyReview, flagReview } = useAppState();
   const [reviewsSearch, setReviewsSearch] = useState("");
   const [productFilter, setProductFilter] = useState("all");
+  const [copiedId, setCopiedId] = useState(null);
+  const openLink = (url) => window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
+  const copyLink = (id, url) => {
+    const full = /^https?:\/\//.test(url) ? url : `https://${url}`;
+    navigator.clipboard?.writeText(full).then(() => { setCopiedId(id); setTimeout(() => setCopiedId(null), 1500); });
+  };
   const productOf = (r) => products.find(p => p.id === r.productId || p.name === r.product);
   const visible = incoming.filter(r => productFilter === "all" || productOf(r)?.id === productFilter);
   const awaiting = visible.filter(r => r.state === "pending" || r.state === "submitted").length;
@@ -75,8 +81,21 @@ export default function MyProduct() {
               {isVerified ? <StateBadge state="verified" /> : isFlagged ? <StateBadge state="flagged" /> : <StateBadge state="pending" />}
             </div>
             <p style={{ fontSize: 14, color: c.textSub, lineHeight: 1.7, marginBottom: 14, fontStyle: "italic" }}>"{r.excerpt}"</p>
-            <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 8, padding: "10px 12px", fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: c.textMuted, marginBottom: 16, wordBreak: "break-all", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: c.gold }}>↗</span> {r.link}
+            <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 8, padding: "8px 10px 8px 12px", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <span onClick={() => openLink(r.link)} title="Open the review on its platform"
+                style={{ flex: 1, fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: c.gold, wordBreak: "break-all", cursor: "pointer", textDecoration: "underline", textDecorationColor: c.borderGold, textUnderlineOffset: 3 }}>
+                {r.link}
+              </span>
+              <button onClick={() => copyLink(r.id, r.link)} title="Copy link"
+                style={{ flexShrink: 0, background: "transparent", border: `1px solid ${copiedId === r.id ? c.verified : c.border}`, borderRadius: 7, padding: "5px 8px", cursor: "pointer", color: copiedId === r.id ? c.verified : c.textMuted, fontSize: 11, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                {copiedId === r.id
+                  ? <>✓ Copied</>
+                  : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> Copy</>}
+              </button>
+              <button onClick={() => openLink(r.link)} title="Open link"
+                style={{ flexShrink: 0, background: "transparent", border: `1px solid ${c.border}`, borderRadius: 7, padding: "5px 8px", cursor: "pointer", color: c.textMuted, fontSize: 11, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg> Open
+              </button>
             </div>
             {!isVerified && !isFlagged && (
               <div style={{ display: "flex", gap: 10 }}>
