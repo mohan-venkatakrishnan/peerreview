@@ -1,7 +1,9 @@
 import { useTheme } from "../tokens/theme";
 
-/* The dashed rings and star rotate; the tick and its disc stay fixed. */
-export default function SealMark({ size = 80, animated = false, gold = "#C9A84C" }) {
+/* The dashed rings and star rotate; the tick and its disc stay fixed.
+   Rotates everywhere by default (pass animated={false} to pin it);
+   FX-lite / reduced-motion users get a still seal. */
+export default function SealMark({ size = 80, animated = true, gold = "#C9A84C" }) {
   const { fx } = useTheme();
   const spin = animated && fx !== "lite";
   return (

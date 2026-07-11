@@ -123,22 +123,6 @@ export default function Settings() {
         ))}
       </Card>
 
-      <Card className="fade-up-d2" style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>Notifications</div>
-          <span style={{ fontSize: 10, fontWeight: 600, color: c.pending, background: c.pending + "16", border: `1px solid ${c.pending}30`, borderRadius: 8, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Coming with launch</span>
-        </div>
-        <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 12, lineHeight: 1.6 }}>Email delivery isn't wired up yet — your preferences here will apply the moment it ships.</p>
-        {["New review assignment", "Review received on my product", "My review was verified"].map((n, i) => (
-          <div key={n} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i < 3 ? `1px solid ${c.border}` : "none" }}>
-            <span style={{ fontSize: 14, color: c.text }}>{n}</span>
-            <div style={{ width: 40, height: 22, borderRadius: 12, background: i < 3 ? c.gold : c.border, position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-              <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: i < 3 ? 21 : 3, transition: "left 0.2s" }} />
-            </div>
-          </div>
-        ))}
-      </Card>
-
       <Card className="fade-up-d3" style={{ borderColor: c.flagged + "40" }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: c.flagged, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Danger zone</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
