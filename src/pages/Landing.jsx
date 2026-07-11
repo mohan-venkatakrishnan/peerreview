@@ -58,7 +58,7 @@ function Hero() {
   const { c, fx } = useTheme();
   const navigate = useNavigate();
   return (
-    <section style={{ minHeight: "88vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "140px 24px 80px", position: "relative", overflow: "hidden" }}>
+    <section style={{ minHeight: "70vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "118px 24px 56px", position: "relative", overflow: "hidden" }}>
       <div style={{
         position: "absolute", top: "12%", left: "12%", width: 380, height: 380,
         background: "radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%)", borderRadius: "50%",
@@ -90,7 +90,7 @@ function Hero() {
 function StatsBar() {
   const { c } = useTheme();
   return (
-    <Section style={{ padding: "0 24px 96px" }}>
+    <Section style={{ padding: "40px 24px 96px" }}>
       <Reveal>
         <Card style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 0, padding: 0, overflow: "hidden" }}>
           {LANDING_STATS.map((s, i) => (
