@@ -30,7 +30,8 @@ function StarLayer({ stars, drift, dur, gold, lite, scale = 1, layerRef }) {
             fontSize: s.size * scale, lineHeight: 1, color: gold,
             opacity: 0.3,
             textShadow: `0 0 ${s.bright ? 12 : 6}px ${gold}`,
-            animation: lite ? "none" : `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite backwards`,
+            // NEGATIVE delay = every star is already mid-twinkle at first paint
+            animation: lite ? "none" : `twinkle ${s.dur}s ease-in-out -${s.delay}s infinite`,
           }}>{s.bright ? "★" : "☆"}</span>
         ))}
       </div>

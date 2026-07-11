@@ -48,7 +48,7 @@ export const LEADERBOARD_FULL = [
   { rank: 1, name: "Priya K.", given: 47, received: 45, verified: 44, score: 4.9, streak: 12, category: "Chrome Extension", badges: ["crown", "flame", "shield"] },
   { rank: 2, name: "Tom W.", given: 38, received: 36, verified: 35, score: 4.8, streak: 8, category: "SaaS Tool", badges: ["gem", "shield"] },
   { rank: 3, name: "Aisha M.", given: 31, received: 30, verified: 29, score: 4.7, streak: 15, category: "Web App", badges: ["flame", "bolt"] },
-  { rank: 4, name: "You (Mohan)", given: 12, received: 8, verified: 10, score: 4.6, streak: 4, isYou: true, category: "Chrome Extension", badges: ["seal", "bolt"] },
+  { rank: 4, name: "You", given: 12, received: 8, verified: 10, score: 4.6, streak: 4, isYou: true, category: "Chrome Extension", badges: ["seal", "bolt"] },
   { rank: 5, name: "Dev R.", given: 24, received: 22, verified: 20, score: 4.6, streak: 3, category: "Mobile App", badges: ["gem"] },
   { rank: 6, name: "Lena S.", given: 19, received: 18, verified: 17, score: 4.5, streak: 6, category: "Web App", badges: ["shield"] },
   { rank: 7, name: "Jake T.", given: 15, received: 14, verified: 12, score: 4.4, streak: 2, category: "Chrome Extension", badges: ["seal"] },

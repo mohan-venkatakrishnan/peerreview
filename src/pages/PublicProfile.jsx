@@ -9,7 +9,7 @@ import BadgeIcon from "../components/BadgeIcon";
 import { Card, GhostButton, StatBar } from "../components/ui";
 
 const maskName = (name) => {
-  const parts = name.replace(" (Mohan)", "").split(" ");
+  const parts = name.split(" ");
   return parts.map(p => p.length <= 2 ? p : p[0] + "•".repeat(Math.min(p.length - 2, 4)) + p[p.length - 1]).join(" ");
 };
 const maskEmail = (email) => {
@@ -34,7 +34,7 @@ export default function PublicProfile() {
     /* Simulate each user's privacy choice — Priya shares everything, others mask */
     shares = p.rank === 1 ? { showName: true, showEmail: true, showPhoto: true } : { showName: p.rank % 2 === 0, showEmail: false, showPhoto: p.rank % 2 === 0 };
     email = p.name.split(" ")[0].toLowerCase().replace(/[^a-z]/g, "") + "@gmail.com";
-    displayName = shares.showName ? p.name.replace(" (Mohan)", "") : maskName(p.name);
+    displayName = shares.showName ? p.name : maskName(p.name);
   } else {
     if (member === null) return <div style={{ padding: 48, textAlign: "center", color: c.textMuted, fontSize: 14 }}>Loading member…</div>;
     if (member === undefined) return <div style={{ padding: 48, textAlign: "center", color: c.textMuted, fontSize: 14 }}>Member not found.</div>;
