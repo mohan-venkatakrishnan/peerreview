@@ -1,6 +1,21 @@
 # Security headers served by Amplify Hosting on every response (OWASP A05).
 # Ships INSIDE the deploy artifact (copied into dist/) — LaunchPad pattern.
 customHeaders:
+  # HTML must never be cached — it points at the hashed JS bundle, so a stale
+  # index.html serves an old build (e.g. a form that drops fields). Always
+  # revalidate the document; the fingerprinted assets below cache forever.
+  - pattern: '**/*.html'
+    headers:
+      - key: Cache-Control
+        value: 'no-cache, no-store, must-revalidate'
+  - pattern: '/'
+    headers:
+      - key: Cache-Control
+        value: 'no-cache, no-store, must-revalidate'
+  - pattern: '/assets/**'
+    headers:
+      - key: Cache-Control
+        value: 'public, max-age=31536000, immutable'
   - pattern: '**'
     headers:
       - key: Strict-Transport-Security
