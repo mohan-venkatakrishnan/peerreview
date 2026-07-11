@@ -2,9 +2,9 @@
 /* Future: swap this module for an API layer. */
 
 export const MY_PRODUCTS = [
-  { id: 1, name: "CommentIQ", platform: "Chrome Web Store", category: "Chrome Extension", url: "chromewebstore.google.com/detail/commentiq", reviews: 8, pending: 2, verified: 6 },
-  { id: 2, name: "SnapDiff", platform: "Product Hunt", category: "Developer Tool", url: "producthunt.com/posts/snapdiff", reviews: 5, pending: 1, verified: 4 },
-  { id: 3, name: "InboxPilot", platform: "Firefox Add-ons", category: "Web App", url: "addons.mozilla.org/en-US/firefox/addon/inboxpilot", reviews: 2, pending: 2, verified: 0 },
+  { id: 1, name: "CommentIQ", platform: "Chrome Web Store", category: "Chrome Extension", url: "chromewebstore.google.com/detail/commentiq", reviews: 8, pending: 2, verified: 6, matching: "category" },
+  { id: 2, name: "SnapDiff", platform: "Product Hunt", category: "Developer Tool", url: "producthunt.com/posts/snapdiff", reviews: 5, pending: 1, verified: 4, matching: "open" },
+  { id: 3, name: "InboxPilot", platform: "Firefox Add-ons", category: "Web App", url: "addons.mozilla.org/en-US/firefox/addon/inboxpilot", reviews: 2, pending: 2, verified: 0, matching: "category" },
 ];
 
 /* Mock accounts — enables LaunchPad-style account switching until real auth lands */
@@ -107,10 +107,10 @@ export const detectPlatform = (url) => PLATFORM_PATTERNS.find(p => p.re.test(Str
 
 /* Landing page content */
 export const LANDING_STATS = [
-  { value: "312", label: "Reviews exchanged" },
-  { value: "94%", label: "Verified by owners" },
-  { value: "87", label: "Developers in the pool" },
-  { value: "6", label: "Supported platforms" },
+  { value: "1 : 1", label: "Reviews given to received" },
+  { value: "100%", label: "Human-verified reviews" },
+  { value: "6", label: "Platforms: Chrome, Firefox, Edge, PH, Play, App Store" },
+  { value: "$0", label: "To join and list your first product" },
 ];
 
 export const HOW_IT_WORKS = [
@@ -144,4 +144,5 @@ export const genProducts = (n) => Array.from({ length: n }, (_, i) => ({
   reviews: (i * 7) % 23,
   pending: i % 3,
   verified: Math.max(0, ((i * 7) % 23) - (i % 3)),
+  matching: i % 2 ? "open" : "category",
 }));

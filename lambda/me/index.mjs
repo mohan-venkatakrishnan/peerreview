@@ -30,7 +30,7 @@ const PUBLIC_FIELDS = (u) => ({
   matching: u.matching, privacy: u.privacy, creditBalance: u.creditBalance,
   given: u.given, received: u.received, verifiedGiven: u.verifiedGiven,
   flaggedGiven: u.flaggedGiven, trustScore: u.trustScore, badges: u.badges,
-  createdAt: u.createdAt,
+  avatarData: u.avatarData ?? null, createdAt: u.createdAt,
 });
 
 export const handler = async (event) => {
@@ -84,6 +84,14 @@ export const handler = async (event) => {
     if (body.matching === 'category' || body.matching === 'open') {
       sets.push('matching = :matching');
       values[':matching'] = body.matching;
+    }
+    if (body.avatarData === null) {
+      sets.push('avatarData = :avatar');
+      values[':avatar'] = null;
+    } else if (typeof body.avatarData === 'string' && body.avatarData.startsWith('data:image/') && body.avatarData.length < 100000) {
+      // small client-resized data URL (~128px); cap keeps DynamoDB item well under 400KB
+      sets.push('avatarData = :avatar');
+      values[':avatar'] = body.avatarData;
     }
     if (body.privacy && typeof body.privacy === 'object') {
       sets.push('privacy = :privacy');

@@ -50,6 +50,7 @@ export default function PublicProfile() {
     shares = { showName: member.nameShared, showEmail: member.emailShared, showPhoto: member.photoShared };
     email = member.email; // pre-masked server-side unless shared
     displayName = member.name;
+    p.avatarData = member.avatarData; // null unless the member shares it
   }
   const maskedEmail = useMock ? (shares.showEmail ? email : maskEmail(email)) : email;
 
@@ -73,9 +74,10 @@ export default function PublicProfile() {
               border: `3px solid ${c.surface}`, boxShadow: `0 0 0 1px ${c.borderGold}, 0 8px 32px rgba(0,0,0,0.3)`,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 34, fontWeight: 700, color: c.gold, fontFamily: "Playfair Display, serif",
-              filter: shares.showPhoto ? "none" : "blur(0px)",
             }}>
-              {shares.showPhoto ? p.name[0] : "?"}
+              {shares.showPhoto && p.avatarData
+                ? <div style={{ position: "absolute", inset: 0, borderRadius: "50%", backgroundImage: `url(${p.avatarData})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+                : (displayName[0] || "?")}
             </div>
             <div style={{ position: "absolute", bottom: -4, right: -4 }}><SealMark size={32} gold={c.gold} /></div>
           </div>

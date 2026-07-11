@@ -65,9 +65,8 @@ export const handler = async () => {
   let assigned = 0;
 
   for (const product of pool) {
-    // the OWNER's preference decides who may review their product
-    const owner = users.find(u => u.userId === product.userId);
-    const requireCategory = owner?.matching === 'category' && !!product.category;
+    // each product carries its own matching preference now
+    const requireCategory = (product.matching ?? 'category') === 'category' && !!product.category;
     const candidates = users.filter(u =>
       !String(u.userId).startsWith('pending#') && // parked entitlements, not people
       u.userId !== product.userId &&

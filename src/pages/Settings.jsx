@@ -7,15 +7,28 @@ import { Card, PageTitle, GhostButton, Avatar, Input, SwitchAccountDialog } from
 
 export default function Settings() {
   const { c } = useTheme();
-  const { privacy, setPrivacy, account, updateProfile, switchAccount, matching, setMatching, signOut, useMock, saveStatus } = useAppState();
+  const { privacy, setPrivacy, account, updateProfile, switchAccount, signOut, useMock, saveStatus } = useAppState();
   const fileRef = useRef(null);
   const [switchOpen, setSwitchOpen] = useState(false);
 
+  // Resize to a small square before storing — keeps the account record tiny
   const onPhotoPick = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => updateProfile({ avatar: reader.result });
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const S = 128;
+        const canvas = document.createElement("canvas");
+        canvas.width = S; canvas.height = S;
+        const ctx = canvas.getContext("2d");
+        const side = Math.min(img.width, img.height);
+        ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+        updateProfile({ avatar: canvas.toDataURL("image/jpeg", 0.82) });
+      };
+      img.src = reader.result;
+    };
     reader.readAsDataURL(file);
     e.target.value = "";
   };
@@ -44,7 +57,7 @@ export default function Settings() {
         </div>
         <Input label="Display name" value={account.name} onChange={e => updateProfile({ name: e.target.value })} placeholder="Your name" />
         <div style={{ fontSize: 12, color: c.textMuted, lineHeight: 1.6 }}>
-          Signed in as <span style={{ fontFamily: "JetBrains Mono, monospace" }}>{account.email}</span>. Your photo stays in this browser — and it's masked on your public profile unless you turn sharing on below.
+          Signed in as <span style={{ fontFamily: "JetBrains Mono, monospace" }}>{account.email}</span>. Your photo is stored with your account. Other members see it only if you turn on “Show my profile photo” below — otherwise they see your initial.
         </div>
       </Card>
 
@@ -83,32 +96,13 @@ export default function Settings() {
           </>
         )}
       </Card>
-      <Card className="fade-up-d1" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 18 }}>Matching preference</div>
-        {[
-          { id: "category", title: "Category match", desc: "Matched within your product category" },
-          { id: "open", title: "Open match", desc: "Matched with anyone in the pool" },
-        ].map(opt => (
-          <div key={opt.id} onClick={() => setMatching(opt.id)}
-            style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 10, border: `1px solid ${matching === opt.id ? c.gold : c.border}`, background: matching === opt.id ? c.goldGlow : "transparent", marginBottom: 10, cursor: "pointer", transition: "all 0.2s" }}>
-            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${matching === opt.id ? c.gold : c.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {matching === opt.id && <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.gold }} />}
-            </div>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>{opt.title}</div>
-              <div style={{ fontSize: 12, color: c.textMuted }}>{opt.desc}</div>
-            </div>
-          </div>
-        ))}
-      </Card>
-
       <Card className="fade-up-d2" style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Public profile privacy</div>
         <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 16, lineHeight: 1.6 }}>Everything is masked by default. You choose what other members see when they visit your profile.</p>
         {[
           ["showName", "Show my full name", "Otherwise shown as M••••n"],
           ["showEmail", "Show my email", "Otherwise shown as m•••@•••.com"],
-          ["showPhoto", "Show my profile photo", "Otherwise shown as ?"],
+          ["showPhoto", "Show my profile photo", "Otherwise your initial is shown"],
         ].map(([key, label, hint], i) => (
           <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i < 2 ? `1px solid ${c.border}` : "none" }}>
             <div>

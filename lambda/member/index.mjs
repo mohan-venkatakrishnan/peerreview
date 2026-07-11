@@ -34,6 +34,7 @@ export const handler = async (event) => {
     email: (self || privacy.showEmail) ? u.email : maskEmail(u.email),
     emailShared: !!privacy.showEmail,
     photoShared: !!privacy.showPhoto,
+    avatarData: (self || privacy.showPhoto) ? (u.avatarData ?? null) : null,
     trustScore: u.trustScore,
     given: u.given ?? 0,
     received: u.received ?? 0,

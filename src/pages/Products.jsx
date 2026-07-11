@@ -54,6 +54,9 @@ export default function Products() {
               <div style={{ fontSize: 16, fontWeight: 700, color: c.text }}>{p.name}</div>
               <div style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>{p.category} · {p.platform}</div>
               <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: c.textMuted, marginTop: 6 }}>{p.url}</div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, fontSize: 10, fontWeight: 600, color: c.textSub, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 8, padding: "3px 9px" }}>
+                {(p.matching ?? "category") === "open" ? "⊕ Open match" : "◎ Category match"}
+              </div>
             </div>
             <div style={{ display: "flex", gap: 24, textAlign: "center", alignItems: "center" }}>
               {[["Reviews", p.reviews], ["Verified", p.verified]].map(([l, v]) => (
@@ -67,7 +70,7 @@ export default function Products() {
                 {p.pending ? "◷ In pool" : "Not queued"}
               </span>
             </div>
-            <GhostButton size="sm" onClick={() => { setProductForm({ id: p.id, name: p.name, url: p.url, category: p.category, desc: p.description || "", platform: p.platform, matching: "category" }); navigate("/onboarding"); }}>Edit</GhostButton>
+            <GhostButton size="sm" onClick={() => { setProductForm({ id: p.id, name: p.name, url: p.url, category: p.category, desc: p.description || "", platform: p.platform, matching: p.matching || "category" }); navigate("/onboarding"); }}>Edit</GhostButton>
           </div>
         </Card>
       ))}

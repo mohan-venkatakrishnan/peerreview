@@ -62,10 +62,11 @@ export const getProducts = async () => (await apiFetch("/products")).map(p => ({
   reviews: p.receivedCount ?? 0,
   pending: p.poolStatus === "queued" ? 1 : 0,
   verified: p.receivedCount ?? 0,
+  matching: p.matching ?? "category",
 }));
 export const saveProduct = (form) => apiFetch("/products", {
   method: "POST",
-  body: JSON.stringify({ productId: form.id, name: form.name, url: form.url, category: form.category, description: form.desc ?? form.description }),
+  body: JSON.stringify({ productId: form.id, name: form.name, url: form.url, category: form.category, description: form.desc ?? form.description, matching: form.matching }),
 });
 export const deleteProduct = (id) => apiFetch(`/products/${id}`, { method: "DELETE" });
 

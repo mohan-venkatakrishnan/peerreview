@@ -100,7 +100,7 @@ export function AppStateProvider({ children }) {
 
   const unifiedAccount = USE_MOCK ? account : (me ? {
     id: me.userId, name: me.name, email: me.email,
-    plan: me.plan, score: me.trustScore, avatar: account.avatar, // avatar stays local
+    plan: me.plan, score: me.trustScore, avatar: me.avatarData ?? null, // stored on the account, gated by privacy
   } : { name: "…", email: "", plan: "free", score: 0, avatar: null });
 
   const stats = USE_MOCK
@@ -184,14 +184,9 @@ export function AppStateProvider({ children }) {
       markSaved();
       return;
     }
-    if (patch.avatar !== undefined) { // avatar is browser-local in both modes for now
-      const next = { ...account, avatar: patch.avatar };
-      setAccountState(next);
-      localStorage.setItem("peerreview-account", JSON.stringify(next));
-    }
     const server = {};
     if (patch.name !== undefined) server.name = patch.name;
-    if (patch.matching !== undefined) server.matching = patch.matching;
+    if (patch.avatar !== undefined) server.avatarData = patch.avatar; // stored server-side, masked per privacy
     if (Object.keys(server).length) queueMePatch(server);
   };
 

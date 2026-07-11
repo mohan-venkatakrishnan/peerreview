@@ -61,6 +61,7 @@ export const handler = async (event) => {
       platform,
       category: String(body.category ?? '').slice(0, 40),
       description: String(body.description ?? '').slice(0, 280),
+      matching: body.matching === 'open' ? 'open' : 'category',
       status: 'active',
       receivedCount: editing ? existing.find(p => p.productId === body.productId).receivedCount ?? 0 : 0,
       reviewerIds: editing ? existing.find(p => p.productId === body.productId).reviewerIds ?? [] : [],

@@ -271,7 +271,7 @@ function FinalCta() {
       <Reveal>
         <Card style={{ padding: "64px 32px", textAlign: "center", background: `linear-gradient(160deg, ${c.goldGlow}, ${c.surface} 65%)`, border: `1px solid ${c.borderGold}` }}>
           <div className="float" style={{ display: "inline-block", marginBottom: 20 }}><SealMark size={56} animated gold={c.gold} /></div>
-          <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "clamp(26px, 4vw, 36px)", fontWeight: 700, color: c.text, marginBottom: 12 }}>Your product deserves a real reader</h2>
+          <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "clamp(26px, 4vw, 36px)", fontWeight: 700, color: c.text, marginBottom: 12 }}>Your product deserves a real reviewer</h2>
           <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 28px" }}>
             List it free, review one product, and get a genuine review back — verified by you.
           </p>
@@ -321,7 +321,6 @@ export default function Landing() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <a href="#how" style={{ fontSize: 13, color: c.textSub, textDecoration: "none" }}>How it works</a>
-            <a href="#pricing" style={{ fontSize: 13, color: c.textSub, textDecoration: "none" }}>Pricing</a>
             <button onClick={() => setIsDark(!isDark)} style={{ background: c.surface, border: `1px solid ${c.border}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: c.textMuted }}>{isDark ? "☀" : "◑"}</button>
             <GoldButton size="sm" onClick={() => navigate("/signin")}>Join the exchange</GoldButton>
           </div>
@@ -333,7 +332,6 @@ export default function Landing() {
       <LifecycleStrip />
       <LeaderboardPreview />
       <Testimonials />
-      <Pricing />
       <FinalCta />
       <Footer />
     </div>
