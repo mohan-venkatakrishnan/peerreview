@@ -37,13 +37,21 @@ export function AppStateProvider({ children }) {
   const [loading, setLoading] = useState(!USE_MOCK);
   const [loadError, setLoadError] = useState(null);
 
+  const SAMPLE_LB = LEADERBOARD_FULL.map(r => ({ ...r, sample: true }));
+
   const loadData = async () => {
-    if (USE_MOCK || !isAuthed()) return;
+    if (USE_MOCK) return;
+    // The leaderboard endpoint is public — load it signed-out too. Empty pool
+    // pre-launch shows the sample cohort (labelled in the table).
+    api.getLeaderboard()
+      .then(lb => setLeaderboardRows(lb.length ? lb : SAMPLE_LB))
+      .catch(() => setLeaderboardRows(SAMPLE_LB));
+    if (!isAuthed()) { setLoading(false); return; }
     setLoading(true);
     setLoadError(null);
     try {
-      const [meData, products, assignment, incoming, lb] = await Promise.all([
-        api.getMe(), api.getProducts(), api.getAssignment(), api.getIncoming(), api.getLeaderboard(),
+      const [meData, products, assignment, incoming] = await Promise.all([
+        api.getMe(), api.getProducts(), api.getAssignment(), api.getIncoming(),
       ]);
       setMe(meData);
       setRealProducts(products);
@@ -51,9 +59,6 @@ export function AppStateProvider({ children }) {
       setRealSubmitted(assignment.submitted);
       setRealHistory(assignment.history);
       setRealIncoming(incoming);
-      // Empty pool pre-launch: show the sample cohort (clearly labelled in
-      // the table) so the leaderboard demonstrates what reviewers earn.
-      setLeaderboardRows(lb.length ? lb : LEADERBOARD_FULL.map(r => ({ ...r, sample: true })));
     } catch (e) {
       setLoadError(e.message);
     } finally {
