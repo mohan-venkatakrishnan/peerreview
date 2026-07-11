@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const lambda = new LambdaClient({});
 
 /* Supported platform LISTING url patterns (auto-detect). Curated set of real
    product/store pages with public reviews — expand as new ones are added. */
@@ -92,6 +94,16 @@ export const handler = async (event) => {
       UpdateExpression: 'SET categories = :c',
       ExpressionAttributeValues: { ':c': categories },
     }));
+
+    // a fresh listing enters the pool — run the matcher now so the owner
+    // isn't stuck on "nothing assigned" until the next hourly sweep
+    if (!editing) {
+      await lambda.send(new InvokeCommand({
+        FunctionName: process.env.MATCHER_FUNCTION,
+        InvocationType: 'Event',
+        Payload: JSON.stringify({ trigger: 'listing' }),
+      })).catch(() => {}); // hourly schedule is the safety net
+    }
 
     return respond(200, product);
   }

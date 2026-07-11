@@ -13,7 +13,7 @@ locals {
   # one entry per lambda dir under ../lambda/
   functions = {
     me          = {}
-    products    = {}
+    products    = { env = { MATCHER_FUNCTION = "peerreview-matcher" } }
     assignment  = {}
     incoming    = { env = { MATCHER_FUNCTION = "peerreview-matcher" } }
     member      = {}
@@ -55,14 +55,17 @@ resource "aws_lambda_function_event_invoke_config" "no_retry" {
   maximum_retry_attempts = 0
 }
 
-# Hourly matcher run: assigns queued products, expires overdue assignments
-resource "aws_cloudwatch_event_rule" "matcher_hourly" {
-  name                = "peerreview-matcher-hourly"
-  schedule_expression = "rate(1 hour)"
+# Matcher runs every minute: assigns queued products, expires overdue
+# assignments. Cheap — it early-returns after one pool query when the queue is
+# empty, so most runs are ~2 DynamoDB reads. Combined with the on-listing
+# trigger in the products lambda, new products match within a minute at worst.
+resource "aws_cloudwatch_event_rule" "matcher_schedule" {
+  name                = "peerreview-matcher-schedule"
+  schedule_expression = "rate(1 minute)"
 }
 
-resource "aws_cloudwatch_event_target" "matcher_hourly" {
-  rule = aws_cloudwatch_event_rule.matcher_hourly.name
+resource "aws_cloudwatch_event_target" "matcher_schedule" {
+  rule = aws_cloudwatch_event_rule.matcher_schedule.name
   arn  = aws_lambda_function.fn["matcher"].arn
 }
 
@@ -71,5 +74,5 @@ resource "aws_lambda_permission" "matcher_events" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.fn["matcher"].function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.matcher_hourly.arn
+  source_arn    = aws_cloudwatch_event_rule.matcher_schedule.arn
 }
