@@ -91,7 +91,7 @@ export default function PublicProfile() {
             <div style={{ fontSize: 12, color: c.textMuted, marginTop: 6 }}>{p.category} developer · {p.streak}-week streak</div>
           </div>
           <div style={{ textAlign: "center", paddingBottom: 6 }}>
-            <div style={{ fontFamily: "Playfair Display, serif", fontSize: 34, fontWeight: 700, color: c.gold }}>★ {p.score}</div>
+            <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 30, fontWeight: 500, color: c.gold, letterSpacing: "-0.02em" }}>★ {p.score}</div>
             <div style={{ fontSize: 10, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Trust Score</div>
           </div>
         </div>

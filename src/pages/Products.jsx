@@ -58,7 +58,7 @@ export default function Products() {
             <div style={{ display: "flex", gap: 24, textAlign: "center", alignItems: "center" }}>
               {[["Reviews", p.reviews], ["Verified", p.verified]].map(([l, v]) => (
                 <div key={l}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: c.gold, fontFamily: "Playfair Display, serif" }}>{v}</div>
+                  <div style={{ fontSize: 18, fontWeight: 500, color: c.gold, fontFamily: "JetBrains Mono, monospace" }}>{v}</div>
                   <div style={{ fontSize: 10, color: c.textMuted }}>{l}</div>
                 </div>
               ))}

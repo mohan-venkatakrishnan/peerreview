@@ -63,7 +63,7 @@ export function StatBar({ items, className, style }) {
         <div key={s.label} style={{ padding: "20px 24px", borderLeft: i > 0 ? `1px solid ${c.border}` : "none" }}>
           <div style={{ fontSize: 10, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{s.label}</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: "Playfair Display, serif", fontSize: 28, fontWeight: 700, color: s.color || c.text, lineHeight: 1 }}>{s.value}</span>
+            <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 26, fontWeight: 500, color: s.color || c.text, lineHeight: 1, letterSpacing: "-0.02em" }}>{s.value}</span>
             {s.delta && <span style={{ fontSize: 10, fontWeight: 600, color: c.verified, background: c.verified + "14", border: `1px solid ${c.verified}30`, borderRadius: 8, padding: "2px 7px" }}>{s.delta}</span>}
           </div>
           {s.sub && <div style={{ fontSize: 11, color: c.textMuted, marginTop: 7 }}>{s.sub}</div>}
@@ -89,7 +89,7 @@ export function TrustRing({ score = 4.6, size = 112, label = "Trust Score" }) {
           transform={`rotate(-90 ${size / 2} ${size / 2})`} />
       </svg>
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontFamily: "Playfair Display, serif", fontSize: size * 0.25, fontWeight: 700, color: c.gold, lineHeight: 1 }}>{score}</div>
+        <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: size * 0.24, fontWeight: 500, color: c.gold, lineHeight: 1, letterSpacing: "-0.02em" }}>{score}</div>
         <div style={{ fontSize: 8, letterSpacing: "0.14em", color: c.textMuted, textTransform: "uppercase", marginTop: 4 }}>{label}</div>
       </div>
     </div>
