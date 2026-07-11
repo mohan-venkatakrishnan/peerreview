@@ -51,7 +51,9 @@ export function AppStateProvider({ children }) {
       setRealSubmitted(assignment.submitted);
       setRealHistory(assignment.history);
       setRealIncoming(incoming);
-      setLeaderboardRows(lb.length ? lb : []);
+      // Empty pool pre-launch: show the sample cohort (clearly labelled in
+      // the table) so the leaderboard demonstrates what reviewers earn.
+      setLeaderboardRows(lb.length ? lb : LEADERBOARD_FULL.map(r => ({ ...r, sample: true })));
     } catch (e) {
       setLoadError(e.message);
     } finally {

@@ -163,21 +163,26 @@ export default function App() {
     localStorage.setItem("peerreview-theme", isDark ? "dark" : "light");
   }, [isDark]);
 
-  // FX tier is the single motion switch. Default: Lite when the OS asks for
-  // reduced motion (e.g. Windows with UI animations off), Full otherwise.
-  // An explicit toggle choice always wins and is persisted.
-  const [fx, setFx] = useState(() =>
-    localStorage.getItem("peerreview-fx")
-    || (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "lite" : "full")
-  );
-  useEffect(() => {
-    localStorage.setItem("peerreview-fx", fx);
-  }, [fx]);
+  // FX tier — auto-detected once, LaunchPad tier.js pattern. No visible
+  // switch; localStorage `peerreview-fx` (full|lite) is a QA-only override.
+  const [fx] = useState(() => {
+    try {
+      const ov = localStorage.getItem("peerreview-fx");
+      if (ov === "full" || ov === "lite") return ov;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const saveData = navigator.connection?.saveData;
+      const mem = navigator.deviceMemory ?? 8;
+      const cores = navigator.hardwareConcurrency ?? 8;
+      return (reduced || saveData || mem <= 2 || cores <= 2) ? "lite" : "full";
+    } catch {
+      return "full";
+    }
+  });
 
   const c = isDark ? DARK : LIGHT;
 
   return (
-    <ThemeContext.Provider value={{ c, isDark, setIsDark, fx, setFx }}>
+    <ThemeContext.Provider value={{ c, isDark, setIsDark, fx }}>
       <AppStateProvider>
         <BrowserRouter>
           <div className={fx === "lite" ? "fx-lite" : undefined} style={{ background: c.bg, color: c.text, minHeight: "100vh", transition: "background 0.3s" }}>

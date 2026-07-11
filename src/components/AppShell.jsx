@@ -6,7 +6,7 @@ import { PLANS, ACCOUNTS } from "../data/mock";
 import SealMark from "./SealMark";
 import ParallaxBackdrop from "./ParallaxBackdrop";
 import NavIcon from "./NavIcon";
-import { FxToggle, Avatar } from "./ui";
+import { Avatar } from "./ui";
 
 const APP_PAGES = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", path: "/app" },
@@ -142,8 +142,7 @@ export default function AppShell() {
             </div>
             <span style={{ color: c.textMuted, fontSize: 11 }}>{menuOpen ? "▾" : "▴"}</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
-            <FxToggle compact />
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
             <button onClick={() => setIsDark(!isDark)} style={{ background: "transparent", border: "none", cursor: "pointer", color: c.textMuted, fontSize: 15 }}>{isDark ? "☀" : "◑"}</button>
           </div>
         </div>

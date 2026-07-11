@@ -13,7 +13,7 @@ const PLATFORMS = [
   { name: 'Google Play Store', re: /^(https:\/\/)?play\.google\.com\/store\/apps\/details\?id=[\w.]+/i },
   { name: 'Apple App Store', re: /^(https:\/\/)?apps\.apple\.com\/[a-z]{2}\/app\/[\w-]+\/id\d+/i },
 ];
-const PLAN_LIMITS = { free: 1, pro: 5, studio: Infinity };
+const PLAN_LIMITS = { free: 5, pro: 10, studio: Infinity };
 
 export const handler = async (event) => {
   const userId = event.requestContext?.authorizer?.claims?.sub;

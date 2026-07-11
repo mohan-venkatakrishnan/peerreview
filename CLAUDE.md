@@ -35,8 +35,8 @@ Platform is auto-detected from the listing URL during onboarding. A product cann
 
 ### Monetisation (mirrors LaunchPad's philosophy)
 All features on every plan. Tiers differ ONLY by listing count:
-- **Free** — 1 product listing
-- **Pro ($7/mo)** — up to 5 product listings
+- **Free** — 5 product listings
+- **Pro ($7/mo)** — up to 10 product listings
 - **Studio ($19/mo)** — unlimited listings
 
 ### Important positioning constraint

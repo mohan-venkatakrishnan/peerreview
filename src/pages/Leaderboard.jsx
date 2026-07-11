@@ -62,7 +62,10 @@ export function LeaderTable({ showFilters = true, limit }) {
       <Card className="fade-up-d1" style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ padding: "16px 24px", borderBottom: `1px solid ${c.border}`, display: "flex", gap: 8, alignItems: "center" }}>
           <SealMark size={20} gold={c.gold} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Top reviewers — July 2026</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Top reviewers — {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
+          {rows[0]?.sample && (
+            <span style={{ fontSize: 10, fontWeight: 600, color: c.pending, background: c.pending + "16", border: `1px solid ${c.pending}30`, borderRadius: 8, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Sample — the launch cohort appears here</span>
+          )}
           <span style={{ marginLeft: "auto", fontSize: 11, color: c.textMuted }}>{rows.length} reviewers</span>
         </div>
         {rows.length === 0 && <div style={{ padding: 32, textAlign: "center", fontSize: 13, color: c.textMuted }}>No reviewers match your filters.</div>}

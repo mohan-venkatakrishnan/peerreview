@@ -11,10 +11,11 @@ const makeStars = (n, seed) => {
     bright: r() > 0.62,
   }));
 };
-/* Three depth layers: far = many small slow, near = few large fast (parallax) */
-const STARS_FAR = makeStars(26, 11);
-const STARS_MID = makeStars(14, 42);
-const STARS_NEAR = makeStars(7, 87);
+/* Three depth layers: far = many small slow, near = few large fast (parallax).
+   Review stars (★/☆) — this is a review exchange, the sky is made of ratings. */
+const STARS_FAR = makeStars(44, 11);
+const STARS_MID = makeStars(26, 42);
+const STARS_NEAR = makeStars(14, 87);
 
 function StarLayer({ stars, drift, dur, gold, lite, scale = 1 }) {
   return (
@@ -23,10 +24,10 @@ function StarLayer({ stars, drift, dur, gold, lite, scale = 1 }) {
         <span key={i} style={{
           position: "absolute", left: `${s.left}%`, top: `${s.top}%`,
           fontSize: s.size * scale, lineHeight: 1, color: gold,
-          opacity: 0.25,
-          textShadow: `0 0 ${s.bright ? 10 : 5}px ${gold}`,
+          opacity: 0.3,
+          textShadow: `0 0 ${s.bright ? 12 : 6}px ${gold}`,
           animation: lite ? "none" : `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite backwards`,
-        }}>{s.bright ? "✦" : "✧"}</span>
+        }}>{s.bright ? "★" : "☆"}</span>
       ))}
     </div>
   );

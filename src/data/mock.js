@@ -15,8 +15,8 @@ export const ACCOUNTS = [
 
 /* Plan tiers — identical features, they differ ONLY by listing count */
 export const PLANS = {
-  free: { label: "Free", limit: 1, price: "$0" },
-  pro: { label: "Pro", limit: 5, price: "$7/mo" },
+  free: { label: "Free", limit: 5, price: "$0" },
+  pro: { label: "Pro", limit: 10, price: "$7/mo" },
   studio: { label: "Studio", limit: Infinity, price: "$19/mo" },
 };
 
@@ -99,8 +99,8 @@ export const TESTIMONIALS = [
 ];
 
 export const PRICING = [
-  { name: "Free", price: "$0", period: "forever", listings: "1 product listing", highlight: false },
-  { name: "Pro", price: "$7", period: "/month", listings: "Up to 5 product listings", highlight: true },
+  { name: "Free", price: "$0", period: "forever", listings: "5 product listings", highlight: false },
+  { name: "Pro", price: "$7", period: "/month", listings: "Up to 10 product listings", highlight: true },
   { name: "Studio", price: "$19", period: "/month", listings: "Unlimited listings", highlight: false },
 ];
 export const CATEGORIES = ["Chrome Extension", "Web App", "Mobile App", "SaaS Tool", "Desktop App", "Developer Tool"];

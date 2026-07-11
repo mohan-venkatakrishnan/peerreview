@@ -91,7 +91,7 @@ export default function Products() {
             <div style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Have more products?</div>
             <div style={{ fontSize: 13, color: c.textSub }}>
               {plan === "free"
-                ? "Pro lists up to 5 products. Studio is unlimited. Same features on every plan."
+                ? "Pro lists up to 10 products. Studio is unlimited. Same features on every plan."
                 : "Studio removes the listing limit entirely. Same features — only the count changes."}
             </div>
           </div>

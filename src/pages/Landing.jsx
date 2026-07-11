@@ -6,7 +6,7 @@ import SealMark from "../components/SealMark";
 import StateBadge from "../components/StateBadge";
 import ParallaxBackdrop from "../components/ParallaxBackdrop";
 import { LeaderTable } from "./Leaderboard";
-import { Card, GoldButton, GhostButton, FxToggle } from "../components/ui";
+import { Card, GoldButton, GhostButton } from "../components/ui";
 
 /* Scroll-triggered fade-up reveal. Sets state once when the element first
    enters the viewport — not continuous scroll state (pitfall #2 is about
@@ -322,7 +322,6 @@ export default function Landing() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <a href="#how" style={{ fontSize: 13, color: c.textSub, textDecoration: "none" }}>How it works</a>
             <a href="#pricing" style={{ fontSize: 13, color: c.textSub, textDecoration: "none" }}>Pricing</a>
-            <FxToggle />
             <button onClick={() => setIsDark(!isDark)} style={{ background: c.surface, border: `1px solid ${c.border}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: c.textMuted }}>{isDark ? "☀" : "◑"}</button>
             <GoldButton size="sm" onClick={() => navigate("/signin")}>Join the exchange</GoldButton>
           </div>

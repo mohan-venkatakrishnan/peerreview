@@ -126,7 +126,7 @@ Same table drives platform auto-detect in onboarding (product URL, not review UR
 
 LemonSqueezy products: Pro $7/mo, Studio $19/mo. `webhook-payment` Lambda
 (signature-verified) resolves payer email → userId via `email-index`, sets
-`users.plan`. Listing limits enforced in `save-product` (free 1 / pro 5 / studio ∞).
+`users.plan`. Listing limits enforced in `save-product` (free 5 / pro 10 / studio ∞).
 Downgrade: extra listings become `paused` (never deleted), oldest kept active.
 
 ## 9. Frontend integration

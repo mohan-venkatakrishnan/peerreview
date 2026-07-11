@@ -118,25 +118,6 @@ export function Avatar({ account, size = 34, fontSize = 13 }) {
   );
 }
 
-/* FX tier switcher — Full (all motion) vs Lite (static, low-end browsers).
-   Kept visible so the design can be tested in both tiers. */
-export function FxToggle({ compact }) {
-  const { c, fx, setFx } = useTheme();
-  const lite = fx === "lite";
-  return (
-    <button onClick={() => setFx(lite ? "full" : "lite")}
-      title={lite ? "Lite FX — static, for low-end browsers. Click for full motion." : "Full FX — all motion. Click for the static lite tier."}
-      style={{
-        background: c.surface, border: `1px solid ${lite ? c.border : c.borderGold}`, borderRadius: 8,
-        padding: compact ? "3px 7px" : "6px 10px", cursor: "pointer",
-        fontFamily: "JetBrains Mono, monospace", fontSize: compact ? 9 : 11,
-        color: lite ? c.textMuted : c.gold, letterSpacing: "0.04em",
-      }}>
-      FX·{lite ? "Lite" : "Full"}
-    </button>
-  );
-}
-
 export function PageTitle({ eyebrow, title, sub }) {
   const { c } = useTheme();
   return (

@@ -16,7 +16,8 @@ export const LIGHT = {
   verified: "#16A34A", flagged: "#DC2626", pending: "#D97706",
 };
 
-/* Theme context — provides { c, isDark, setIsDark, fx, setFx } app-wide.
-   fx tier: "full" = all motion, "lite" = static (low-end browsers / testing). */
-export const ThemeContext = createContext({ c: DARK, isDark: true, setIsDark: () => {}, fx: "full", setFx: () => {} });
+/* Theme context — provides { c, isDark, setIsDark, fx } app-wide.
+   fx tier: "full" = all motion, "lite" = static. Auto-detected at load
+   (LaunchPad tier.js pattern); localStorage `peerreview-fx` is QA-only. */
+export const ThemeContext = createContext({ c: DARK, isDark: true, setIsDark: () => {}, fx: "full" });
 export const useTheme = () => useContext(ThemeContext);
