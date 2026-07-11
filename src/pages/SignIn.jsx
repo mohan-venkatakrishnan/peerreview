@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { USE_MOCK } from "../state";
-import { login } from "../data/auth";
+import { login, isAuthed } from "../data/auth";
 import SealMark from "../components/SealMark";
 import ParallaxBackdrop from "../components/ParallaxBackdrop";
 import { Card } from "../components/ui";
@@ -9,6 +9,8 @@ import { Card } from "../components/ui";
 export default function SignIn() {
   const { c } = useTheme();
   const navigate = useNavigate();
+  // Already signed in? Skip the form and go straight to the app.
+  if (!USE_MOCK && isAuthed()) return <Navigate to="/app" replace />;
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, position: "relative", overflow: "hidden" }}>
       <ParallaxBackdrop />

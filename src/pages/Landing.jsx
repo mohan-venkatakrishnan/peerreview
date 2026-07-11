@@ -6,6 +6,8 @@ import SealMark from "../components/SealMark";
 import StateBadge from "../components/StateBadge";
 import ParallaxBackdrop from "../components/ParallaxBackdrop";
 import { LeaderTable } from "./Leaderboard";
+import { USE_MOCK } from "../state";
+import { isAuthed } from "../data/auth";
 import { Card, GoldButton, GhostButton } from "../components/ui";
 
 /* Scroll-triggered fade-up reveal. Sets state once when the element first
@@ -73,7 +75,7 @@ function Hero() {
           Review a developer's product. A developer reviews yours. Every review verified by a real person.
         </p>
         <div className="fade-up-d2" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <GoldButton size="lg" onClick={() => navigate("/signin")}>List your product — it's free</GoldButton>
+          <GoldButton size="lg" onClick={() => navigate(ctaTarget())}>{authed() ? "Open the app →" : "List your product — it's free"}</GoldButton>
           <GhostButton onClick={() => navigate("/leaderboard")}>See the leaderboard →</GhostButton>
         </div>
         <div className="fade-up-d3" style={{ marginTop: 44, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
@@ -275,7 +277,7 @@ function FinalCta() {
           <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 28px" }}>
             List it free, review one product, and get a genuine review back — verified by you.
           </p>
-          <GoldButton size="lg" onClick={() => navigate("/signin")}>Join the exchange</GoldButton>
+          <GoldButton size="lg" onClick={() => navigate(ctaTarget())}>{authed() ? "Open the app →" : "Join the exchange"}</GoldButton>
         </Card>
       </Reveal>
     </Section>
@@ -302,6 +304,9 @@ function Footer() {
   );
 }
 
+const authed = () => !USE_MOCK && isAuthed();
+const ctaTarget = () => (authed() ? "/app" : "/signin");
+
 export default function Landing() {
   const { c, isDark, setIsDark } = useTheme();
   const navigate = useNavigate();
@@ -322,7 +327,7 @@ export default function Landing() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <a href="#how" style={{ fontSize: 13, color: c.textSub, textDecoration: "none" }}>How it works</a>
             <button onClick={() => setIsDark(!isDark)} style={{ background: c.surface, border: `1px solid ${c.border}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: c.textMuted }}>{isDark ? "☀" : "◑"}</button>
-            <GoldButton size="sm" onClick={() => navigate("/signin")}>Join the exchange</GoldButton>
+            <GoldButton size="sm" onClick={() => navigate(ctaTarget())}>{authed() ? "Open app" : "Join the exchange"}</GoldButton>
           </div>
         </div>
       </nav>
