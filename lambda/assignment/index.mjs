@@ -3,6 +3,22 @@ import { DynamoDBDocumentClient, GetCommand, QueryCommand, UpdateCommand } from 
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+const ses = new SESClient({});
+/* Transactional email — never throws into the core flow. No-op until
+   NOTIFY_ENABLED=true (SES DKIM verified + out of sandbox). */
+async function notify(to, subject, body) {
+  if (process.env.NOTIFY_ENABLED !== 'true' || !to) return;
+  try {
+    await ses.send(new SendEmailCommand({
+      Source: process.env.NOTIFY_FROM,
+      Destination: { ToAddresses: [to] },
+      Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } },
+    }));
+  } catch (e) { console.log('notify failed for', to, '-', e.message); }
+}
+
+
 /* REVIEW url patterns per platform — the link must point at the platform,
    review anchors/params allowed. Owner verification remains the human gate. */
 const REVIEW_PATTERNS = {
@@ -92,6 +108,16 @@ export const handler = async (event) => {
       UpdateExpression: 'ADD given :one REMOVE activeAssignmentId',
       ExpressionAttributeValues: { ':one': 1 },
     }));
+
+    // tell the product owner a review is waiting for their verification
+    const { Item: owner } = await client.send(new GetCommand({
+      TableName: process.env.USERS_TABLE, Key: { userId: current.ownerId },
+    })).catch(() => ({ Item: null }));
+    await notify(owner?.email, 'Your product received a review',
+      `A reviewer just left a review on one of your products.
+
+Read it on the platform, then verify or flag it here:
+${process.env.SITE_URL}/app/product`);
 
     return respond(200, { ok: true, state: 'submitted' });
   }

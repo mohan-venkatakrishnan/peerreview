@@ -4,6 +4,10 @@ locals {
     PRODUCTS_TABLE    = aws_dynamodb_table.products.name
     ASSIGNMENTS_TABLE = aws_dynamodb_table.assignments.name
     REGION            = var.aws_region
+    # Email: flip NOTIFY_ENABLED to "true" once SES DKIM is verified + out of sandbox
+    NOTIFY_ENABLED = var.notify_enabled
+    NOTIFY_FROM    = "PeerReview <noreply@${var.root_domain}>"
+    SITE_URL       = "https://${var.subdomain_prefix}.${var.root_domain}"
   }
 
   # one entry per lambda dir under ../lambda/

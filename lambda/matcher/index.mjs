@@ -4,6 +4,22 @@ import { DynamoDBDocumentClient, QueryCommand, ScanCommand, TransactWriteCommand
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+const ses = new SESClient({});
+/* Transactional email — never throws into the core flow. No-op until
+   NOTIFY_ENABLED=true (SES DKIM verified + out of sandbox). */
+async function notify(to, subject, body) {
+  if (process.env.NOTIFY_ENABLED !== 'true' || !to) return;
+  try {
+    await ses.send(new SendEmailCommand({
+      Source: process.env.NOTIFY_FROM,
+      Destination: { ToAddresses: [to] },
+      Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } },
+    }));
+  } catch (e) { console.log('notify failed for', to, '-', e.message); }
+}
+
+
 const DEADLINE_DAYS = 7;
 const RECIPROCITY_DAYS = 30;
 const MAX_EXPIRIES = 3; // per ARCHITECTURE.md — pause matching after 3 expiries
@@ -132,6 +148,13 @@ export const handler = async () => {
       }));
       reviewer.activeAssignmentId = assignment.assignmentId; // don't reuse in this run
       assigned += 1;
+      await notify(reviewer.email, 'A product is waiting for your review',
+        `You've been matched with a product to review on PeerReview.
+
+Review it on its listing, then paste your review link back here:
+${process.env.SITE_URL}/app/review
+
+Every review you give earns one back. Due in 7 days.`);
     } catch {
       // conditional failure = raced with another matcher run; next pass retries
     }

@@ -34,3 +34,9 @@ variable "subdomain_prefix" {
   type    = string
   default = "peerreview"
 }
+
+variable "notify_enabled" {
+  type        = string
+  default     = "false" # flip to "true" after SES DKIM verified + production access
+  description = "Whether lambdas send transactional emails via SES"
+}

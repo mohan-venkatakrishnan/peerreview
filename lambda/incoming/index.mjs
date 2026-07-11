@@ -3,6 +3,22 @@ import { DynamoDBDocumentClient, GetCommand, QueryCommand, UpdateCommand } from 
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+const ses = new SESClient({});
+/* Transactional email — never throws into the core flow. No-op until
+   NOTIFY_ENABLED=true (SES DKIM verified + out of sandbox). */
+async function notify(to, subject, body) {
+  if (process.env.NOTIFY_ENABLED !== 'true' || !to) return;
+  try {
+    await ses.send(new SendEmailCommand({
+      Source: process.env.NOTIFY_FROM,
+      Destination: { ToAddresses: [to] },
+      Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } },
+    }));
+  } catch (e) { console.log('notify failed for', to, '-', e.message); }
+}
+
 const lambda = new LambdaClient({});
 
 /* Trust Score — ARCHITECTURE.md §5, locked formula */
@@ -131,6 +147,12 @@ export const handler = async (event) => {
         ExpressionAttributeValues: { ':minus': -1 },
       }));
     }
+
+    // celebrate the reviewer
+    await notify(reviewer.email, 'Your review was verified 🎉',
+      `Good news — a product owner verified your review. You've earned a review credit, and your Trust Score just went up.
+
+${process.env.SITE_URL}/app/profile`);
 
     // fire the matcher so the queue moves immediately
     await lambda.send(new InvokeCommand({
