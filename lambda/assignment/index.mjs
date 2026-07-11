@@ -83,7 +83,17 @@ export const handler = async (event) => {
         ownerScore: owner?.trustScore ?? null,
       } : null;
     }
-    return respond(200, { current, product, history });
+
+    // enrich history with the real product name (assignments only store ids)
+    const enriched = [];
+    for (const h of history) {
+      const { Item: p } = await client.send(new GetCommand({
+        TableName: process.env.PRODUCTS_TABLE,
+        Key: { userId: h.ownerId, productId: h.productId },
+      })).catch(() => ({ Item: null }));
+      enriched.push({ ...h, productName: p?.name ?? 'A product' });
+    }
+    return respond(200, { current, product, history: enriched });
   }
 
   if (event.httpMethod === 'POST' && path.endsWith('/submit')) {

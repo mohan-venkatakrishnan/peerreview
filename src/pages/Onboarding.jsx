@@ -42,6 +42,15 @@ export default function Onboarding() {
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, position: "relative", overflow: "hidden" }}>
       <ParallaxBackdrop intensity={0.8} />
       <div style={{ maxWidth: 520, width: "100%", position: "relative", zIndex: 1 }}>
+        {onboardStep < 2 && (
+          <div className="fade-up" onClick={() => navigate(useMock ? "/app" : "/app/products")}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, marginBottom: 18, cursor: "pointer", fontSize: 13, color: c.textMuted }}
+            onMouseEnter={e => e.currentTarget.style.color = c.gold}
+            onMouseLeave={e => e.currentTarget.style.color = c.textMuted}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            {editing ? "Back to my products" : "Back to app"}
+          </div>
+        )}
         {/* Progress */}
         <div className="fade-up" style={{ display: "flex", gap: 8, marginBottom: 32 }}>
           {STEPS.map((s, i) => (
