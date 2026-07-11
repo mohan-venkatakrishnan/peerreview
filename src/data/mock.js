@@ -56,12 +56,40 @@ export const LEADERBOARD_FULL = [
 
 /* Badge definitions — earned achievements */
 export const BADGE_DEFS = {
-  crown: { name: "Top Reviewer", desc: "Ranked #1 in a monthly leaderboard" },
-  flame: { name: "On Fire", desc: "8+ week review streak" },
-  shield: { name: "Trusted", desc: "95%+ of reviews verified" },
-  bolt: { name: "Fast Turnaround", desc: "Reviews within 24h of assignment" },
-  gem: { name: "Deep Diver", desc: "Consistently detailed, high-trust reviews" },
-  seal: { name: "Founding Member", desc: "Joined in the first launch cohort" },
+  // Getting started / milestones
+  seal: { name: "Founding Member", desc: "Joined in the first launch cohort", how: "Be part of the first launch cohort. Once it's gone, it's gone.", group: "Milestones" },
+  box: { name: "Shipped", desc: "Listed your first product", how: "List your first product with a live store listing.", group: "Milestones" },
+  quill: { name: "First Ink", desc: "First verified review", how: "Get your first review verified by a product owner.", group: "Milestones" },
+  calendar: { name: "One Year In", desc: "A year in the exchange", how: "Stay an active member for 12 months.", group: "Milestones" },
+  // Volume
+  stack: { name: "Ten Deep", desc: "10 verified reviews", how: "Have 10 of your reviews verified.", group: "Volume" },
+  medal: { name: "Fifty Club", desc: "50 verified reviews", how: "Have 50 of your reviews verified.", group: "Volume" },
+  trophy: { name: "Century", desc: "100 verified reviews", how: "Have 100 of your reviews verified.", group: "Volume" },
+  boxes: { name: "Portfolio", desc: "5 products listed", how: "Keep 5 products actively listed.", group: "Volume" },
+  factory: { name: "Product Studio", desc: "10 products listed", how: "Keep 10 products actively listed.", group: "Volume" },
+  // Quality
+  shield: { name: "Trusted", desc: "95%+ of reviews verified", how: "Keep 95% or more of your reviews verified (minimum 10 given).", group: "Quality" },
+  gem: { name: "Deep Diver", desc: "Consistently detailed reviews", how: "Earn repeated 5-star owner ratings for detailed reviews.", group: "Quality" },
+  star: { name: "Five-Star Favorite", desc: "Ten 5-star owner ratings", how: "Collect ten 5-star helpfulness ratings from product owners.", group: "Quality" },
+  laurel: { name: "Laureate", desc: "4.8 average over 25 reviews", how: "Hold a 4.8+ average owner rating across 25 verified reviews.", group: "Quality" },
+  diamond: { name: "Flawless", desc: "25 verified, zero flags", how: "Reach 25 verified reviews without a single flag.", group: "Quality" },
+  pen: { name: "Wordsmith", desc: "Substantial written reviews", how: "Submit 10 verified reviews of 100+ words.", group: "Quality" },
+  // Speed & streaks
+  bolt: { name: "Fast Turnaround", desc: "Reviews within 24h", how: "Consistently submit within 24 hours of assignment.", group: "Speed & Streaks" },
+  rocket: { name: "Same-Day Ten", desc: "10 same-day reviews", how: "Submit 10 reviews on the day they were assigned.", group: "Speed & Streaks" },
+  flame: { name: "On Fire", desc: "8-week review streak", how: "Complete an assignment every week for 8+ weeks.", group: "Speed & Streaks" },
+  flame2: { name: "Eternal Flame", desc: "26-week review streak", how: "Complete an assignment every week for 26 weeks.", group: "Speed & Streaks" },
+  comet: { name: "Comet", desc: "52-week review streak", how: "A full year of unbroken weekly reviews.", group: "Speed & Streaks" },
+  // Community
+  crown: { name: "Top Reviewer", desc: "#1 on a monthly leaderboard", how: "Finish a calendar month ranked #1 on the leaderboard.", group: "Community" },
+  handshake: { name: "Good Neighbor", desc: "Prompt verifier", how: "Verify 10 incoming reviews within 48 hours of submission.", group: "Community" },
+  scale: { name: "Fair Judge", desc: "25 owner ratings given", how: "Rate the helpfulness of 25 incoming reviews.", group: "Community" },
+  heart: { name: "Giver", desc: "Gives more than receives", how: "Keep a give/get ratio of 1.5+ across 20 reviews.", group: "Community" },
+  // Explorer
+  compass: { name: "Cross-Platform", desc: "Reviews on 3 platforms", how: "Deliver verified reviews on 3 different platforms.", group: "Explorer" },
+  globe: { name: "Polyglot", desc: "Reviews on all 6 platforms", how: "Deliver verified reviews on every supported platform.", group: "Explorer" },
+  owl: { name: "Night Owl", desc: "Midnight reviewer", how: "Submit a verified review between midnight and 5am.", group: "Explorer" },
+  sun: { name: "Early Bird", desc: "Dawn reviewer", how: "Submit a verified review between 5am and 8am.", group: "Explorer" },
 };
 
 export const PLATFORMS = ["Chrome Web Store", "Firefox Add-ons", "Edge Add-ons", "Product Hunt", "Google Play Store", "Apple App Store"];

@@ -44,20 +44,45 @@ export default function Profile() {
       ]} />
 
       <Card className="fade-up-d2" style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 18 }}>Badges</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
-          {Object.entries(BADGE_DEFS).map(([id, b]) => {
-            const earned = badges.includes(id);
-            return (
-              <div key={id} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 8, padding: "18px 12px", borderRadius: 12, background: earned ? c.goldGlow : c.bg, border: `1px solid ${earned ? c.borderGold : c.border}`, opacity: earned ? 1 : 0.45, transition: "all 0.2s" }}>
-                <BadgeIcon type={id} size={30} gold={earned ? c.gold : c.textMuted} showTooltip={false} />
-                <div style={{ fontSize: 12, fontWeight: 700, color: earned ? c.gold : c.textSub }}>{b.name}</div>
-                <div style={{ fontSize: 10, color: c.textMuted, lineHeight: 1.5 }}>{b.desc}</div>
-                {!earned && <div style={{ fontSize: 9, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Locked</div>}
-              </div>
-            );
-          })}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 18 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>Earned badges</div>
+          <span style={{ fontSize: 11, color: c.textMuted, fontFamily: "JetBrains Mono, monospace" }}>{badges.length} of {Object.keys(BADGE_DEFS).length}</span>
         </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+          {badges.filter(id => BADGE_DEFS[id]).map(id => (
+            <div key={id} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 8, padding: "18px 12px", borderRadius: 12, background: c.goldGlow, border: `1px solid ${c.borderGold}` }}>
+              <BadgeIcon type={id} size={30} gold={c.gold} showTooltip={false} />
+              <div style={{ fontSize: 12, fontWeight: 700, color: c.gold }}>{BADGE_DEFS[id].name}</div>
+              <div style={{ fontSize: 10, color: c.textMuted, lineHeight: 1.5 }}>{BADGE_DEFS[id].desc}</div>
+            </div>
+          ))}
+          {badges.length === 0 && <div style={{ gridColumn: "1 / -1", fontSize: 13, color: c.textMuted, padding: "8px 0" }}>No badges yet — your first verified review earns First Ink.</div>}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "26px 0 14px" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: c.textSub, textTransform: "uppercase", letterSpacing: "0.08em" }}>Still to earn</div>
+          <span style={{ fontSize: 11, color: c.textMuted, fontFamily: "JetBrains Mono, monospace" }}>{Object.keys(BADGE_DEFS).length - badges.length}</span>
+        </div>
+        {["Milestones", "Volume", "Quality", "Speed & Streaks", "Community", "Explorer"].map(group => {
+          const pending = Object.entries(BADGE_DEFS).filter(([id, b]) => b.group === group && !badges.includes(id));
+          if (!pending.length) return null;
+          return (
+            <div key={group} style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 10, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{group}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8 }}>
+                {pending.map(([id, b]) => (
+                  <div key={id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 12px", borderRadius: 10, background: c.bg, border: `1px solid ${c.border}`, opacity: 0.75 }}>
+                    <BadgeIcon type={id} size={24} gold={c.textMuted} showTooltip={false} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: c.textSub }}>{b.name}</div>
+                      <div style={{ fontSize: 10, color: c.textMuted, lineHeight: 1.45 }}>{b.how}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </Card>
 
       <Card className="fade-up-d3">

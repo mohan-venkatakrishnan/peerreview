@@ -21,8 +21,7 @@ export default function Dashboard() {
   const { assigned, incoming, history, account, stats, products } = useAppState();
   const navigate = useNavigate();
   const awaiting = incoming.filter(r => r.state === "pending" || r.state === "submitted").length;
-  const firstProduct = products[0];
-  const verifiedRate = stats.given > 0 ? Math.round((stats.verified / stats.given) * 100) : null;
+    const verifiedRate = stats.given > 0 ? Math.round((stats.verified / stats.given) * 100) : null;
 
   return (
     <>
@@ -80,22 +79,25 @@ export default function Dashboard() {
 
         {/* My product status */}
         <Card className="fade-up-d3" style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 18 }}><NavIcon name="product" size={13} color={c.gold} /> Your product</div>
-          {firstProduct ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 18 }}><NavIcon name="product" size={13} color={c.gold} /> Your product{products.length > 1 ? "s" : ""}</div>
+          {products.length > 0 ? (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{firstProduct.name[0]}</div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>{firstProduct.name}</div>
-                  <div style={{ fontSize: 11, color: c.textMuted }}>{firstProduct.platform}</div>
+              {products.slice(0, 3).map((p, i) => (
+                <div key={p.id} style={{ marginBottom: i < Math.min(products.length, 3) - 1 ? 16 : 18 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 9, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{p.name[0]}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: c.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                      <div style={{ fontSize: 10, color: c.textMuted }}>{p.platform}</div>
+                    </div>
+                    <span style={{ fontSize: 11, color: c.textMuted, fontFamily: "JetBrains Mono, monospace" }}>{p.verified}/{p.reviews}</span>
+                  </div>
+                  <MeterBar pct={p.reviews > 0 ? (p.verified / p.reviews) * 100 : 0} height={3} />
                 </div>
-              </div>
-              <div style={{ marginBottom: 18 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: c.textMuted, marginBottom: 6 }}>
-                  <span>Verified by you</span><span style={{ color: c.text, fontWeight: 600 }}>{firstProduct.verified} of {firstProduct.reviews}</span>
-                </div>
-                <MeterBar pct={firstProduct.reviews > 0 ? (firstProduct.verified / firstProduct.reviews) * 100 : 0} />
-              </div>
+              ))}
+              {products.length > 3 && (
+                <div onClick={() => navigate("/app/products")} style={{ fontSize: 12, color: c.textMuted, cursor: "pointer", marginBottom: 14 }}>+{products.length - 3} more →</div>
+              )}
             </>
           ) : (
             <div style={{ textAlign: "center", padding: "8px 0 16px" }}>

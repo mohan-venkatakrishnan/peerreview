@@ -19,14 +19,7 @@ const FLAG_CRITERIA = [
   "Asks for anything in return (\"5 stars if you 5-star mine\") — instant flag",
 ];
 
-const BADGE_RULES = {
-  crown: "Finish a calendar month ranked #1 on the leaderboard.",
-  flame: "Complete an assignment every week for 8+ weeks in a row.",
-  shield: "Keep 95% or more of your reviews verified (minimum 10 given).",
-  bolt: "Consistently submit your review within 24 hours of assignment.",
-  gem: "Earn repeated 5★ ratings from product owners for detailed reviews.",
-  seal: "Be part of the first launch cohort. Once it's gone, it's gone.",
-};
+
 
 export default function Rules() {
   const { c } = useTheme();
@@ -86,7 +79,7 @@ export default function Rules() {
           <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>Trust Score</div>
         </div>
         <p style={{ fontSize: 13, color: c.textSub, lineHeight: 1.7, marginBottom: 16 }}>
-          Your Trust Score (out of 5) is the reputation number next to your name — on the leaderboard, on your profile, and beside every review you leave. It moves with three things:
+          Your Trust Score (out of 5) is the reputation number next to your name. New members start at a neutral ★ 3.2 — enough history to be matched, not enough to outrank proven reviewers — and the formula takes over from your first verified review. It moves with three things:
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {[
@@ -112,7 +105,7 @@ export default function Rules() {
               <BadgeIcon type={id} size={34} gold={c.gold} showTooltip={false} />
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: c.gold }}>{b.name}</div>
-                <div style={{ fontSize: 12, color: c.textSub, marginTop: 4, lineHeight: 1.6 }}>{BADGE_RULES[id]}</div>
+                <div style={{ fontSize: 12, color: c.textSub, marginTop: 4, lineHeight: 1.6 }}>{b.how}</div>
               </div>
             </div>
           ))}

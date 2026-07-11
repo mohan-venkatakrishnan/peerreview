@@ -11,7 +11,7 @@ const STEPS = ["Your product", "Matching", "Done"];
 
 export default function Onboarding() {
   const { c } = useTheme();
-  const { productForm, setProductForm, saveProduct, setMatching, useMock } = useAppState();
+  const { productForm, setProductForm, saveProduct, setMatching, resetProductForm, useMock } = useAppState();
   const [onboardStep, setOnboardStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -28,6 +28,7 @@ export default function Onboarding() {
         await setMatching(productForm.matching);
       }
       setOnboardStep(2);
+      setTimeout(resetProductForm, 400); // next "+ Add product" starts blank
     } catch (e) {
       setError(e.message);
       setOnboardStep(0);

@@ -37,6 +37,13 @@ export function AppStateProvider({ children }) {
   const [loading, setLoading] = useState(!USE_MOCK);
   const [loadError, setLoadError] = useState(null);
   const [saveError, setSaveError] = useState(null); // background writes: banner, never a full-screen takeover
+  const [saveStatus, setSaveStatus] = useState(null); // 'saving' | 'saved' — settings feedback chip
+  const savedTimer = useRef(null);
+  const markSaved = () => {
+    setSaveStatus("saved");
+    clearTimeout(savedTimer.current);
+    savedTimer.current = setTimeout(() => setSaveStatus(null), 2200);
+  };
 
   const SAMPLE_LB = LEADERBOARD_FULL.map(r => ({ ...r, sample: true }));
 
@@ -152,12 +159,14 @@ export function AppStateProvider({ children }) {
       const server = await api.updateMe(patch);
       if (meVersion.current === version) setMe(server);
       setSaveError(null);
+      markSaved();
     } catch (e) {
       setSaveError(e.message);
     }
   };
 
   const queueMePatch = (server) => {
+    setSaveStatus("saving");
     meVersion.current += 1; // local write wins over any in-flight response
     setMe(m => (m ? { ...m, ...server } : m));
     pendingMePatch.current = { ...(pendingMePatch.current ?? {}), ...server };
@@ -170,6 +179,7 @@ export function AppStateProvider({ children }) {
       const next = { ...account, ...patch };
       setAccountState(next);
       localStorage.setItem("peerreview-account", JSON.stringify(next));
+      markSaved();
       return;
     }
     if (patch.avatar !== undefined) { // avatar is browser-local in both modes for now
@@ -185,7 +195,7 @@ export function AppStateProvider({ children }) {
 
   const setPrivacy = (updater) => {
     const next = typeof updater === "function" ? updater(USE_MOCK ? privacy : (me?.privacy ?? privacy)) : updater;
-    if (USE_MOCK) { setPrivacyState(next); return; }
+    if (USE_MOCK) { setPrivacyState(next); markSaved(); return; }
     queueMePatch({ privacy: next });
   };
 
@@ -217,9 +227,11 @@ export function AppStateProvider({ children }) {
       useMock: USE_MOCK,
       loading, loadError, loadData,
       saveError, clearSaveError: () => setSaveError(null),
+      saveStatus,
+      resetProductForm: () => setProductForm({ name: "", platform: "", url: "", category: "", desc: "", matching: productForm.matching }),
       // data
       account: unifiedAccount, me, stats,
-      badges: USE_MOCK ? ["seal", "bolt", "shield"] : (me?.badges ?? []),
+      badges: USE_MOCK ? ["seal", "box", "quill", "stack", "bolt", "shield"] : (me?.badges ?? []),
       products, assigned, incoming, history, reviewSubmitted,
       leaderboard: leaderboardRows,
       privacy: USE_MOCK ? privacy : (me?.privacy ?? privacy),

@@ -6,7 +6,7 @@ import { Card, PageTitle, GhostButton, Avatar, Input } from "../components/ui";
 
 export default function Settings() {
   const { c } = useTheme();
-  const { privacy, setPrivacy, account, updateProfile, switchAccount, matching, setMatching, signOut, useMock } = useAppState();
+  const { privacy, setPrivacy, account, updateProfile, switchAccount, matching, setMatching, signOut, useMock, saveStatus } = useAppState();
   const fileRef = useRef(null);
 
   const onPhotoPick = (e) => {
@@ -20,7 +20,14 @@ export default function Settings() {
 
   return (
     <>
-      <PageTitle eyebrow="Account" title="Settings" />
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+        <PageTitle eyebrow="Account" title="Settings" />
+        {saveStatus && (
+          <span className="fade-up" style={{ marginTop: 34, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, borderRadius: 12, padding: "5px 12px", color: saveStatus === "saved" ? c.verified : c.textMuted, background: (saveStatus === "saved" ? c.verified : c.textMuted) + "16", border: `1px solid ${(saveStatus === "saved" ? c.verified : c.textMuted)}30` }}>
+            {saveStatus === "saved" ? "✓ Saved" : "Saving…"}
+          </span>
+        )}
+      </div>
 
       {/* Profile — name & photo */}
       <Card className="fade-up-d1" style={{ marginBottom: 16 }}>
@@ -116,7 +123,7 @@ export default function Settings() {
 
       <Card className="fade-up-d2" style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 18 }}>Notifications</div>
-        {["New review assignment", "Review received on my product", "My review was verified", "Weekly digest"].map((n, i) => (
+        {["New review assignment", "Review received on my product", "My review was verified"].map((n, i) => (
           <div key={n} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i < 3 ? `1px solid ${c.border}` : "none" }}>
             <span style={{ fontSize: 14, color: c.text }}>{n}</span>
             <div style={{ width: 40, height: 22, borderRadius: 12, background: i < 3 ? c.gold : c.border, position: "relative", cursor: "pointer", transition: "background 0.2s" }}>

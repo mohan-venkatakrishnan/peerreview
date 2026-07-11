@@ -141,9 +141,7 @@ export default function AppShell() {
               <div style={{ fontSize: 11, color: c.textMuted, whiteSpace: "nowrap" }}>★ {account.score} · {PLANS[plan].label} plan</div>
             </div>
             <span style={{ color: c.textMuted, fontSize: 11 }}>{menuOpen ? "▾" : "▴"}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-            <button onClick={() => setIsDark(!isDark)} style={{ background: "transparent", border: "none", cursor: "pointer", color: c.textMuted, fontSize: 15 }}>{isDark ? "☀" : "◑"}</button>
+            <button onClick={e => { e.stopPropagation(); setIsDark(!isDark); }} title={isDark ? "Light mode" : "Dark mode"} style={{ background: "transparent", border: "none", cursor: "pointer", color: c.textMuted, fontSize: 15, padding: "0 2px" }}>{isDark ? "☀" : "◑"}</button>
           </div>
         </div>
       </aside>

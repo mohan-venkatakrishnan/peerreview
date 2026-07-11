@@ -106,6 +106,7 @@ export const getIncoming = async () => (await apiFetch("/incoming")).map(r => ({
   reviewer: r.reviewer.name,
   score: r.reviewer.trustScore,
   given: r.reviewer.given,
+  productId: r.productId,
   product: "",
   excerpt: r.reviewText || "(no text pasted — read it at the link)",
   link: r.reviewLink,

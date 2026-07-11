@@ -10,17 +10,34 @@ export default function MyProduct() {
   const { c } = useTheme();
   const { incoming, products, stats, stampAnimating, verifyReview, flagReview } = useAppState();
   const [reviewsSearch, setReviewsSearch] = useState("");
-  const awaiting = incoming.filter(r => r.state === "pending" || r.state === "submitted").length;
-  const verifiedByMe = incoming.filter(r => r.state === "verified").length;
-  const productName = products[0]?.name ?? "My product";
+  const [productFilter, setProductFilter] = useState("all");
+  const productOf = (r) => products.find(p => p.id === r.productId || p.name === r.product);
+  const visible = incoming.filter(r => productFilter === "all" || productOf(r)?.id === productFilter);
+  const awaiting = visible.filter(r => r.state === "pending" || r.state === "submitted").length;
+  const verifiedByMe = visible.filter(r => r.state === "verified").length;
+  const productName = products.length > 1 ? "Incoming reviews" : (products[0]?.name ?? "My product");
 
   return (
     <>
-      <PageTitle eyebrow="My Product" title={productName} sub="Reviews your product has received. Read each one on the platform, then verify or flag it." />
+      <PageTitle eyebrow={products.length > 1 ? "My Products" : "My Product"} title={productName} sub="Reviews your products have received. Read each one on the platform, then verify or flag it." />
+
+      {products.length > 1 && (
+        <div className="fade-up" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+          {[{ id: "all", name: "All products" }, ...products].map(p => (
+            <button key={p.id} onClick={() => setProductFilter(p.id)}
+              style={{
+                background: productFilter === p.id ? c.goldGlow : "transparent",
+                border: `1px solid ${productFilter === p.id ? c.gold : c.border}`,
+                color: productFilter === p.id ? c.gold : c.textMuted,
+                borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.2s",
+              }}>{p.name}</button>
+          ))}
+        </div>
+      )}
 
       <StatBar className="fade-up-d1" style={{ marginBottom: 28 }} items={[
-        { label: "Total received", value: String(incoming.length) },
-        { label: "Verified by you", value: String(verifiedByMe), sub: incoming.length ? `${Math.round((verifiedByMe / incoming.length) * 100)}% of received` : undefined },
+        { label: "Total received", value: String(visible.length) },
+        { label: "Verified by you", value: String(verifiedByMe), sub: visible.length ? `${Math.round((verifiedByMe / visible.length) * 100)}% of received` : undefined },
         { label: "Awaiting verification", value: String(awaiting), color: awaiting > 0 ? c.pending : undefined },
       ]} />
 
@@ -28,7 +45,7 @@ export default function MyProduct() {
         <SearchBox value={reviewsSearch} onChange={e => setReviewsSearch(e.target.value)} placeholder="Search reviews by reviewer or content…" />
       </div>
 
-      {incoming.length === 0 && (
+      {visible.length === 0 && (
         <Card className="fade-up-d2" style={{ textAlign: "center", padding: "48px 24px" }}>
           <div className="float" style={{ display: "inline-block", marginBottom: 16 }}><SealMark size={56} animated gold={c.gold} /></div>
           <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 20, fontWeight: 700, color: c.text, marginBottom: 8 }}>No reviews yet</h3>
@@ -38,7 +55,7 @@ export default function MyProduct() {
         </Card>
       )}
 
-      {incoming.filter(r => !reviewsSearch || r.reviewer.toLowerCase().includes(reviewsSearch.toLowerCase()) || r.excerpt.toLowerCase().includes(reviewsSearch.toLowerCase())).map((r, i) => {
+      {visible.filter(r => !reviewsSearch || r.reviewer.toLowerCase().includes(reviewsSearch.toLowerCase()) || r.excerpt.toLowerCase().includes(reviewsSearch.toLowerCase())).map((r, i) => {
         const isVerified = r.state === "verified";
         const isFlagged = r.state === "flagged";
         const isStamping = stampAnimating === r.id;
@@ -53,7 +70,7 @@ export default function MyProduct() {
               <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg, ${c.gold}30, ${c.gold}60)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: c.gold }}>{r.reviewer[0]}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>{r.reviewer}</div>
-                <div style={{ fontSize: 11, color: c.textMuted }}>★ {r.score} trust · {r.given} reviews given · {r.time}</div>
+                <div style={{ fontSize: 11, color: c.textMuted }}>★ {r.score} trust · {r.given} reviews given · {r.time}{productOf(r) && productFilter === "all" && products.length > 1 ? ` · on ${productOf(r).name}` : ""}</div>
               </div>
               {isVerified ? <StateBadge state="verified" /> : isFlagged ? <StateBadge state="flagged" /> : <StateBadge state="pending" />}
             </div>
