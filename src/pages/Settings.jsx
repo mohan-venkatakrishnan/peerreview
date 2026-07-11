@@ -2,12 +2,14 @@ import { useRef } from "react";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import { ACCOUNTS, PLANS } from "../data/mock";
-import { Card, PageTitle, GhostButton, Avatar, Input } from "../components/ui";
+import { useState } from "react";
+import { Card, PageTitle, GhostButton, Avatar, Input, SwitchAccountDialog } from "../components/ui";
 
 export default function Settings() {
   const { c } = useTheme();
   const { privacy, setPrivacy, account, updateProfile, switchAccount, matching, setMatching, signOut, useMock, saveStatus } = useAppState();
   const fileRef = useRef(null);
+  const [switchOpen, setSwitchOpen] = useState(false);
 
   const onPhotoPick = (e) => {
     const file = e.target.files?.[0];
@@ -75,7 +77,7 @@ export default function Settings() {
               <span style={{ fontSize: 12, color: c.verified, fontWeight: 600 }}>✓ Active</span>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <GhostButton size="sm" onClick={() => switchAccount()}>Switch Google account</GhostButton>
+              <GhostButton size="sm" onClick={() => setSwitchOpen(true)}>Switch Google account</GhostButton>
               <GhostButton size="sm" onClick={signOut}>Sign out</GhostButton>
             </div>
           </>
@@ -122,7 +124,11 @@ export default function Settings() {
       </Card>
 
       <Card className="fade-up-d2" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 18 }}>Notifications</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>Notifications</div>
+          <span style={{ fontSize: 10, fontWeight: 600, color: c.pending, background: c.pending + "16", border: `1px solid ${c.pending}30`, borderRadius: 8, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Coming with launch</span>
+        </div>
+        <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 12, lineHeight: 1.6 }}>Email delivery isn't wired up yet — your preferences here will apply the moment it ships.</p>
         {["New review assignment", "Review received on my product", "My review was verified"].map((n, i) => (
           <div key={n} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i < 3 ? `1px solid ${c.border}` : "none" }}>
             <span style={{ fontSize: 14, color: c.text }}>{n}</span>

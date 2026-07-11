@@ -9,8 +9,9 @@ export default function Products() {
   const { c } = useTheme();
   const { plan, setPlan, products: allProducts, useMock } = useAppState();
   const navigate = useNavigate();
-  const tier = PLANS[plan];
-  const products = useMock ? allProducts.slice(0, Number.isFinite(tier.limit) ? tier.limit : allProducts.length) : allProducts;
+  const qa = useMock && Number(localStorage.getItem("peerreview-qa-products")) > 0;
+  const tier = qa ? PLANS.studio : PLANS[plan];
+  const products = useMock && !qa ? allProducts.slice(0, Number.isFinite(tier.limit) ? tier.limit : allProducts.length) : allProducts;
   const atLimit = products.length >= tier.limit;
   const emptySlots = Number.isFinite(tier.limit) ? Math.max(0, tier.limit - products.length) : 0;
   const usage = Number.isFinite(tier.limit) ? `${products.length} of ${tier.limit} listings used` : `${products.length} listings · unlimited`;

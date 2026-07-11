@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { ACCOUNTS, MY_PRODUCTS, ASSIGNED, INCOMING_REVIEWS, REVIEW_HISTORY, LEADERBOARD_FULL } from "./data/mock";
+import { ACCOUNTS, MY_PRODUCTS, ASSIGNED, INCOMING_REVIEWS, REVIEW_HISTORY, LEADERBOARD_FULL, genProducts } from "./data/mock";
 import * as api from "./data/api";
 import { isAuthed, login, logout as authLogout } from "./data/auth";
 
@@ -85,7 +85,9 @@ export function AppStateProvider({ children }) {
   useEffect(() => { loadData(); }, []);
 
   /* ---------- unified surface ---------- */
-  const products = USE_MOCK ? MY_PRODUCTS : realProducts;
+  // QA affordance (mock only): localStorage 'peerreview-qa-products' = N
+  const qaCount = USE_MOCK ? Number(localStorage.getItem("peerreview-qa-products")) || 0 : 0;
+  const products = USE_MOCK ? (qaCount ? genProducts(qaCount) : MY_PRODUCTS) : realProducts;
   const incoming = USE_MOCK
     ? INCOMING_REVIEWS.map(r => ({
         ...r,

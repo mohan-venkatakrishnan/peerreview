@@ -6,7 +6,7 @@ import { PLANS, ACCOUNTS } from "../data/mock";
 import SealMark from "./SealMark";
 import ParallaxBackdrop from "./ParallaxBackdrop";
 import NavIcon from "./NavIcon";
-import { Avatar } from "./ui";
+import { Avatar, SwitchAccountDialog } from "./ui";
 
 const APP_PAGES = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", path: "/app" },
@@ -32,7 +32,7 @@ function activeFromPath(pathname) {
 }
 
 /* Account popover opened from the sidebar footer */
-function AccountMenu({ onClose }) {
+function AccountMenu({ onClose, onSwitchGoogle }) {
   const { c } = useTheme();
   const { account, switchAccount, signOut, useMock } = useAppState();
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ function AccountMenu({ onClose }) {
         <div style={{ borderTop: `1px solid ${c.border}`, margin: "6px 4px", paddingTop: 6 }}>
           <div style={{ fontSize: 9, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 8px 6px" }}>Switch account</div>
           {!useMock && (
-            <Item icon="⇄" onClick={() => go(() => switchAccount())}>Sign in with another Google account</Item>
+            <Item icon="⇄" onClick={() => go(onSwitchGoogle)}>Switch Google account</Item>
           )}
           {useMock && ACCOUNTS.map(a => (
             <div key={a.id} onClick={() => go(() => switchAccount(a.id))}
@@ -81,11 +81,12 @@ function AccountMenu({ onClose }) {
 /* Layout route: persistent sidebar + Outlet. Only the main pane changes on nav. */
 export default function AppShell() {
   const { c, isDark, setIsDark } = useTheme();
-  const { incoming, assigned, plan, account, loading, loadError, loadData, saveError, clearSaveError, setSpotlightOpen, setSpotlightQuery } = useAppState();
+  const { incoming, assigned, plan, account, loading, loadError, loadData, saveError, clearSaveError, signOut, setSpotlightOpen, setSpotlightQuery } = useAppState();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const active = activeFromPath(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [switchOpen, setSwitchOpen] = useState(false);
 
   const awaiting = incoming.filter(r => r.state === "pending" || r.state === "submitted").length;
   const badges = {
@@ -129,7 +130,7 @@ export default function AppShell() {
             </div>
           ))}
         </nav>
-        {menuOpen && <AccountMenu onClose={() => setMenuOpen(false)} />}
+        {menuOpen && <AccountMenu onClose={() => setMenuOpen(false)} onSwitchGoogle={() => setSwitchOpen(true)} />}
         <div className="side-footer" style={{ borderTop: `1px solid ${c.border}`, padding: "14px 8px 0" }}>
           <div onClick={() => setMenuOpen(o => !o)} role="button" title="Account menu" aria-expanded={menuOpen}
             style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", borderRadius: 10, padding: "6px 6px", margin: "-6px -6px 0", transition: "background 0.15s" }}
@@ -145,6 +146,7 @@ export default function AppShell() {
           </div>
         </div>
       </aside>
+      <SwitchAccountDialog open={switchOpen} onClose={() => setSwitchOpen(false)} onSwitch={signOut} />
       {/* Main — only this pane changes when navigating in-app */}
       <main className="main-pane" style={{ marginLeft: 232, flex: 1, padding: "40px 48px", maxWidth: 1100, position: "relative", zIndex: 1 }}>
         {saveError && (
@@ -158,12 +160,12 @@ export default function AppShell() {
             error with a human sentence + Retry, then content. Nothing
             plan-dependent renders before the data is known. */}
         {loading ? (
-          <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18 }}>
+          <div className="pane-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18 }}>
             <div className="float"><SealMark size={56} animated gold={c.gold} /></div>
             <div style={{ fontSize: 14, color: c.textMuted }}>Loading your exchange…</div>
           </div>
         ) : loadError ? (
-          <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, textAlign: "center", padding: 24 }}>
+          <div className="pane-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, textAlign: "center", padding: 24 }}>
             <SealMark size={48} gold={c.flagged} />
             <div style={{ fontSize: 15, fontWeight: 600, color: c.text }}>We couldn't load your exchange</div>
             <div style={{ fontSize: 13, color: c.textMuted, maxWidth: 380, lineHeight: 1.6 }}>{loadError}</div>

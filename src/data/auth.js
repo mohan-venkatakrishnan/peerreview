@@ -24,9 +24,11 @@ export const isAuthed = () => {
 
 export const login = () => {
   const redirect = `${window.location.origin}/auth/callback`;
+  // always request Google's account chooser — silent SSO into the wrong
+  // account is a trap on shared machines (LaunchPad lesson)
   window.location.href = `https://${domain}/oauth2/authorize?client_id=${clientId}` +
     `&response_type=code&scope=openid+email+profile&identity_provider=Google` +
-    `&redirect_uri=${encodeURIComponent(redirect)}`;
+    `&prompt=select_account&redirect_uri=${encodeURIComponent(redirect)}`;
 };
 
 export const logout = () => {

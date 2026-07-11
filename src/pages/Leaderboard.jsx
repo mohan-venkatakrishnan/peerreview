@@ -70,14 +70,15 @@ export function LeaderTable({ showFilters = true, limit }) {
         </div>
         {rows.length === 0 && <div style={{ padding: 32, textAlign: "center", fontSize: 13, color: c.textMuted }}>No reviewers match your filters.</div>}
         {rows.map((item, i) => (
-          <div key={item.rank} onClick={() => navigate(`/app/member/${item.userId ?? item.rank}`)}
+          <div key={item.rank} onClick={() => { if (!item.sample) navigate(`/app/member/${item.userId ?? item.rank}`); }}
+            title={item.sample ? "Sample member — profiles open once real reviewers join" : undefined}
             style={{
               padding: "16px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${c.border}` : "none",
-              display: "flex", alignItems: "center", gap: 16, cursor: "pointer", transition: "background 0.15s",
+              display: "flex", alignItems: "center", gap: 16, cursor: item.sample ? "default" : "pointer", transition: "background 0.15s",
               background: item.isYou ? c.goldGlow : i === 0 ? `linear-gradient(90deg, ${c.goldGlow}, transparent)` : "transparent",
               borderLeft: item.isYou ? `2px solid ${c.gold}` : "2px solid transparent",
             }}
-            onMouseEnter={e => { if (!item.isYou) e.currentTarget.style.background = c.surfaceHover; }}
+            onMouseEnter={e => { if (!item.isYou && !item.sample) e.currentTarget.style.background = c.surfaceHover; }}
             onMouseLeave={e => { if (!item.isYou) e.currentTarget.style.background = i === 0 ? `linear-gradient(90deg, ${c.goldGlow}, transparent)` : "transparent"; }}>
             <span style={{ width: 28, fontFamily: "JetBrains Mono, monospace", fontSize: 13, fontWeight: 600, color: i < 3 ? c.gold : c.textMuted }}>#{item.rank}</span>
             <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg, ${c.gold}30, ${c.gold}60)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: c.gold }}>{item.name[0]}</div>
@@ -98,6 +99,11 @@ export function LeaderTable({ showFilters = true, limit }) {
             </div>
           </div>
         ))}
+        {rows[0]?.sample && (
+          <div className="sample-note" style={{ padding: "12px 24px", borderTop: `1px solid ${c.border}`, fontSize: 11, color: c.textMuted, lineHeight: 1.6 }}>
+            These are sample members showing how the leaderboard works — they'll be removed once enough real reviewers have joined. Sample profiles can't be opened.
+          </div>
+        )}
       </Card>
     </>
   );

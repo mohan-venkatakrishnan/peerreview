@@ -132,3 +132,16 @@ export const PRICING = [
   { name: "Studio", price: "$19", period: "/month", listings: "Unlimited listings", highlight: false },
 ];
 export const CATEGORIES = ["Chrome Extension", "Web App", "Mobile App", "SaaS Tool", "Desktop App", "Developer Tool"];
+
+/* QA scale generator — deterministic synthetic products for regression runs.
+   Activated in mock mode via localStorage 'peerreview-qa-products' = N. */
+export const genProducts = (n) => Array.from({ length: n }, (_, i) => ({
+  id: `qa-${i + 1}`,
+  name: `${["Nova", "Echo", "Pulse", "Drift", "Forge", "Prism", "Quill", "Vault", "Baton", "Ledger"][i % 10]}${Math.floor(i / 10) ? " " + (Math.floor(i / 10) + 1) : ""}`,
+  platform: PLATFORMS[i % PLATFORMS.length],
+  category: CATEGORIES[i % CATEGORIES.length],
+  url: `chromewebstore.google.com/detail/qa-product-${i + 1}`,
+  reviews: (i * 7) % 23,
+  pending: i % 3,
+  verified: Math.max(0, ((i * 7) % 23) - (i % 3)),
+}));

@@ -48,7 +48,7 @@ export default function Rules() {
       </Card>
 
       {/* Verified vs flagged */}
-      <div className="fade-up-d2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+      <div className="fade-up-d2 grid-main" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
         <Card>
           <div style={{ marginBottom: 14 }}><StateBadge state="verified" /></div>
           <div style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 10 }}>What earns Verified</div>
@@ -81,7 +81,7 @@ export default function Rules() {
         <p style={{ fontSize: 13, color: c.textSub, lineHeight: 1.7, marginBottom: 16 }}>
           Your Trust Score (out of 5) is the reputation number next to your name. New members start at a neutral ★ 3.2 — enough history to be matched, not enough to outrank proven reviewers — and the formula takes over from your first verified review. It moves with three things:
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <div className="grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {[
             ["Verified reviews", "Every review verified by an owner builds your score. Flags pull it down."],
             ["Give / get ratio", "Givers are rewarded. Reviewing more than you receive keeps your ratio — and score — healthy."],

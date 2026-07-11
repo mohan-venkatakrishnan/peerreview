@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { useTheme } from "../tokens/theme";
 
 export function GoldButton({ children, onClick, full, size = "md" }) {
@@ -126,5 +127,38 @@ export function PageTitle({ eyebrow, title, sub }) {
       <h1 style={{ fontFamily: "Playfair Display, serif", fontSize: 32, fontWeight: 700, color: c.text, letterSpacing: "-0.02em" }}>{title}</h1>
       {sub && <p style={{ fontSize: 14, color: c.textMuted, marginTop: 8, lineHeight: 1.6 }}>{sub}</p>}
     </div>
+  );
+}
+
+/* Guided Google account switch (LaunchPad pattern): Google silently reuses the
+   only signed-in session — the wanted account must exist in the browser first. */
+export function SwitchAccountDialog({ open, onClose, onSwitch }) {
+  const { c } = useTheme();
+  if (!open) return null;
+  return createPortal(
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(2,4,12,0.6)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "overlayIn 0.15s ease" }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "min(460px, 94vw)", background: c.surface, border: `1px solid ${c.borderGold}`, borderRadius: 16, padding: 28, boxShadow: "0 24px 80px rgba(0,0,0,0.5)", animation: "spotlightIn 0.2s cubic-bezier(0.16,1,0.3,1)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+          <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 20, fontWeight: 700, color: c.text }}>Switch Google account</h3>
+          <span onClick={onClose} style={{ cursor: "pointer", color: c.textMuted, fontSize: 14, padding: 4 }}>✕</span>
+        </div>
+        <p style={{ fontSize: 13, color: c.textMuted, lineHeight: 1.7, marginBottom: 18 }}>
+          Google only shows its account picker when it knows more than one account. If the account
+          you want isn't signed in to Google in this browser yet, add it first — otherwise Google
+          silently signs you back in with the current one.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <a href="https://accounts.google.com/AddSession" target="_blank" rel="noopener noreferrer"
+            style={{ display: "block", textAlign: "center", background: "transparent", border: `1px solid ${c.border}`, borderRadius: 10, padding: "11px", color: c.textSub, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
+            1 · Add another Google account
+          </a>
+          <button onClick={onSwitch}
+            style={{ background: `linear-gradient(135deg, ${c.gold}, #a07830)`, border: "none", borderRadius: 10, padding: "12px", color: "#05091a", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            2 · Sign out &amp; switch
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }

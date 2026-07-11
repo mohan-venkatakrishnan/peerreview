@@ -65,6 +65,9 @@ function GlobalStyles() {
       width: max-content; max-width: 260px; z-index: 90; text-align: left;
       box-shadow: 0 8px 24px rgba(0,0,0,0.4); pointer-events: none;
     }
+    /* Loading/error states center in the VISIBLE pane (viewport minus sidebar),
+       not inside main's max-width column */
+    .pane-center { position: fixed; top: 0; right: 0; bottom: 0; left: 232px; z-index: 1; }
     /* Responsive: works at 390px; sidebar becomes a bottom icon bar */
     @media (max-width: 900px) {
       aside.side-nav {
@@ -82,7 +85,9 @@ function GlobalStyles() {
       .side-nav nav > div { margin-bottom: 0 !important; padding: 9px !important; border: none !important; }
       .side-nav .nav-label { display: none !important; }
       main.main-pane { margin-left: 0 !important; padding: 24px 16px 92px !important; max-width: 100% !important; }
+      .pane-center { left: 0; bottom: 60px; }
       .grid-main { grid-template-columns: 1fr !important; }
+      .grid-3 { grid-template-columns: 1fr !important; }
       .statbar { grid-template-columns: 1fr 1fr !important; }
       .statbar > div { border-left: none !important; border-top: 1px solid ${c.border}; }
       .statbar > div:first-child, .statbar > div:nth-child(2) { border-top: none; }
