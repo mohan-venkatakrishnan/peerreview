@@ -18,6 +18,10 @@ const REVIEW_PATTERNS = {
   'WordPress Plugins': /^(https:\/\/)?wordpress\.org\/plugins\/[\w-]+/i,
   'G2': /^(https:\/\/)?(www\.)?g2\.com\/products\/[\w-]+/i,
   'Capterra': /^(https:\/\/)?(www\.)?capterra\.com\/(p|software|reviews)\/[\w/-]+/i,
+  'itch.io': /^(https:\/\/)?([\w-]+\.)?itch\.io\/[\w-]+/i,
+  'Slack App Directory': /^(https:\/\/)?([\w-]+\.)?slack\.com\/apps\/[\w-]+/i,
+  'Gumroad': /^(https:\/\/)?([\w-]+\.)?gumroad\.com\/(l\/)?[\w-]+/i,
+  'npm': /^(https:\/\/)?(www\.)?npmjs\.com\/package\/(@[\w-]+\/)?[\w.-]+/i,
 };
 
 const getCurrent = async (reviewerId) => {

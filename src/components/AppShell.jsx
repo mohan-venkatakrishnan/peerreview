@@ -8,6 +8,8 @@ import ParallaxBackdrop from "./ParallaxBackdrop";
 import NavIcon from "./NavIcon";
 import { Avatar, SwitchAccountDialog } from "./ui";
 
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || "");
+
 const APP_PAGES = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", path: "/app" },
   { id: "review-queue", label: "Review Queue", icon: "review", path: "/app/review" },
@@ -109,7 +111,7 @@ export default function AppShell() {
           onMouseLeave={e => e.currentTarget.style.borderColor = c.border}>
           <span style={{ color: c.textMuted, fontSize: 13 }}>⌕</span>
           <span style={{ flex: 1, fontSize: 12, color: c.textMuted }}>Search…</span>
-          <span style={{ fontSize: 9, color: c.textMuted, border: `1px solid ${c.border}`, borderRadius: 4, padding: "1px 5px", fontFamily: "JetBrains Mono, monospace" }}>⌘K</span>
+          <span style={{ fontSize: 9, color: c.textMuted, border: `1px solid ${c.border}`, borderRadius: 4, padding: "1px 5px", fontFamily: "JetBrains Mono, monospace" }}>{isMac ? "⌘K" : "Ctrl K"}</span>
         </div>
         <nav style={{ flex: 1 }}>
           {APP_PAGES.map(p => (

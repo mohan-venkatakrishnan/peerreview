@@ -1,10 +1,11 @@
 import { createPortal } from "react-dom";
 import { useTheme } from "../tokens/theme";
 
-export function GoldButton({ children, onClick, full, size = "md" }) {
+export function GoldButton({ children, onClick, full, size = "md", disabled = false }) {
   const { c } = useTheme();
   return (
-    <button onClick={onClick} style={{
+    <button onClick={disabled ? undefined : onClick} disabled={disabled} style={{
+      opacity: disabled ? 0.45 : 1, pointerEvents: disabled ? "none" : "auto",
       background: `linear-gradient(135deg, ${c.gold}, #a07830)`, border: "none",
       borderRadius: 10, padding: size === "lg" ? "14px 32px" : size === "sm" ? "8px 16px" : "11px 24px",
       color: "#05091a", fontSize: size === "lg" ? 15 : size === "sm" ? 13 : 14, fontWeight: 700, cursor: "pointer",
@@ -18,10 +19,11 @@ export function GoldButton({ children, onClick, full, size = "md" }) {
   );
 }
 
-export function GhostButton({ children, onClick, full, size = "md" }) {
+export function GhostButton({ children, onClick, full, size = "md", disabled = false }) {
   const { c } = useTheme();
   return (
-    <button onClick={onClick} style={{
+    <button onClick={disabled ? undefined : onClick} disabled={disabled} style={{
+      opacity: disabled ? 0.45 : 1, pointerEvents: disabled ? "none" : "auto",
       background: "transparent", border: `1px solid ${c.border}`, borderRadius: 10,
       padding: size === "sm" ? "8px 16px" : "11px 24px", color: c.textSub,
       fontSize: size === "sm" ? 13 : 14, fontWeight: 500, cursor: "pointer", width: full ? "100%" : "auto",

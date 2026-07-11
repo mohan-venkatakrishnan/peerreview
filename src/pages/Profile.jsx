@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
@@ -5,12 +6,17 @@ import { BADGE_DEFS } from "../data/mock";
 import SealMark from "../components/SealMark";
 import BadgeIcon from "../components/BadgeIcon";
 import StateBadge from "../components/StateBadge";
+import SearchBox from "../components/SearchBox";
 import { Card, GhostButton, StatBar } from "../components/ui";
 
 export default function Profile() {
   const { c } = useTheme();
   const { account, history, stats, badges } = useAppState();
   const ratio = stats.received > 0 ? (stats.given / stats.received).toFixed(1) : "—";
+  const [historySearch, setHistorySearch] = useState("");
+  const filteredHistory = history.filter(r => !historySearch ||
+    r.product.toLowerCase().includes(historySearch.toLowerCase()) ||
+    (r.developer || "").toLowerCase().includes(historySearch.toLowerCase()));
   const navigate = useNavigate();
   return (
     <>
@@ -86,18 +92,26 @@ export default function Profile() {
       </Card>
 
       <Card className="fade-up-d3">
-        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 18 }}>Review history</div>
-        {history.map((r, i) => (
-          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < history.length - 1 ? `1px solid ${c.border}` : "none" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>Review history</div>
+          <span style={{ fontSize: 11, color: c.textMuted }}>{history.length} total</span>
+        </div>
+        {history.length > 5 && (
+          <SearchBox value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search by product or developer…" />
+        )}
+        {filteredHistory.map((r, i) => (
+          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < filteredHistory.length - 1 ? `1px solid ${c.border}` : "none" }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: c.gold }}>{r.product[0]}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>{r.product}</div>
-              <div style={{ fontSize: 12, color: c.textMuted }}>by {r.developer} · {r.time}</div>
+              <div style={{ fontSize: 12, color: c.textMuted }}>{r.developer ? `by ${r.developer} · ` : ""}{r.time}</div>
             </div>
             {r.rating && <span style={{ fontSize: 12, color: c.gold, fontWeight: 600 }}>rated ★ {r.rating}</span>}
             <StateBadge state={r.state} />
           </div>
         ))}
+        {history.length === 0 && <div style={{ fontSize: 13, color: c.textMuted, padding: "8px 0" }}>No reviews yet — your first assignment starts the story.</div>}
+        {history.length > 0 && filteredHistory.length === 0 && <div style={{ fontSize: 13, color: c.textMuted, padding: "8px 0" }}>No reviews match “{historySearch}”.</div>}
       </Card>
     </>
   );

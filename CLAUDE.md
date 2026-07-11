@@ -36,6 +36,10 @@ The core loop:
 - WordPress Plugins
 - G2
 - Capterra
+- itch.io
+- Slack App Directory
+- Gumroad
+- npm
 
 Platform is auto-detected from the listing URL during onboarding. A product cannot be listed without a valid listing URL on one of these.
 

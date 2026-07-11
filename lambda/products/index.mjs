@@ -19,6 +19,10 @@ const PLATFORMS = [
   { name: 'WordPress Plugins', re: /^(https:\/\/)?wordpress\.org\/plugins\/[\w-]+/i },
   { name: 'G2', re: /^(https:\/\/)?(www\.)?g2\.com\/products\/[\w-]+/i },
   { name: 'Capterra', re: /^(https:\/\/)?(www\.)?capterra\.com\/(p|software|reviews)\/[\w/-]+/i },
+  { name: 'itch.io', re: /^(https:\/\/)?([\w-]+\.)?itch\.io\/[\w-]+/i },
+  { name: 'Slack App Directory', re: /^(https:\/\/)?([\w-]+\.)?slack\.com\/apps\/[\w-]+/i },
+  { name: 'Gumroad', re: /^(https:\/\/)?([\w-]+\.)?gumroad\.com\/(l\/)?[\w-]+/i },
+  { name: 'npm', re: /^(https:\/\/)?(www\.)?npmjs\.com\/package\/(@[\w-]+\/)?[\w.-]+/i },
 ];
 const PLAN_LIMITS = { free: 5, pro: 10, studio: Infinity };
 

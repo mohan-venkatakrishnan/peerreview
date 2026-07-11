@@ -18,6 +18,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const platform = detectPlatform(productForm.url);
   const editing = !!productForm.id;
+  const step0Valid = productForm.name.trim().length > 0 && !!platform && !!productForm.category;
 
   const finish = async () => {
     if (saving) return;
@@ -85,7 +86,12 @@ export default function Onboarding() {
             </div>
             <Input label="One line description" placeholder="What does it do?" value={productForm.desc} onChange={e => setProductForm({ ...productForm, desc: e.target.value })} />
             <div style={{ marginTop: 8 }}>
-              <GoldButton full onClick={() => setOnboardStep(1)}>Continue →</GoldButton>
+              <GoldButton full disabled={!step0Valid} onClick={() => setOnboardStep(1)}>Continue →</GoldButton>
+              {!step0Valid && (
+                <div style={{ fontSize: 11, color: c.textMuted, marginTop: 10, textAlign: "center" }}>
+                  {!productForm.name.trim() ? "Add a product name" : !platform ? "Paste a valid listing URL from a supported platform" : "Pick a category"} to continue
+                </div>
+              )}
             </div>
           </Card>
         )}

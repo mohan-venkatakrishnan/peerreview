@@ -109,7 +109,7 @@ export default function ReviewQueue() {
               {error && (
                 <div className="fade-up" style={{ fontSize: 12, color: c.flagged, marginBottom: 14 }}>⚠ {error}</div>
               )}
-              <GoldButton full onClick={onSubmit}>
+              <GoldButton full disabled={reviewLinkPasted.length <= 8 || busy} onClick={onSubmit}>
                 {busy ? "Submitting…" : "Submit for verification"}
               </GoldButton>
             </>

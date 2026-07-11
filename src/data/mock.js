@@ -92,7 +92,7 @@ export const BADGE_DEFS = {
   sun: { name: "Early Bird", desc: "Dawn reviewer", how: "Submit a verified review between 5am and 8am.", group: "Explorer" },
 };
 
-export const PLATFORMS = ["Chrome Web Store", "Firefox Add-ons", "Edge Add-ons", "Product Hunt", "Google Play Store", "Apple App Store", "VS Code Marketplace", "JetBrains Marketplace", "Shopify App Store", "WordPress Plugins", "G2", "Capterra"];
+export const PLATFORMS = ["Chrome Web Store", "Firefox Add-ons", "Edge Add-ons", "Product Hunt", "Google Play Store", "Apple App Store", "VS Code Marketplace", "JetBrains Marketplace", "Shopify App Store", "WordPress Plugins", "G2", "Capterra", "itch.io", "Slack App Directory", "Gumroad", "npm"];
 
 /* Listing-URL patterns per platform — client-side mirror of the backend's */
 export const PLATFORM_PATTERNS = [
@@ -108,6 +108,10 @@ export const PLATFORM_PATTERNS = [
   { name: "WordPress Plugins", re: /^(https:\/\/)?wordpress\.org\/plugins\/[\w-]+/i },
   { name: "G2", re: /^(https:\/\/)?(www\.)?g2\.com\/products\/[\w-]+/i },
   { name: "Capterra", re: /^(https:\/\/)?(www\.)?capterra\.com\/(p|software|reviews)\/[\w/-]+/i },
+  { name: "itch.io", re: /^(https:\/\/)?([\w-]+\.)?itch\.io\/[\w-]+/i },
+  { name: "Slack App Directory", re: /^(https:\/\/)?([\w-]+\.)?slack\.com\/apps\/[\w-]+/i },
+  { name: "Gumroad", re: /^(https:\/\/)?([\w-]+\.)?gumroad\.com\/(l\/)?[\w-]+/i },
+  { name: "npm", re: /^(https:\/\/)?(www\.)?npmjs\.com\/package\/(@[\w-]+\/)?[\w.-]+/i },
 ];
 export const detectPlatform = (url) => PLATFORM_PATTERNS.find(p => p.re.test(String(url ?? "").trim()))?.name ?? null;
 
@@ -115,7 +119,7 @@ export const detectPlatform = (url) => PLATFORM_PATTERNS.find(p => p.re.test(Str
 export const LANDING_STATS = [
   { value: "1 : 1", label: "Reviews given to received" },
   { value: "100%", label: "Human-verified reviews" },
-  { value: "12", label: "Supported platforms & stores" },
+  { value: "16", label: "Supported platforms & stores" },
   { value: "$0", label: "To join and list your first product" },
 ];
 
