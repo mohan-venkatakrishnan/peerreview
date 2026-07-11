@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
-import { PLATFORMS, LANDING_STATS, HOW_IT_WORKS, TESTIMONIALS, PRICING } from "../data/mock";
+import { PLATFORMS, LANDING_STATS, HOW_IT_WORKS, TESTIMONIALS } from "../data/mock";
 import SealMark from "../components/SealMark";
 import StateBadge from "../components/StateBadge";
 import ParallaxBackdrop from "../components/ParallaxBackdrop";
@@ -193,7 +193,8 @@ function Testimonials() {
   const { c } = useTheme();
   return (
     <Section>
-      <SectionHeading eyebrow="From the exchange" title="Feedback from people who ship" />
+      <SectionHeading eyebrow="From the exchange" title="Feedback from people who ship"
+        sub="Sample quotes that show the kind of feedback the exchange produces — we'll replace them with real ones as the community grows." />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
         {TESTIMONIALS.map((t, i) => (
           <Reveal key={t.name} delay={Math.min(i + 1, 3)}>
@@ -215,56 +216,6 @@ function Testimonials() {
   );
 }
 
-/* ---- Pricing ---- */
-function Pricing() {
-  const { c } = useTheme();
-  const navigate = useNavigate();
-  return (
-    <Section id="pricing">
-      <SectionHeading eyebrow="Pricing" title="Every feature, on every plan"
-        sub="Tiers differ only by how many products you can list. Nothing is paywalled — not verification, not badges, not the leaderboard." />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16, alignItems: "stretch" }}>
-        {PRICING.map((p, i) => (
-          <Reveal key={p.name} delay={Math.min(i + 1, 3)} style={{ height: "100%" }}>
-            <Card style={{
-              height: "100%", display: "flex", flexDirection: "column", gap: 6, padding: 28, position: "relative",
-              border: `1px solid ${p.highlight ? c.gold : c.border}`,
-              background: p.highlight ? `linear-gradient(160deg, ${c.goldGlow}, ${c.surface} 60%)` : c.surface,
-              boxShadow: p.highlight ? "0 0 32px rgba(201,168,76,0.12)" : "none",
-            }}>
-              {p.highlight && (
-                <div style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", background: `linear-gradient(135deg, ${c.gold}, #a07830)`, color: "#05091a", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 10, padding: "4px 12px" }}>Most popular</div>
-              )}
-              <div style={{ fontSize: 13, fontWeight: 600, color: p.highlight ? c.gold : c.textSub, textTransform: "uppercase", letterSpacing: "0.08em" }}>{p.name}</div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 6, margin: "8px 0 4px" }}>
-                <span style={{ fontFamily: "Playfair Display, serif", fontSize: 40, fontWeight: 700, color: c.text }}>{p.price}</span>
-                <span style={{ fontSize: 13, color: c.textMuted }}>{p.period}</span>
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: c.gold, marginBottom: 16 }}>{p.listings}</div>
-              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 16, marginBottom: 20, display: "flex", flexDirection: "column", gap: 9, flex: 1 }}>
-                {["One-for-one review exchange", "Owner verification & Trust Score", "Badges and public leaderboard", "Category or open matching"].map(f => (
-                  <div key={f} style={{ display: "flex", gap: 9, fontSize: 13, color: c.textSub, alignItems: "center" }}>
-                    <span style={{ color: c.verified, fontSize: 12 }}>✓</span> {f}
-                  </div>
-                ))}
-              </div>
-              {p.highlight
-                ? <GoldButton full onClick={() => navigate("/signin")}>Start with {p.name}</GoldButton>
-                : <GhostButton full onClick={() => navigate("/signin")}>Start with {p.name}</GhostButton>}
-            </Card>
-          </Reveal>
-        ))}
-      </div>
-      <Reveal delay={3} style={{ textAlign: "center", marginTop: 28 }}>
-        <p style={{ fontSize: 12, color: c.textMuted, lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
-          PeerReview facilitates genuine feedback between developers — it never buys, sells, or incentivises store ratings.
-        </p>
-      </Reveal>
-    </Section>
-  );
-}
-
-/* ---- Final CTA + footer ---- */
 function FinalCta() {
   const { c } = useTheme();
   const navigate = useNavigate();
@@ -297,6 +248,7 @@ function Footer() {
         <div style={{ display: "flex", gap: 20, fontSize: 12 }}>
           <span onClick={() => navigate("/leaderboard")} style={{ color: c.textMuted, cursor: "pointer" }}>Leaderboard</span>
           <span onClick={() => navigate("/signin")} style={{ color: c.textMuted, cursor: "pointer" }}>Sign in</span>
+          <span onClick={() => navigate("/privacy")} style={{ color: c.textMuted, cursor: "pointer" }}>Privacy</span>
         </div>
         <span style={{ fontSize: 11, color: c.textMuted }}>Privacy by architecture — no trackers, no third parties.</span>
       </div>

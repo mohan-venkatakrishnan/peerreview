@@ -24,7 +24,7 @@ const PLATFORMS = [
   { name: 'Gumroad', re: /^(https:\/\/)?([\w-]+\.)?gumroad\.com\/(l\/)?[\w-]+/i },
   { name: 'npm', re: /^(https:\/\/)?(www\.)?npmjs\.com\/package\/(@[\w-]+\/)?[\w.-]+/i },
 ];
-const PLAN_LIMITS = { free: 5, pro: 10, studio: Infinity };
+const PLAN_LIMITS = { free: 25, pro: 25, studio: Infinity };
 
 export const handler = async (event) => {
   const userId = event.requestContext?.authorizer?.claims?.sub;

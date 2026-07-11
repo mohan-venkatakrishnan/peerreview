@@ -16,6 +16,7 @@ import PublicProfile from "./pages/PublicProfile";
 import Leaderboard, { LeaderboardPublic } from "./pages/Leaderboard";
 import Products from "./pages/Products";
 import Rules from "./pages/Rules";
+import Privacy from "./pages/Privacy";
 import Settings from "./pages/Settings";
 import AppShell from "./components/AppShell";
 
@@ -175,6 +176,7 @@ function TransitionedRoutes() {
       <Routes location={displayedLocation}>
         <Route path="/" element={<Landing />} />
         <Route path="/leaderboard" element={<LeaderboardPublic />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/auth/callback" element={<AuthCallback />} />

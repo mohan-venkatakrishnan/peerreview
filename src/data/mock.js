@@ -13,7 +13,10 @@ export const ACCOUNTS = [
   { id: "riya", name: "Riya S.", email: "riya.builds@gmail.com", plan: "pro", score: 4.8 },
 ];
 
-/* Plan tiers — identical features, they differ ONLY by listing count */
+/* Free-launch listing cap (no paid tiers yet). Generous — just anti-spam. */
+export const FREE_LIMIT = 25;
+
+/* Plan tiers — kept for the mock account switcher; UI surfaces Free only. */
 export const PLANS = {
   free: { label: "Free", limit: 5, price: "$0" },
   pro: { label: "Pro", limit: 10, price: "$7/mo" },

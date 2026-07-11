@@ -26,7 +26,7 @@ export default function SignIn() {
           Continue with Google
         </button>
         <p style={{ marginTop: 24, fontSize: 11, color: c.textMuted, lineHeight: 1.6 }}>
-          Privacy by architecture. Your sign-in identity is used for account access only — never sent to third parties, never tracked.
+          Privacy by architecture. Your sign-in identity is used for account access only — never sent to third parties, never tracked. <span onClick={() => navigate("/privacy")} style={{ color: c.gold, cursor: "pointer" }}>Privacy policy</span>.
         </p>
       </Card>
     </div>
