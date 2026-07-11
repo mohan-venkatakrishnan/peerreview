@@ -19,25 +19,27 @@ async function notify(to, subject, body) {
 }
 
 
-/* REVIEW url patterns per platform — the link must point at the platform,
-   review anchors/params allowed. Owner verification remains the human gate. */
+/* REVIEW links only need to be ON the right platform's domain — review URLs
+   take many shapes (/detail/…/reviews, /reviews/<uuid>, ?see-all=reviews, …).
+   The owner reads and verifies the actual review by hand, so domain-level is
+   the right gate; a stricter path check just blocks legitimate links. */
 const REVIEW_PATTERNS = {
-  'Chrome Web Store': /^(https:\/\/)?chromewebstore\.google\.com\/detail\/[\w-]+/i,
-  'Firefox Add-ons': /^(https:\/\/)?addons\.mozilla\.org\/.*firefox\/addon\/[\w.-]+/i,
-  'Edge Add-ons': /^(https:\/\/)?microsoftedge\.microsoft\.com\/addons\/detail\/[\w-]+/i,
-  'Product Hunt': /^(https:\/\/)?(www\.)?producthunt\.com\/(products|posts)\/[\w-]+/i,
-  'Google Play Store': /^(https:\/\/)?play\.google\.com\/store\/apps\/details\?id=[\w.]+/i,
-  'Apple App Store': /^(https:\/\/)?apps\.apple\.com\/[a-z]{2}\/app\/[\w-]+\/id\d+/i,
-  'VS Code Marketplace': /^(https:\/\/)?marketplace\.visualstudio\.com\/items\?itemName=[\w.-]+/i,
-  'JetBrains Marketplace': /^(https:\/\/)?plugins\.jetbrains\.com\/plugin\/[\w.-]+/i,
-  'Shopify App Store': /^(https:\/\/)?apps\.shopify\.com\/[\w-]+/i,
-  'WordPress Plugins': /^(https:\/\/)?wordpress\.org\/plugins\/[\w-]+/i,
-  'G2': /^(https:\/\/)?(www\.)?g2\.com\/products\/[\w-]+/i,
-  'Capterra': /^(https:\/\/)?(www\.)?capterra\.com\/(p|software|reviews)\/[\w/-]+/i,
-  'itch.io': /^(https:\/\/)?([\w-]+\.)?itch\.io\/[\w-]+/i,
-  'Slack App Directory': /^(https:\/\/)?([\w-]+\.)?slack\.com\/apps\/[\w-]+/i,
-  'Gumroad': /^(https:\/\/)?([\w-]+\.)?gumroad\.com\/(l\/)?[\w-]+/i,
-  'npm': /^(https:\/\/)?(www\.)?npmjs\.com\/package\/(@[\w-]+\/)?[\w.-]+/i,
+  'Chrome Web Store': /^(https:\/\/)?(chromewebstore\.google\.com|chrome\.google\.com\/webstore)\//i,
+  'Firefox Add-ons': /^(https:\/\/)?addons\.mozilla\.org\//i,
+  'Edge Add-ons': /^(https:\/\/)?microsoftedge\.microsoft\.com\//i,
+  'Product Hunt': /^(https:\/\/)?(www\.)?producthunt\.com\//i,
+  'Google Play Store': /^(https:\/\/)?play\.google\.com\//i,
+  'Apple App Store': /^(https:\/\/)?apps\.apple\.com\//i,
+  'VS Code Marketplace': /^(https:\/\/)?marketplace\.visualstudio\.com\//i,
+  'JetBrains Marketplace': /^(https:\/\/)?plugins\.jetbrains\.com\//i,
+  'Shopify App Store': /^(https:\/\/)?apps\.shopify\.com\//i,
+  'WordPress Plugins': /^(https:\/\/)?wordpress\.org\//i,
+  'G2': /^(https:\/\/)?(www\.)?g2\.com\//i,
+  'Capterra': /^(https:\/\/)?(www\.)?capterra\.com\//i,
+  'itch.io': /^(https:\/\/)?([\w-]+\.)?itch\.io\//i,
+  'Slack App Directory': /^(https:\/\/)?([\w-]+\.)?slack\.com\//i,
+  'Gumroad': /^(https:\/\/)?([\w-]+\.)?gumroad\.com\//i,
+  'npm': /^(https:\/\/)?(www\.)?npmjs\.com\//i,
 };
 
 const getCurrent = async (reviewerId) => {
@@ -68,9 +70,17 @@ export const handler = async (event) => {
         TableName: process.env.PRODUCTS_TABLE,
         Key: { userId: current.ownerId, productId: current.productId },
       }));
+      // owner identity follows the owner's own privacy choice: name shown only
+      // if they've turned on showName, else a neutral label. Trust score is
+      // public (it's on the leaderboard), so always include it.
+      const { Item: owner } = await client.send(new GetCommand({
+        TableName: process.env.USERS_TABLE, Key: { userId: current.ownerId },
+      })).catch(() => ({ Item: null }));
       product = Item ? {
         name: Item.name, url: Item.url, platform: Item.platform,
         category: Item.category, description: Item.description,
+        ownerName: owner?.privacy?.showName ? owner.name : 'a fellow developer',
+        ownerScore: owner?.trustScore ?? null,
       } : null;
     }
     return respond(200, { current, product, history });

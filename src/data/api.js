@@ -77,8 +77,8 @@ export const getAssignment = async () => {
     assigned: current && product ? {
       assignmentId: current.assignmentId,
       name: product.name,
-      developer: "a fellow developer", // owner identity is intentionally not exposed pre-review
-      devScore: null,
+      developer: product.ownerName ?? "a fellow developer", // per the owner privacy choice
+      devScore: product.ownerScore ?? null,
       category: product.category,
       platform: product.platform,
       description: product.description,
