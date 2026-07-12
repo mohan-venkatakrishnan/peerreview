@@ -104,7 +104,7 @@ export default function ReviewQueue() {
             <SearchBox value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products by name, platform, or developer…" />
           </div>
 
-          {categories.length > 1 && (
+          {categories.length > 0 && (
             <div className="fade-up-d1" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
               {["all", ...categories].map(k => (
                 <button key={k} onClick={() => setCat(k)}
