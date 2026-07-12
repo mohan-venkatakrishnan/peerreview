@@ -38,9 +38,9 @@ export const ASSIGNED = {
 /* The open review pool — every product this member can review right now.
    Sample data (mock mode only); the live app fills this from the backend. */
 export const REVIEW_POOL = [
-  { productId: "p1", ownerId: "o1", name: "FocusFlow", developer: "Nadia R.", devScore: 4.7, category: "Chrome Extension", platform: "Chrome Web Store", description: "A pomodoro timer that blocks distracting sites during focus sessions. Built for deep work.", url: "chromewebstore.google.com/detail/focusflow" },
-  { productId: "p2", ownerId: "o2", name: "InboxIQ", developer: "a fellow developer", devScore: 4.5, category: "SaaS Tool", platform: "Product Hunt", description: "AI triage for your inbox that drafts replies in your voice. Browser-side, no data leaves your machine.", url: "producthunt.com/products/inboxiq" },
-  { productId: "p3", ownerId: "o3", name: "SnapPalette", developer: "Marco T.", devScore: 4.8, category: "Web App", platform: "VS Code Marketplace", description: "Extract a color palette from any screenshot, straight in your editor. One shortcut, done.", url: "marketplace.visualstudio.com/items?itemName=snappalette" },
+  { productId: "p1", ownerId: "o1", name: "FocusFlow", developer: "Nadia R.", devScore: 4.7, category: "Chrome Extension", platform: "Chrome Web Store", description: "A pomodoro timer that blocks distracting sites during focus sessions. Built for deep work.", url: "chromewebstore.google.com/detail/focusflow", createdAt: "2026-07-12T04:00:00.000Z" },
+  { productId: "p2", ownerId: "o2", name: "InboxIQ", developer: "a fellow developer", devScore: 4.5, category: "SaaS Tool", platform: "Product Hunt", description: "AI triage for your inbox that drafts replies in your voice. Browser-side, no data leaves your machine.", url: "producthunt.com/products/inboxiq", createdAt: "2026-07-09T10:00:00.000Z" },
+  { productId: "p3", ownerId: "o3", name: "SnapPalette", developer: "Marco T.", devScore: 4.8, category: "Web App", platform: "VS Code Marketplace", description: "Extract a color palette from any screenshot, straight in your editor. One shortcut, done.", url: "marketplace.visualstudio.com/items?itemName=snappalette", createdAt: "2026-06-25T10:00:00.000Z" },
 ];
 
 export const INCOMING_REVIEWS = [

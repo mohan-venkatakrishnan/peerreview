@@ -81,6 +81,7 @@ const shapePoolItem = (p) => ({
   platform: p.platform,
   description: p.description,
   url: p.url,
+  createdAt: p.createdAt ?? null, // ISO — for "listed X ago", sort, and date filters
 });
 export const getAssignment = async () => {
   const { pool = [], skipped = [], history = [] } = await apiFetch("/assignment");

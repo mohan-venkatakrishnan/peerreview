@@ -8,6 +8,18 @@ import { Card, Input, GoldButton, GhostButton, PageTitle } from "../components/u
 
 const openUrl = (url) => window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
 
+const ts = (p) => (p.createdAt ? new Date(p.createdAt).getTime() : 0);
+const formatAgo = (iso) => {
+  if (!iso) return "recently";
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.round(s / 60)}m ago`;
+  if (s < 86400) return `${Math.round(s / 3600)}h ago`;
+  if (s < 604800) return `${Math.round(s / 86400)}d ago`;
+  if (s < 2592000) return `${Math.round(s / 604800)}w ago`;
+  return `${Math.round(s / 2592000)}mo ago`;
+};
+
 /* One product. Module-level (never nested) so its input keeps focus across the
    parent's re-renders. `parked` switches it between the queue and the
    Not-interested list. */
@@ -33,7 +45,10 @@ function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
         <div style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 11, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{product.name[0]}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 19, fontWeight: 700, color: c.text, lineHeight: 1.2 }}>{product.name}</h3>
-          <div style={{ fontSize: 12, color: c.textMuted, marginTop: 3 }}>{product.category} · {product.platform}</div>
+          <div style={{ fontSize: 12, color: c.textMuted, marginTop: 3 }}>
+            {product.category} · {product.platform}
+            {product.createdAt && <> · <span data-tip={new Date(product.createdAt).toLocaleString()} style={{ cursor: "help" }}>listed {formatAgo(product.createdAt)}</span></>}
+          </div>
           <p style={{ fontSize: 13.5, color: c.textSub, lineHeight: 1.65, margin: "10px 0 0" }}>{product.description}</p>
         </div>
       </div>
@@ -77,20 +92,51 @@ function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
 }
 
 export default function ReviewQueue() {
-  const { c } = useTheme();
+  const { c, isDark } = useTheme();
   const { reviewablePool, skippedPool, reviewSubmitted, submitReview, skipProduct, unskipProduct } = useAppState();
   const navigate = useNavigate();
   const [tab, setTab] = useState("review"); // 'review' | 'parked'
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
+  const [sortDir, setSortDir] = useState("newest"); // 'newest' | 'oldest'
+  const [range, setRange] = useState("all"); // all | day | week | month | custom
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  const now = Date.now();
+  const inRange = (p) => {
+    if (range === "all") return true;
+    const t = ts(p);
+    if (range === "custom") {
+      const okFrom = !from || t >= new Date(from).getTime();
+      const okTo = !to || t <= new Date(to).getTime() + 86400000 - 1; // include the whole 'to' day
+      return okFrom && okTo;
+    }
+    const days = range === "day" ? 1 : range === "week" ? 7 : 30;
+    return t >= now - days * 86400000;
+  };
 
   const source = tab === "parked" ? skippedPool : reviewablePool;
   const categories = [...new Set(source.map(p => p.category).filter(Boolean))].sort();
   const q = search.trim().toLowerCase();
-  const filtered = source.filter(p =>
-    (cat === "all" || p.category === cat) &&
-    (!q || [p.name, p.description, p.platform, p.developer].some(f => (f || "").toLowerCase().includes(q)))
-  );
+  const filtered = source
+    .filter(p =>
+      (cat === "all" || p.category === cat) &&
+      inRange(p) &&
+      (!q || [p.name, p.description, p.platform, p.developer].some(f => (f || "").toLowerCase().includes(q)))
+    )
+    .sort((a, b) => (sortDir === "newest" ? ts(b) - ts(a) : ts(a) - ts(b)));
+
+  const rangeChip = (active) => ({
+    background: active ? c.goldGlow : "transparent",
+    border: `1px solid ${active ? c.gold : c.border}`,
+    color: active ? c.gold : c.textMuted,
+    borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.2s",
+  });
+  const dateInput = {
+    background: c.bg, border: `1px solid ${c.border}`, color: c.text,
+    borderRadius: 8, padding: "7px 10px", fontSize: 13, colorScheme: isDark ? "dark" : "light",
+  };
 
   const Tab = ({ id, label, count }) => (
     <button onClick={() => { setTab(id); setCat("all"); }}
@@ -168,6 +214,34 @@ export default function ReviewQueue() {
             </div>
           )}
 
+          {/* time controls: date-range filter + sort */}
+          <div className="fade-up-d1" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: range === "custom" ? 12 : 18 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {[["all", "All time"], ["day", "Today"], ["week", "This week"], ["month", "This month"], ["custom", "Custom"]].map(([k, label]) => (
+                <button key={k} onClick={() => setRange(k)} style={rangeChip(range === k)}>{label}</button>
+              ))}
+            </div>
+            <button onClick={() => setSortDir(d => d === "newest" ? "oldest" : "newest")}
+              data-tip="Sort by when the product was listed"
+              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.textSub, borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
+              {sortDir === "newest" ? "↓ Newest first" : "↑ Oldest first"}
+            </button>
+          </div>
+
+          {range === "custom" && (
+            <div className="fade-up" style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
+              <label style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                From <input type="date" value={from} max={to || undefined} onChange={e => setFrom(e.target.value)} style={dateInput} />
+              </label>
+              <label style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                To <input type="date" value={to} min={from || undefined} onChange={e => setTo(e.target.value)} style={dateInput} />
+              </label>
+              {(from || to) && (
+                <button onClick={() => { setFrom(""); setTo(""); }} style={{ background: "transparent", border: "none", color: c.textMuted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>Clear dates</button>
+              )}
+            </div>
+          )}
+
           <div className="fade-up" style={{ fontSize: 12, color: c.textMuted, marginBottom: 16 }}>
             {filtered.length === source.length
               ? `${source.length} product${source.length === 1 ? "" : "s"}${tab === "parked" ? " set aside" : " waiting for a review"}`
@@ -179,7 +253,7 @@ export default function ReviewQueue() {
               <div style={{ display: "inline-block", marginBottom: 14, opacity: 0.6 }}><SealMark size={48} gold={c.textMuted} /></div>
               <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 8 }}>No products match</h3>
               <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 16 }}>Try a different search or category.</p>
-              <GhostButton onClick={() => { setSearch(""); setCat("all"); }}>Clear filters</GhostButton>
+              <GhostButton onClick={() => { setSearch(""); setCat("all"); setRange("all"); setFrom(""); setTo(""); }}>Clear filters</GhostButton>
             </Card>
           ) : (
             filtered.map((p, i) => (
