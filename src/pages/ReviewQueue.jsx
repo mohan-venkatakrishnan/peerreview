@@ -4,6 +4,7 @@ import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import SealMark from "../components/SealMark";
 import DatePicker from "../components/DatePicker";
+import Select from "../components/Select";
 import { Card, Input, GoldButton, GhostButton, PageTitle } from "../components/ui";
 
 const openUrl = (url) => window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
@@ -92,7 +93,7 @@ function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
 }
 
 export default function ReviewQueue() {
-  const { c, isDark } = useTheme();
+  const { c } = useTheme();
   const { reviewablePool, skippedPool, reviewSubmitted, submitReview, skipProduct, unskipProduct } = useAppState();
   const navigate = useNavigate();
   const [tab, setTab] = useState("review"); // 'review' | 'parked'
@@ -127,7 +128,6 @@ export default function ReviewQueue() {
     )
     .sort((a, b) => (sortDir === "newest" ? ts(b) - ts(a) : ts(a) - ts(b)));
 
-  const sel = { background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 10, padding: "9px 12px", fontSize: 13, cursor: "pointer", colorScheme: isDark ? "dark" : "light" };
 
   const Tab = ({ id, label, count }) => (
     <button onClick={() => { setTab(id); setCat("all"); }}
@@ -187,33 +187,26 @@ export default function ReviewQueue() {
             </div>
           )}
 
-          {/* one compact toolbar: search + category + date + sort */}
-          <div className="fade-up-d1" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: range === "custom" ? 12 : 18 }}>
+          {/* one compact toolbar: search + category + date + sort. relative+zIndex
+              lifts it (and its dropdown/date popovers) above the cards below —
+              the fade-up transform otherwise traps popovers in a stacking context */}
+          <div className="fade-up-d1" style={{ position: "relative", zIndex: 30, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: range === "custom" ? 12 : 18 }}>
             <div style={{ flex: "1 1 200px", minWidth: 160, display: "flex", alignItems: "center", gap: 10, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: "9px 14px" }}>
               <span style={{ color: c.textMuted, fontSize: 14 }}>⌕</span>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products…"
                 style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 13, color: c.text }} />
               {search && <span onClick={() => setSearch("")} style={{ cursor: "pointer", color: c.textMuted, fontSize: 12 }}>✕</span>}
             </div>
-            <select value={cat} onChange={e => setCat(e.target.value)} style={sel} aria-label="Category">
-              <option value="all">All categories</option>
-              {categories.map(k => <option key={k} value={k}>{k}</option>)}
-            </select>
-            <select value={range} onChange={e => setRange(e.target.value)} style={sel} aria-label="Date listed">
-              <option value="all">Any time</option>
-              <option value="day">Today</option>
-              <option value="week">This week</option>
-              <option value="month">This month</option>
-              <option value="custom">Custom…</option>
-            </select>
-            <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={sel} aria-label="Sort by listing date">
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-            </select>
+            <Select ariaLabel="Category" value={cat} onChange={setCat} minWidth={148}
+              options={[{ value: "all", label: "All categories" }, ...categories.map(k => ({ value: k, label: k }))]} />
+            <Select ariaLabel="Date listed" value={range} onChange={setRange} minWidth={120}
+              options={[{ value: "all", label: "Any time" }, { value: "day", label: "Today" }, { value: "week", label: "This week" }, { value: "month", label: "This month" }, { value: "custom", label: "Custom…" }]} />
+            <Select ariaLabel="Sort by listing date" value={sortDir} onChange={setSortDir} minWidth={132}
+              options={[{ value: "newest", label: "Newest first" }, { value: "oldest", label: "Oldest first" }]} />
           </div>
 
           {range === "custom" && (
-            <div className="fade-up" style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
+            <div className="fade-up" style={{ position: "relative", zIndex: 30, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
               <span style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
                 From <DatePicker value={from} max={to || undefined} onChange={setFrom} />
               </span>
