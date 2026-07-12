@@ -90,18 +90,16 @@ export const handler = async () => {
       u.userId !== product.userId &&
       !u.activeAssignmentId &&
       (u.expiredCount ?? 0) < MAX_EXPIRIES &&
+      // HARD: never re-offer a product to someone already assigned it. This is
+      // what stops a skipped product from bouncing straight back to the skipper.
+      !(product.reviewerIds ?? []).includes(u.userId) &&
       (!requireCategory || (u.categories ?? []).includes(product.category));
 
-    // Tiered selection so a small pool never deadlocks. Prefer a fresh, non-
-    // reciprocal reviewer; fall back to relaxing anti-reciprocity, then the
-    // has-not-reviewed-before rule, rather than leaving a product unmatched.
+    // Prefer a non-reciprocal reviewer; relax ONLY anti-reciprocity for a small
+    // pool. We never relax the has-not-reviewed rule — re-offering the same
+    // product to the same person is never desirable.
     let candidates = users.filter(u => baseEligible(u) &&
-      !(product.reviewerIds ?? []).includes(u.userId) &&
       !((u.recentPartners ?? {})[product.userId] > cutoff));
-    if (!candidates.length) {
-      candidates = users.filter(u => baseEligible(u) &&
-        !(product.reviewerIds ?? []).includes(u.userId));
-    }
     if (!candidates.length) {
       candidates = users.filter(u => baseEligible(u));
     }

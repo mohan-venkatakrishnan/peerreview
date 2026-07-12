@@ -116,12 +116,25 @@ export const handler = async (event) => {
       UpdateExpression: 'ADD received :one',
       ExpressionAttributeValues: { ':one': 1 },
     }));
-    await client.send(new UpdateCommand({
+    const { Attributes: prod } = (await client.send(new UpdateCommand({
       TableName: process.env.PRODUCTS_TABLE,
       Key: { userId, productId: a.productId },
       UpdateExpression: 'ADD receivedCount :one',
       ExpressionAttributeValues: { ':one': 1 },
-    })).catch(() => {});
+      ReturnValues: 'ALL_NEW',
+    }).catch(() => ({ Attributes: null })))) ?? {};
+    // Open pool: an active listing always goes back in the queue after a review,
+    // so there's always something for the next member (even one with no product
+    // of their own) to review. Each person is matched to it at most once — once
+    // everyone has reviewed it, it simply waits for a new member to join.
+    if (prod.status === 'active') {
+      await client.send(new UpdateCommand({
+        TableName: process.env.PRODUCTS_TABLE,
+        Key: { userId, productId: a.productId },
+        UpdateExpression: 'SET poolStatus = :q, enqueuedAt = :now',
+        ExpressionAttributeValues: { ':q': 'queued', ':now': new Date().toISOString() },
+      })).catch(() => {});
+    }
 
     // one-for-one: the credit converts into a queued slot for one of the
     // reviewer's products (oldest active not already queued)
