@@ -12,14 +12,13 @@ const greeting = () => {
 };
 const today = () => new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 const reviewSubmittedFromHistory = (history) => history.some(h => h.state === "pending" || h.state === "submitted");
-const reviewSubmittedCopy = (pendingVerification) => pendingVerification
-  ? "Your review is pending verification by the product owner. A new assignment lands soon."
-  : "Nothing assigned right now — a product from the pool will land here soon.";
 
 export default function Dashboard() {
   const { c } = useTheme();
-  const { assigned, incoming, history, account, stats, products } = useAppState();
+  const { reviewablePool, incoming, history, account, stats, products } = useAppState();
   const navigate = useNavigate();
+  const next = reviewablePool[0] ?? null;
+  const caughtUp = reviewSubmittedFromHistory(history);
   const awaiting = incoming.filter(r => r.state === "pending" || r.state === "submitted").length;
     const verifiedRate = stats.given > 0 ? Math.round((stats.verified / stats.given) * 100) : null;
 
@@ -45,34 +44,35 @@ export default function Dashboard() {
       <div className="grid-main" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
         {/* Review queue */}
         <Card className="fade-up-d2" style={{ position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          {assigned ? (
+          {next ? (
             <>
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${c.gold}, transparent)` }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}><NavIcon name="review" size={13} color={c.gold} /> Your review queue</div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 11, color: c.textMuted, marginBottom: 5 }}>Due in <span style={{ color: c.text, fontWeight: 600 }}>{assigned.deadline}</span></div>
-                  <MeterBar pct={(5 / 7) * 100} style={{ width: 88, marginLeft: "auto" }} height={3} />
-                </div>
+                <div style={{ fontSize: 11, color: c.textMuted }}><span style={{ color: c.text, fontWeight: 600, fontFamily: "JetBrains Mono, monospace" }}>{reviewablePool.length}</span> to review</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-                <div style={{ width: 52, height: 52, borderRadius: 12, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{assigned.name[0]}</div>
+                <div style={{ width: 52, height: 52, borderRadius: 12, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{next.name[0]}</div>
                 <div>
-                  <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, color: c.text, lineHeight: 1.2 }}>{assigned.name}</h3>
-                  <div style={{ fontSize: 12, color: c.textMuted, marginTop: 3 }}>{assigned.category} · {assigned.platform}</div>
+                  <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, color: c.text, lineHeight: 1.2 }}>{next.name}</h3>
+                  <div style={{ fontSize: 12, color: c.textMuted, marginTop: 3 }}>{next.category} · {next.platform}</div>
                 </div>
               </div>
-              <p style={{ fontSize: 14, color: c.textSub, lineHeight: 1.7, marginBottom: 18, flex: 1 }}>{assigned.description}</p>
+              <p style={{ fontSize: 14, color: c.textSub, lineHeight: 1.7, marginBottom: 18, flex: 1 }}>{next.description}</p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                 <GoldButton onClick={() => navigate("/app/review")}>Start reviewing →</GoldButton>
-                <span style={{ fontSize: 11, color: c.textMuted }}>by {assigned.developer}{assigned.devScore ? ` · ★ ${assigned.devScore}` : ""} — they verify your review</span>
+                <span style={{ fontSize: 11, color: c.textMuted }}>{reviewablePool.length > 1 ? `+${reviewablePool.length - 1} more in the queue` : "they verify your review"}</span>
               </div>
             </>
           ) : (
             <div style={{ textAlign: "center", padding: "28px 0" }}>
               <div className="stamp-in" style={{ display: "inline-block", marginBottom: 12 }}><SealMark size={48} gold={c.gold} /></div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>Queue clear</div>
-              <p style={{ fontSize: 13, color: c.textMuted }}>{reviewSubmittedCopy(reviewSubmittedFromHistory(history))}</p>
+              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>{caughtUp ? "All caught up" : "Queue clear"}</div>
+              <p style={{ fontSize: 13, color: c.textMuted }}>
+                {caughtUp
+                  ? "You've reviewed everything in the pool. New listings show up here as they join."
+                  : "Nothing to review yet — products appear here as developers list them."}
+              </p>
             </div>
           )}
         </Card>

@@ -35,6 +35,14 @@ export const ASSIGNED = {
   deadline: "5 days",
 };
 
+/* The open review pool — every product this member can review right now.
+   Sample data (mock mode only); the live app fills this from the backend. */
+export const REVIEW_POOL = [
+  { productId: "p1", ownerId: "o1", name: "FocusFlow", developer: "Nadia R.", devScore: 4.7, category: "Chrome Extension", platform: "Chrome Web Store", description: "A pomodoro timer that blocks distracting sites during focus sessions. Built for deep work.", url: "chromewebstore.google.com/detail/focusflow" },
+  { productId: "p2", ownerId: "o2", name: "InboxIQ", developer: "a fellow developer", devScore: 4.5, category: "SaaS Tool", platform: "Product Hunt", description: "AI triage for your inbox that drafts replies in your voice. Browser-side, no data leaves your machine.", url: "producthunt.com/products/inboxiq" },
+  { productId: "p3", ownerId: "o3", name: "SnapPalette", developer: "Marco T.", devScore: 4.8, category: "Web App", platform: "VS Code Marketplace", description: "Extract a color palette from any screenshot, straight in your editor. One shortcut, done.", url: "marketplace.visualstudio.com/items?itemName=snappalette" },
+];
+
 export const INCOMING_REVIEWS = [
   { id: 1, reviewer: "Karan V.", score: 4.8, given: 22, product: "CommentIQ", excerpt: "Really impressed by the sentiment breakdown. The on-device processing means my data never leaves the browser — that's rare. Would love export to CSV though.", link: "chromewebstore.google.com/detail/commentiq/reviews#r-8842", time: "3 hours ago", state: "pending" },
   { id: 2, reviewer: "Emma L.", score: 4.9, given: 41, product: "CommentIQ", excerpt: "Clean UI, does what it says. The comment clustering saved me hours on my channel audit.", link: "chromewebstore.google.com/detail/commentiq/reviews#r-8836", time: "1 day ago", state: "pending" },

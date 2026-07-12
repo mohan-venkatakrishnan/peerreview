@@ -26,15 +26,15 @@ export default function Rules() {
   return (
     <>
       <PageTitle eyebrow="Rules & Badges" title="How the exchange works"
-        sub="Short version: give one genuine review, get one back, and everything is verified by a real person." />
+        sub="Short version: review any product in the open pool, give one genuine review to earn one back, and everything is verified by a real person." />
 
       {/* The exchange */}
       <Card className="fade-up-d1" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>The one-for-one exchange</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>The exchange</div>
         {[
-          ["Strict one-for-one", "Every review you give earns exactly one review credit. One credit = one person assigned to review your product. No stockpiling, no shortcuts."],
+          ["Give one, get one", "Every product in the pool is open for you to review, and yours is open to everyone else. Each genuine review you give earns one back — no stockpiling, no shortcuts."],
+          ["Review any product", "Your queue shows every product you can review right now. Pick any of them — you review each product at most once, and yours stays in the pool for the whole community."],
           ["Real listings only", "Products must have a live listing on a supported platform. Reviews are written there — on the store or launch page — because that's where they're useful."],
-          ["Deadlines matter", "Assignments are due in 7 days. Skipping is allowed occasionally; letting assignments expire repeatedly pauses new matches."],
           ["Owners verify by hand", "The product owner reads your review on the platform and marks it Verified or Flagged. Nothing is auto-approved."],
         ].map(([title, desc], i, arr) => (
           <div key={title} style={{ display: "flex", gap: 14, padding: "12px 0", borderBottom: i < arr.length - 1 ? `1px solid ${c.border}` : "none" }}>

@@ -60,7 +60,15 @@ export const handler = async () => {
     })).catch(() => null);
   }
 
-  /* ---- 2. Assign queued products ---- */
+  /* ---- 2. Auto-assign is retired ----
+     PeerReview now runs an OPEN POOL: members browse everything they can
+     review and pick for themselves (see lambda/assignment buildPool), so the
+     matcher no longer pushes one-at-a-time assignments or removes products
+     from the pool. It stays scheduled purely to expire stale legacy
+     'assigned' rows above. Remove this early return to re-enable push-matching. */
+  return { assigned: 0, expired: active.length, mode: 'open-pool' };
+
+  /* eslint-disable no-unreachable */
   const { Items: pool = [] } = await client.send(new QueryCommand({
     TableName: process.env.PRODUCTS_TABLE,
     IndexName: 'pool-index',

@@ -1,5 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
@@ -49,12 +50,60 @@ const getCurrent = async (reviewerId) => {
     KeyConditionExpression: 'reviewerId = :r',
     ExpressionAttributeValues: { ':r': reviewerId },
     ScanIndexForward: false,
-    Limit: 20,
+    Limit: 50,
   }));
   return {
     current: Items.find(a => a.state === 'assigned') ?? null,
     history: Items.filter(a => a.state !== 'assigned'),
+    all: Items,
   };
+};
+
+const maskName = (name = '') => name.split(' ')
+  .map(p => p.length <= 2 ? p : p[0] + '•'.repeat(Math.min(p.length - 2, 4)) + p[p.length - 1]).join(' ');
+
+/* Everything the current member may review right now: the open pool minus
+   their own listings, anything they've already engaged with, and (when the
+   owner asked for it) products outside their categories. */
+const buildPool = async (userId, myCategories = []) => {
+  const { Items: queued = [] } = await client.send(new QueryCommand({
+    TableName: process.env.PRODUCTS_TABLE,
+    IndexName: 'pool-index',
+    KeyConditionExpression: 'poolStatus = :q',
+    ExpressionAttributeValues: { ':q': 'queued' },
+    ScanIndexForward: true, // oldest listings first
+    Limit: 60,
+  }));
+  const eligible = queued.filter(p =>
+    p.userId !== userId &&
+    (p.status ?? 'active') === 'active' &&
+    !(p.reviewerIds ?? []).includes(userId) &&
+    (((p.matching ?? 'category') !== 'category') || !p.category || (myCategories ?? []).includes(p.category))
+  );
+  // masked owner identity — one lookup per distinct owner
+  const owners = {};
+  for (const ownerId of [...new Set(eligible.map(p => p.userId))]) {
+    const { Item } = await client.send(new GetCommand({
+      TableName: process.env.USERS_TABLE, Key: { userId: ownerId },
+    })).catch(() => ({ Item: null }));
+    owners[ownerId] = Item;
+  }
+  return eligible.map(p => {
+    const o = owners[p.userId];
+    return {
+      productId: p.productId,
+      ownerId: p.userId,
+      name: p.name,
+      platform: p.platform,
+      category: p.category,
+      url: p.url,
+      description: p.description,
+      // owner name only if they opted to show it; trust score is public
+      ownerName: o?.privacy?.showName ? o.name : 'a fellow developer',
+      ownerScore: o?.trustScore ?? null,
+      enqueuedAt: p.enqueuedAt,
+    };
+  });
 };
 
 export const handler = async (event) => {
@@ -63,26 +112,12 @@ export const handler = async (event) => {
   const path = event.path ?? '';
 
   if (event.httpMethod === 'GET') {
-    const { current, history } = await getCurrent(userId);
-    let product = null;
-    if (current) {
-      const { Item } = await client.send(new GetCommand({
-        TableName: process.env.PRODUCTS_TABLE,
-        Key: { userId: current.ownerId, productId: current.productId },
-      }));
-      // owner identity follows the owner's own privacy choice: name shown only
-      // if they've turned on showName, else a neutral label. Trust score is
-      // public (it's on the leaderboard), so always include it.
-      const { Item: owner } = await client.send(new GetCommand({
-        TableName: process.env.USERS_TABLE, Key: { userId: current.ownerId },
-      })).catch(() => ({ Item: null }));
-      product = Item ? {
-        name: Item.name, url: Item.url, platform: Item.platform,
-        category: Item.category, description: Item.description,
-        ownerName: owner?.privacy?.showName ? owner.name : 'a fellow developer',
-        ownerScore: owner?.trustScore ?? null,
-      } : null;
-    }
+    const { history } = await getCurrent(userId);
+    // the reviewer's own categories drive category-restricted matches
+    const { Item: meUser } = await client.send(new GetCommand({
+      TableName: process.env.USERS_TABLE, Key: { userId },
+    })).catch(() => ({ Item: null }));
+    const pool = await buildPool(userId, meUser?.categories ?? []);
 
     // enrich history with the real product name (assignments only store ids)
     const enriched = [];
@@ -93,45 +128,65 @@ export const handler = async (event) => {
       })).catch(() => ({ Item: null }));
       enriched.push({ ...h, productName: p?.name ?? 'A product' });
     }
-    return respond(200, { current, product, history: enriched });
+    return respond(200, { pool, history: enriched });
   }
 
   if (event.httpMethod === 'POST' && path.endsWith('/submit')) {
     const body = JSON.parse(event.body ?? '{}');
-    const { current } = await getCurrent(userId);
-    if (!current) return respond(404, { message: 'No active assignment' });
+    const productId = String(body.productId ?? '').trim();
+    const ownerId = String(body.ownerId ?? '').trim();
+    if (!productId || !ownerId) return respond(400, { message: 'Pick a product to review first.' });
+    if (ownerId === userId) return respond(400, { message: "You can't review your own product." });
+
+    const { Item: product } = await client.send(new GetCommand({
+      TableName: process.env.PRODUCTS_TABLE, Key: { userId: ownerId, productId },
+    }));
+    if (!product || (product.status ?? 'active') !== 'active') return respond(404, { message: 'That product is no longer available.' });
+    if ((product.reviewerIds ?? []).includes(userId)) return respond(409, { message: "You've already reviewed this one.", code: 'ALREADY_REVIEWED' });
 
     const link = String(body.link ?? '').trim();
-    const pattern = REVIEW_PATTERNS[current.platform];
+    const pattern = REVIEW_PATTERNS[product.platform];
     if (!pattern || !pattern.test(link)) {
-      return respond(400, { message: `Link doesn't match a ${current.platform} URL`, code: 'INVALID_REVIEW_LINK' });
+      return respond(400, { message: `Link doesn't match a ${product.platform} URL`, code: 'INVALID_REVIEW_LINK' });
     }
 
-    await client.send(new UpdateCommand({
+    const now = new Date().toISOString();
+    const assignmentId = randomUUID();
+    // one atomic claim: reviewer joins the product's reviewerIds only if not
+    // already there — blocks a double submit racing two tabs.
+    try {
+      await client.send(new UpdateCommand({
+        TableName: process.env.PRODUCTS_TABLE,
+        Key: { userId: ownerId, productId },
+        UpdateExpression: 'SET reviewerIds = list_append(if_not_exists(reviewerIds, :empty), :rid)',
+        ConditionExpression: 'attribute_not_exists(reviewerIds) OR NOT contains(reviewerIds, :ridStr)',
+        ExpressionAttributeValues: { ':empty': [], ':rid': [userId], ':ridStr': userId },
+      }));
+    } catch (e) {
+      return respond(409, { message: "You've already reviewed this one.", code: 'ALREADY_REVIEWED' });
+    }
+
+    await client.send(new PutCommand({
       TableName: process.env.ASSIGNMENTS_TABLE,
-      Key: { assignmentId: current.assignmentId },
-      UpdateExpression: 'SET #s = :submitted, submittedAt = :now, reviewLink = :link, reviewText = :text',
-      ConditionExpression: '#s = :assigned',
-      ExpressionAttributeNames: { '#s': 'state' },
-      ExpressionAttributeValues: {
-        ':submitted': 'submitted', ':assigned': 'assigned',
-        ':now': new Date().toISOString(), ':link': link,
-        ':text': String(body.text ?? '').slice(0, 4000),
+      Item: {
+        assignmentId, reviewerId: userId, ownerId, productId,
+        platform: product.platform, category: product.category,
+        state: 'submitted', assignedAt: now, submittedAt: now,
+        reviewLink: link, reviewText: String(body.text ?? '').slice(0, 4000),
       },
     }));
 
-    // given counts submissions; verified counts land on owner verification.
-    // Clearing activeAssignmentId frees the reviewer for the next match.
+    // given counts submissions; verified counts land on owner verification
     await client.send(new UpdateCommand({
       TableName: process.env.USERS_TABLE,
       Key: { userId },
-      UpdateExpression: 'ADD given :one REMOVE activeAssignmentId',
+      UpdateExpression: 'ADD given :one',
       ExpressionAttributeValues: { ':one': 1 },
     }));
 
     // tell the product owner a review is waiting for their verification
     const { Item: owner } = await client.send(new GetCommand({
-      TableName: process.env.USERS_TABLE, Key: { userId: current.ownerId },
+      TableName: process.env.USERS_TABLE, Key: { userId: ownerId },
     })).catch(() => ({ Item: null }));
     await notify(owner?.email, 'Your product received a review',
       `A reviewer just left a review on one of your products.
@@ -139,35 +194,7 @@ export const handler = async (event) => {
 Read it on the platform, then verify or flag it here:
 ${process.env.SITE_URL}/app/product`);
 
-    return respond(200, { ok: true, state: 'submitted' });
-  }
-
-  if (event.httpMethod === 'POST' && path.endsWith('/skip')) {
-    const { current } = await getCurrent(userId);
-    if (!current) return respond(404, { message: 'No active assignment' });
-
-    await client.send(new UpdateCommand({
-      TableName: process.env.ASSIGNMENTS_TABLE,
-      Key: { assignmentId: current.assignmentId },
-      UpdateExpression: 'SET #s = :skipped',
-      ConditionExpression: '#s = :assigned',
-      ExpressionAttributeNames: { '#s': 'state' },
-      ExpressionAttributeValues: { ':skipped': 'skipped', ':assigned': 'assigned' },
-    }));
-    // put the product back near the front of the pool (keeps its priority)
-    await client.send(new UpdateCommand({
-      TableName: process.env.PRODUCTS_TABLE,
-      Key: { userId: current.ownerId, productId: current.productId },
-      UpdateExpression: 'SET poolStatus = :q, enqueuedAt = :at',
-      ExpressionAttributeValues: { ':q': 'queued', ':at': current.assignedAt },
-    }));
-    await client.send(new UpdateCommand({
-      TableName: process.env.USERS_TABLE,
-      Key: { userId },
-      UpdateExpression: 'REMOVE activeAssignmentId',
-    }));
-
-    return respond(200, { ok: true, state: 'skipped' });
+    return respond(200, { ok: true, state: 'submitted', assignmentId });
   }
 
   return respond(405, { message: 'Method not allowed' });

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { ACCOUNTS, MY_PRODUCTS, ASSIGNED, INCOMING_REVIEWS, REVIEW_HISTORY, LEADERBOARD_FULL, genProducts } from "./data/mock";
+import { ACCOUNTS, MY_PRODUCTS, REVIEW_POOL, INCOMING_REVIEWS, REVIEW_HISTORY, LEADERBOARD_FULL, genProducts } from "./data/mock";
 import * as api from "./data/api";
 import { isAuthed, login, logout as authLogout } from "./data/auth";
 
@@ -18,7 +18,7 @@ export function AppStateProvider({ children }) {
   /* ---------- mock-mode interaction state ---------- */
   const [mockVerified, setMockVerified] = useState([]);
   const [mockFlagged, setMockFlagged] = useState([]);
-  const [mockSubmitted, setMockSubmitted] = useState(false);
+  const [mockReviewed, setMockReviewed] = useState([]); // productIds reviewed this session
   const [privacy, setPrivacyState] = useState({ showName: false, showEmail: false, showPhoto: false });
   const [plan, setPlanState] = useState(() => localStorage.getItem("peerreview-plan") || "free");
   const [account, setAccountState] = useState(() => {
@@ -29,7 +29,7 @@ export function AppStateProvider({ children }) {
   /* ---------- real-mode data ---------- */
   const [me, setMe] = useState(null);
   const [realProducts, setRealProducts] = useState([]);
-  const [realAssigned, setRealAssigned] = useState(null);
+  const [realPool, setRealPool] = useState([]);
   const [realSubmitted, setRealSubmitted] = useState(false);
   const [realIncoming, setRealIncoming] = useState([]);
   const [realHistory, setRealHistory] = useState([]);
@@ -45,7 +45,6 @@ export function AppStateProvider({ children }) {
     savedTimer.current = setTimeout(() => setSaveStatus(null), 2200);
   };
 
-  const SAMPLE_LB = LEADERBOARD_FULL.map(r => ({ ...r, sample: true }));
 
   // Version counter guarding every fetch-then-set (web-app-craft: a slow
   // response landing after a local edit must never wipe the edit).
@@ -58,9 +57,10 @@ export function AppStateProvider({ children }) {
   // the only one that shows the spinner.
   const loadData = async (silent = false) => {
     if (USE_MOCK) return;
+    // Live never shows sample rows — real leaderboard or an honest empty state.
     api.getLeaderboard()
-      .then(lb => setLeaderboardRows(lb.length ? lb : SAMPLE_LB))
-      .catch(() => setLeaderboardRows(SAMPLE_LB));
+      .then(lb => setLeaderboardRows(lb))
+      .catch(() => setLeaderboardRows([]));
     if (!isAuthed()) { setLoading(false); return; }
     if (!silent) { setLoading(true); setLoadError(null); }
     const version = meVersion.current;
@@ -71,7 +71,7 @@ export function AppStateProvider({ children }) {
       // a local edit happened while this was in flight — its response wins
       if (meVersion.current === version) setMe(meData);
       setRealProducts(products);
-      setRealAssigned(assignment.assigned);
+      setRealPool(assignment.pool);
       setRealSubmitted(assignment.submitted);
       setRealHistory(assignment.history);
       setRealIncoming(incoming);
@@ -105,8 +105,11 @@ export function AppStateProvider({ children }) {
         state: mockVerified.includes(r.id) ? "verified" : mockFlagged.includes(r.id) ? "flagged" : "pending",
       }))
     : realIncoming;
-  const assigned = USE_MOCK ? (mockSubmitted ? null : ASSIGNED) : realAssigned;
-  const reviewSubmitted = USE_MOCK ? mockSubmitted : (realSubmitted && !realAssigned);
+  // the open pool of products this member can review right now
+  const reviewablePool = USE_MOCK
+    ? REVIEW_POOL.filter(p => !mockReviewed.includes(p.productId))
+    : realPool;
+  const reviewSubmitted = USE_MOCK ? mockReviewed.length > 0 : realSubmitted;
   const history = USE_MOCK ? REVIEW_HISTORY : realHistory;
 
   const unifiedAccount = USE_MOCK ? account : (me ? {
@@ -130,25 +133,31 @@ export function AppStateProvider({ children }) {
       setTimeout(() => { setMockVerified(v => [...v, id]); setStampAnimating(null); }, 500);
       return;
     }
-    try { await api.verifyReview(id, rating); await loadData(true); }
+    // Optimistic: flip the card to verified immediately. The incoming list is
+    // read from an eventually-consistent GSI, so a refetch right after the
+    // write can still report 'submitted' — the local flip is what makes the
+    // button respond without a reload. loadData reconciles in the background.
+    setRealIncoming(list => list.map(r => r.id === id ? { ...r, state: "verified" } : r));
+    try { await api.verifyReview(id, rating); }
+    catch (e) { setSaveError(e.message); await loadData(true); } // revert on failure
     finally { setStampAnimating(null); }
+    loadData(true);
   };
 
   const flagReview = async (id, reason) => {
     if (USE_MOCK) { setMockFlagged(f => [...f, id]); return; }
-    await api.flagReview(id, reason);
-    await loadData(true);
+    setRealIncoming(list => list.map(r => r.id === id ? { ...r, state: "flagged" } : r));
+    try { await api.flagReview(id, reason); }
+    catch (e) { setSaveError(e.message); await loadData(true); }
+    loadData(true);
   };
 
-  const submitReview = async (link, text) => {
-    if (USE_MOCK) { setMockSubmitted(true); return; }
-    await api.submitReview(link, text);
-    await loadData(true);
-  };
-
-  const skipAssignment = async () => {
-    if (USE_MOCK) return;
-    await api.skipAssignment();
+  const submitReview = async (productId, ownerId, link, text) => {
+    if (USE_MOCK) { setMockReviewed(r => [...r, productId]); return; }
+    // Optimistic: drop the reviewed product from the pool right away so it
+    // can't be submitted twice while the write is in flight.
+    setRealPool(pool => pool.filter(p => p.productId !== productId));
+    await api.submitReview(productId, ownerId, link, text);
     await loadData(true);
   };
 
@@ -240,7 +249,7 @@ export function AppStateProvider({ children }) {
       // data
       account: unifiedAccount, me, stats,
       badges: USE_MOCK ? ["seal", "box", "quill", "stack", "bolt", "shield"] : (me?.badges ?? []),
-      products, assigned, incoming, history, reviewSubmitted,
+      products, reviewablePool, incoming, history, reviewSubmitted,
       leaderboard: leaderboardRows,
       privacy: USE_MOCK ? privacy : (me?.privacy ?? privacy),
       plan: USE_MOCK ? plan : (me?.plan ?? "free"),
@@ -250,7 +259,7 @@ export function AppStateProvider({ children }) {
       flaggedIds: incoming.filter(r => r.state === "flagged").map(r => r.id),
       stampAnimating,
       // actions
-      verifyReview, flagReview, submitReview, skipAssignment, saveProduct,
+      verifyReview, flagReview, submitReview, saveProduct,
       updateProfile, setPrivacy, setMatching, switchAccount, signOut, setPlan,
       // ui state
       reviewLinkPasted, setReviewLinkPasted,

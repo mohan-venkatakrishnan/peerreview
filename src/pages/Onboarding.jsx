@@ -141,7 +141,7 @@ export default function Onboarding() {
             </div>
             <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.text, marginBottom: 10 }}>{editing ? "Product updated" : "You're in the pool"}</h2>
             <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, marginBottom: 28, maxWidth: 360, margin: "0 auto 28px" }}>
-              <strong style={{ color: c.text }}>{productForm.name || "Your product"}</strong> {editing ? "has been updated." : "is listed. You'll be assigned your first product to review shortly. Every review you give earns one back."}
+              <strong style={{ color: c.text }}>{productForm.name || "Your product"}</strong> {editing ? "has been updated." : "is listed and now in the review pool. Head to your review queue to start reviewing other products — every review you give earns one back."}
             </p>
             <GoldButton size="lg" onClick={() => navigate(editing ? "/app/products" : "/app")}>{editing ? "Back to my products →" : "Go to dashboard →"}</GoldButton>
           </Card>

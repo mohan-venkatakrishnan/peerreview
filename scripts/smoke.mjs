@@ -39,6 +39,14 @@ check("public /leaderboard -> 200", lb.status === 200, `got ${lb.status}`);
 const wh = await fetch(API + "/webhook/payment", { method: "POST", body: "{}" });
 check("unsigned webhook rejected", wh.status === 401 || wh.status === 503, `got ${wh.status}`);
 
+/* 5b. NO mock/sample data on the live site — the public leaderboard must never
+   contain the sample names shipped in mock.js (guards against a mock-mode build
+   or a sample fallback leaking onto production). */
+const MOCK_NAMES = ["FocusFlow", "InboxIQ", "SnapPalette", "TabStash", "QuickNote", "CommentIQ demo", "Priya K.", "Tom W.", "Aisha M.", "Karan V.", "Emma L."];
+const lbBody = await (await fetch(API + "/leaderboard")).text();
+const leaked = MOCK_NAMES.filter(n => lbBody.includes(n));
+check("live leaderboard has no sample data", leaked.length === 0, leaked.length ? `leaked: ${leaked.join(", ")}` : "");
+
 /* 6. Browser sentinels: 390px zero horizontal overflow, app renders */
 try {
   const { default: puppeteer } = await import("puppeteer-core");

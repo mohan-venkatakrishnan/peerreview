@@ -83,7 +83,7 @@ function AccountMenu({ onClose, onSwitchGoogle }) {
 /* Layout route: persistent sidebar + Outlet. Only the main pane changes on nav. */
 export default function AppShell() {
   const { c, isDark, setIsDark } = useTheme();
-  const { incoming, assigned, plan, account, loading, loadError, loadData, saveError, clearSaveError, signOut, setSpotlightOpen, setSpotlightQuery } = useAppState();
+  const { incoming, reviewablePool, plan, account, loading, loadError, loadData, saveError, clearSaveError, signOut, setSpotlightOpen, setSpotlightQuery } = useAppState();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const active = activeFromPath(pathname);
@@ -92,7 +92,7 @@ export default function AppShell() {
 
   const awaiting = incoming.filter(r => r.state === "pending" || r.state === "submitted").length;
   const badges = {
-    "review-queue": assigned ? 1 : null,
+    "review-queue": reviewablePool.length || null,
     "my-reviews": awaiting || null,
   };
 

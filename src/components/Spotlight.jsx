@@ -20,7 +20,7 @@ export default function Spotlight() {
     { type: "Page", label: "Rules & Badges", nav: "rules", action: () => navigate("/app/rules") },
     { type: "Page", label: "Settings", nav: "settings", action: () => navigate("/app/settings") },
     { type: "Product", label: "CommentIQ — your product", icon: "C", action: () => navigate("/app/product") },
-    { type: "Product", label: "FocusFlow — assigned to you", icon: "F", action: () => navigate("/app/review") },
+    { type: "Action", label: "Review products in the pool", nav: "review", action: () => navigate("/app/review") },
     { type: "Reviewer", label: "Karan V. — reviewed CommentIQ", icon: "K", action: () => navigate("/app/product") },
     { type: "Reviewer", label: "Emma L. — reviewed CommentIQ", icon: "E", action: () => navigate("/app/product") },
     { type: "Action", label: "Add a new product", nav: "add", action: () => navigate("/app/products") },

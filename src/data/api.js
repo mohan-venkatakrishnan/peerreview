@@ -70,23 +70,21 @@ export const saveProduct = (form) => apiFetch("/products", {
 });
 export const deleteProduct = (id) => apiFetch(`/products/${id}`, { method: "DELETE" });
 
-/* ---- assignment (mock ASSIGNED shape + submission state) ---- */
+/* ---- assignment: the open pool of products this member can review ---- */
 export const getAssignment = async () => {
-  const { current, product, history } = await apiFetch("/assignment");
+  const { pool = [], history = [] } = await apiFetch("/assignment");
   return {
-    assigned: current && product ? {
-      assignmentId: current.assignmentId,
-      name: product.name,
-      developer: product.ownerName ?? "a fellow developer", // per the owner privacy choice
-      devScore: product.ownerScore ?? null,
-      category: product.category,
-      platform: product.platform,
-      description: product.description,
-      url: product.url,
-      assignedAgo: timeAgo(current.assignedAt),
-      deadline: daysLeft(current.dueAt),
-      state: current.state,
-    } : null,
+    pool: pool.map(p => ({
+      productId: p.productId,
+      ownerId: p.ownerId,
+      name: p.name,
+      developer: p.ownerName ?? "a fellow developer", // per the owner privacy choice
+      devScore: p.ownerScore ?? null,
+      category: p.category,
+      platform: p.platform,
+      description: p.description,
+      url: p.url,
+    })),
     submitted: !!history.find(h => h.state === "submitted"),
     history: history.map((h, i) => ({
       id: h.assignmentId ?? i,
@@ -98,8 +96,8 @@ export const getAssignment = async () => {
     })),
   };
 };
-export const submitReview = (link, text) => apiFetch("/assignment/submit", { method: "POST", body: JSON.stringify({ link, text }) });
-export const skipAssignment = () => apiFetch("/assignment/skip", { method: "POST" });
+export const submitReview = (productId, ownerId, link, text) =>
+  apiFetch("/assignment/submit", { method: "POST", body: JSON.stringify({ productId, ownerId, link, text }) });
 
 /* ---- incoming (mock INCOMING_REVIEWS shape) ---- */
 export const getIncoming = async () => (await apiFetch("/incoming")).map(r => ({

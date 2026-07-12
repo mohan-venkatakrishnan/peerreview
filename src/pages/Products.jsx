@@ -53,7 +53,7 @@ export default function Products() {
                   <div style={{ fontSize: 10, color: c.textMuted }}>{l}</div>
                 </div>
               ))}
-              <span data-tip={p.pending ? "In the matching pool — waiting to be assigned to a reviewer." : "Not currently queued for a new review."}
+              <span data-tip={p.pending ? "In the review pool — open for members to review." : "Not currently in the review pool."}
                 style={{ fontSize: 10, fontWeight: 600, whiteSpace: "nowrap", color: p.pending ? c.pending : c.textMuted, background: (p.pending ? c.pending : c.textMuted) + "16", border: `1px solid ${(p.pending ? c.pending : c.textMuted)}30`, borderRadius: 8, padding: "4px 10px", cursor: "help" }}>
                 {p.pending ? "◷ In pool" : "Not queued"}
               </span>
