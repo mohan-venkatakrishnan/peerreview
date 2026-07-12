@@ -28,6 +28,27 @@ const PLATFORMS = [
 ];
 const PLAN_LIMITS = { free: 25, pro: 25, studio: Infinity };
 
+/* Badges we can award honestly from stored stats (no time/streak/word-count
+   guesses). Purely additive — never removes an earned badge. Kept in sync with
+   lambda/incoming and the backfill. `seal` = founding launch cohort. */
+export function earnedBadges(u, productCount = 0) {
+  const b = new Set(u.badges ?? []);
+  const vg = u.verifiedGiven ?? 0, fg = u.flaggedGiven ?? 0, given = u.given ?? 0;
+  const rc = u.ratingCount ?? 0, avg = rc > 0 ? (u.ratingSum ?? 0) / rc : 0;
+  b.add('seal');
+  if (productCount >= 1) b.add('box');       // Shipped
+  if (productCount >= 5) b.add('boxes');      // Portfolio
+  if (productCount >= 10) b.add('factory');   // Product Studio
+  if (vg >= 1) b.add('quill');                // First Ink
+  if (vg >= 10) b.add('stack');               // Ten Deep
+  if (vg >= 50) b.add('medal');               // Fifty Club
+  if (vg >= 100) b.add('trophy');             // Century
+  if (given >= 10 && vg / given >= 0.95) b.add('shield'); // Trusted
+  if (vg >= 25 && fg === 0) b.add('diamond');  // Flawless
+  if (rc >= 25 && avg >= 4.8) b.add('laurel'); // Laureate
+  return [...b];
+}
+
 export const handler = async (event) => {
   const userId = event.requestContext?.authorizer?.claims?.sub;
   if (!userId) return respond(401, { message: 'Unauthorized' });
@@ -86,13 +107,15 @@ export const handler = async (event) => {
     };
     await client.send(new PutCommand({ TableName: process.env.PRODUCTS_TABLE, Item: product }));
 
-    // keep the matcher's category eligibility current
+    // keep the matcher's category eligibility current + award listing badges
     const categories = [...new Set([...(user.categories ?? []), product.category].filter(Boolean))];
+    const productCount = active.length + (editing ? 0 : 1);
+    const badges = earnedBadges(user, productCount);
     await client.send(new UpdateCommand({
       TableName: process.env.USERS_TABLE,
       Key: { userId },
-      UpdateExpression: 'SET categories = :c',
-      ExpressionAttributeValues: { ':c': categories },
+      UpdateExpression: 'SET categories = :c, badges = :b',
+      ExpressionAttributeValues: { ':c': categories, ':b': badges },
     }));
 
     // a fresh listing enters the pool — run the matcher now so the owner

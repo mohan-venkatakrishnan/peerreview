@@ -48,6 +48,17 @@ function GlobalStyles() {
     .fade-up-d3 { animation: fadeUp 0.55s ease 0.24s forwards; opacity: 0; }
     .stamp-in { animation: stampIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
     .float { animation: float 4s ease-in-out infinite; }
+    @keyframes badgeIn { 0% { opacity: 0; transform: translateX(48px) scale(0.6) rotate(-12deg); } 60% { opacity: 1; transform: translateX(-6px) scale(1.08) rotate(3deg); } 100% { opacity: 1; transform: translateX(0) scale(1) rotate(0deg); } }
+    @keyframes badgeOut { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(48px) scale(0.85); } }
+    @keyframes badgeRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes badgePulse { 0%, 100% { box-shadow: 0 0 28px rgba(201,168,76,0.22); } 50% { box-shadow: 0 0 58px rgba(201,168,76,0.5); } }
+    .badge-pop { animation: badgeIn 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .badge-pop.leaving { animation: badgeOut 0.4s ease forwards; }
+    .badge-ring { animation: badgeRing 9s linear infinite; }
+    .badge-pulse { animation: badgePulse 2.4s ease-in-out infinite; }
+    .fx-lite .badge-pop { animation: none; opacity: 1; }
+    .fx-lite .badge-ring, .fx-lite .badge-pulse { animation: none; }
+    @media (prefers-reduced-motion: reduce) { .badge-pop, .badge-ring, .badge-pulse { animation: none !important; opacity: 1; } }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
     input, select, textarea { font-family: 'Inter', sans-serif; }

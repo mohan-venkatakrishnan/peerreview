@@ -26,6 +26,26 @@ const lambda = new LambdaClient({});
    score (capped 15%); moving items back restores it. Kept identical to
    lambda/assignment so verify/flag and skip agree. */
 const skipSize = (v) => (v ? (v.size ?? (Array.isArray(v) ? v.length : 0)) : 0);
+
+/* Additive badge award from stored stats — kept identical to lambda/products. */
+function earnedBadges(u, productCount = 0) {
+  const b = new Set(u.badges ?? []);
+  const vg = u.verifiedGiven ?? 0, fg = u.flaggedGiven ?? 0, given = u.given ?? 0;
+  const rc = u.ratingCount ?? 0, avg = rc > 0 ? (u.ratingSum ?? 0) / rc : 0;
+  b.add('seal');
+  if (productCount >= 1) b.add('box');
+  if (productCount >= 5) b.add('boxes');
+  if (productCount >= 10) b.add('factory');
+  if (vg >= 1) b.add('quill');
+  if (vg >= 10) b.add('stack');
+  if (vg >= 50) b.add('medal');
+  if (vg >= 100) b.add('trophy');
+  if (given >= 10 && vg / given >= 0.95) b.add('shield');
+  if (vg >= 25 && fg === 0) b.add('diamond');
+  if (rc >= 25 && avg >= 4.8) b.add('laurel');
+  return [...b];
+}
+
 const computeTrust = (u) => {
   const V = ((u.verifiedGiven ?? 0) + 2) / ((u.verifiedGiven ?? 0) + (u.flaggedGiven ?? 0) + 4);
   const R = (u.ratingCount ?? 0) > 0 ? (u.ratingSum / u.ratingCount) / 5 : 0.70;
@@ -108,11 +128,13 @@ export const handler = async (event) => {
       ExpressionAttributeValues: { ':one': 1, ':r': rating },
       ReturnValues: 'ALL_NEW',
     }));
+    // recompute trust + award any newly-earned review badges (quill, stack, …)
+    const rBadges = earnedBadges(reviewer, 0);
     await client.send(new UpdateCommand({
       TableName: process.env.USERS_TABLE,
       Key: { userId: a.reviewerId },
-      UpdateExpression: 'SET trustScore = :t',
-      ExpressionAttributeValues: { ':t': computeTrust(reviewer) },
+      UpdateExpression: 'SET trustScore = :t, badges = :b',
+      ExpressionAttributeValues: { ':t': computeTrust(reviewer), ':b': rBadges },
     }));
 
     // owner: received count; product: received count

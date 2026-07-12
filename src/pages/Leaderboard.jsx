@@ -17,7 +17,8 @@ export function LeaderTable({ showFilters = true, limit }) {
   const [lbSort, setLbSort] = useState("trust");
   const [lbSearch, setLbSearch] = useState("");
 
-  const cats = ["All", ...new Set(leaderboard.map(l => l.category))];
+  // members with no product yet have no category — don't render an empty chip
+  const cats = ["All", ...new Set(leaderboard.map(l => l.category).filter(Boolean))];
   let rows = leaderboard
     .filter(l => lbCategory === "All" || l.category === lbCategory)
     .filter(l => !lbSearch || l.name.toLowerCase().includes(lbSearch.toLowerCase()));
