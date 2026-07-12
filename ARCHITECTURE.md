@@ -65,24 +65,39 @@ GSI `owner-index` (ownerId, state) — "incoming reviews to verify".
 No credits ledger table: `creditBalance` is an atomic ADD with the assignment record
 as the audit trail. Revisit only if disputes demand a ledger.
 
-## 4. Matching engine (one-for-one queue)
+## 4. Matching engine — OPEN POOL (updated 2026-07-12)
 
-1. Owner **verifies** a review → in one transaction: assignment `submitted→verified`,
-   reviewer `creditBalance +1`, reviewer trust recomputed, reviewer's product
-   enqueued (`enqueuedAt=now` in pool-index) if not already queued.
-2. Matcher (on-verify + hourly): for each product in pool (oldest first) pick a
-   reviewer: has `creditBalance ≥ 0` is wrong — **reviewers are picked from users
-   who owe nothing; products are queued by users who are owed**. Concretely:
-   product P (owner O, category C) needs a reviewer R where
-   `R ≠ O`, R has no active assignment, R hasn't reviewed P before,
-   no direct reciprocity within 30 days (A reviews B ⇏ B reviews A immediately —
-   prevents quid-pro-quo pairs), and (P.matching = open OR R has a product in C).
-3. Assignment created with conditional writes (no double-assign), `dueAt = now+7d`.
-4. Expiry: TTL + sweep sets `expired`, re-enqueues the product at queue head,
-   increments reviewer's expiry count (3 in 90 days → matching paused).
-5. Skip: allowed 1 per active assignment chain; re-enqueues product, no penalty.
-6. Multi-product owners (Pro/Studio): credits assign reviews round-robin across
-   their active products, oldest-served first.
+> **Superseded:** the original strict one-for-one push-matcher below is retired.
+> It starved on cold-start / two-person pools and left product-less members with
+> nothing to review. PeerReview now runs an **open pool**: members browse
+> everything they can review and pick for themselves. The subsections below marked
+> *(legacy)* describe the old design and are kept for context only.
+
+**Open-pool model (current):**
+1. A listing is queued (`poolStatus=queued`) when created and **stays queued while
+   active** — re-enqueued after every verify/flag/skip/expire. Products never leave
+   the pool except when the owner removes them.
+2. `lambda/assignment` `buildPool(userId)` returns the member's queue: all queued
+   products where `P.owner ≠ me`, `me ∉ P.reviewerIds`, and
+   (`P.matching = open` OR the member's categories include `P.category`).
+3. `POST /assignment/submit {productId, ownerId, link, text}` creates a `submitted`
+   assignment directly and atomically adds the member to `P.reviewerIds`
+   (`ConditionExpression: NOT contains(reviewerIds, me)` blocks double-submit).
+   `reviewerIds` therefore lists **actual reviewers only** — a skip never adds to it,
+   so a skipped product stays available to that member.
+4. Owner verify/flag unchanged (§ trust + received counts). Reviewer `given +1` on
+   submit; `verifiedGiven`/trust on verify.
+5. `lambda/matcher` auto-assign is early-returned; the EventBridge sweep is kept
+   only to expire any legacy `assigned` rows. `creditBalance` still increments on
+   verify but no longer gates visibility (dormant; reconcile if a credit UI returns).
+
+**Legacy one-for-one push-matcher (retired):**
+1. *(legacy)* Owner verify enqueued the reviewer's own product (`creditBalance +1`).
+2. *(legacy)* Matcher (on-verify + sweep) picked, per queued product, a reviewer R
+   where `R ≠ O`, R had no active assignment, R hadn't reviewed P, no 30-day
+   reciprocity, and (P.matching = open OR R has a product in C).
+3. *(legacy)* Assignment created with conditional writes, `dueAt = now+7d`; expiry
+   TTL/sweep; skip allowed once per chain; multi-product round-robin.
 
 ## 5. Trust Score formula (locked once approved)
 

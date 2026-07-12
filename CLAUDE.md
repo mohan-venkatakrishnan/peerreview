@@ -12,14 +12,16 @@ PeerReview (peerreview.tapdot.org) is a **review exchange for indie developers**
 
 The core loop:
 
-1. A developer lists their product (must have a live listing on a supported platform).
-2. They are assigned another developer's product to review.
+1. A developer lists their product (must have a live listing on a supported platform). It joins the **open review pool**.
+2. Their review queue shows **every product they can review right now** — the whole open pool minus their own listings and anything they've already reviewed. They pick any one.
 3. They leave a **genuine review on the actual platform** (Chrome Web Store, Product Hunt, etc.) — not on PeerReview itself.
 4. They paste the **direct link to their review** (plus optional review text) back into PeerReview.
 5. The product owner reads the review on the platform and marks it **Verified** or **Flagged**.
-6. Every review given earns exactly one review credit → someone is assigned the giver's product. Strict one-for-one.
+6. Each member reviews a given product **at most once**; every product stays in the pool for the whole community. Give one genuine review to earn one back — no stockpiling, no shortcuts.
 
-**Review lifecycle:** `Submitted → Pending → Verified | Flagged`
+> **Model note (2026-07-12):** PeerReview runs an **open pool**, not strict one-for-one push-matching. Members browse everything they can review and pick for themselves; there is no per-assignment matcher push and no per-review "credit" gate on visibility. The change was made because a two-person / cold-start pool starved under strict one-for-one and product-less members had nothing to review. Backend: `lambda/assignment` `buildPool` builds the eligible pool; `lambda/matcher` auto-assign is retired (kept only to expire legacy rows). A product is hidden from a member only once they've **submitted** a review for it — skipping leaves it available.
+
+**Review lifecycle:** `Submitted → Pending → Verified | Flagged` (a member may also **skip** a product — it stays in their pool, available, and is never forced back on them one-at-a-time)
 
 **Trust Score** (never call it "quality score") is the reputation metric: driven by verified reviews, give/get ratio, and review ratings from product owners.
 
