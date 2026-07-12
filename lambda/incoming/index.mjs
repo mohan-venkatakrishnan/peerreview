@@ -122,7 +122,7 @@ export const handler = async (event) => {
       UpdateExpression: 'ADD receivedCount :one',
       ExpressionAttributeValues: { ':one': 1 },
       ReturnValues: 'ALL_NEW',
-    }).catch(() => ({ Attributes: null })))) ?? {};
+    })).catch(() => ({ Attributes: null }))) ?? {};
     // Open pool: an active listing always goes back in the queue after a review,
     // so there's always something for the next member (even one with no product
     // of their own) to review. Each person is matched to it at most once — once
