@@ -32,6 +32,15 @@ export function AppStateProvider({ children }) {
   const [realPool, setRealPool] = useState([]);
   const [realSkipped, setRealSkipped] = useState([]);
   const [mockSkipped, setMockSkipped] = useState([]); // productIds parked (mock)
+
+  // Optimistic overlay (real mode). Every list read from an eventually-consistent
+  // GSI, so a refetch right after a write can still return the pre-write state
+  // and momentarily undo an optimistic change (the "card flashes back" bug). We
+  // keep server data raw in real*, layer these overlays on top when deriving the
+  // UI lists, and prune each overlay entry only once the server agrees — so the
+  // change is stable from click until confirmed, with no flicker.
+  const [opt, setOpt] = useState({ poolHide: {}, poolShow: {}, skipHide: {}, skipShow: {}, incoming: {} });
+  const omit = (obj, k) => { const { [k]: _drop, ...rest } = obj; return rest; };
   const [realSubmitted, setRealSubmitted] = useState(false);
   const [realIncoming, setRealIncoming] = useState([]);
   const [realHistory, setRealHistory] = useState([]);
@@ -78,6 +87,19 @@ export function AppStateProvider({ children }) {
       setRealSubmitted(assignment.submitted);
       setRealHistory(assignment.history);
       setRealIncoming(incoming);
+      // Drop overlay entries the server now confirms; keep the rest so a still-
+      // stale read can't flash the old state back.
+      const poolIds = new Set(assignment.pool.map(p => p.productId));
+      const skipIds = new Set((assignment.skipped ?? []).map(p => p.productId));
+      const incState = Object.fromEntries(incoming.map(r => [r.id, r.state]));
+      const prune = (o, keep) => Object.fromEntries(Object.entries(o).filter(([k, v]) => keep(k, v)));
+      setOpt(o => ({
+        poolHide: prune(o.poolHide, id => poolIds.has(id)),   // still hiding? only while server still lists it
+        poolShow: prune(o.poolShow, id => !poolIds.has(id)),  // still injecting? only until server lists it
+        skipHide: prune(o.skipHide, id => skipIds.has(id)),
+        skipShow: prune(o.skipShow, id => !skipIds.has(id)),
+        incoming: prune(o.incoming, (id, st) => incState[id] !== st), // override until server agrees
+      }));
       if (!silent) setLoadError(null);
     } catch (e) {
       if (!silent) setLoadError(e.message); // background failures keep stale data, no takeover
@@ -102,20 +124,22 @@ export function AppStateProvider({ children }) {
   // QA affordance (mock only): localStorage 'peerreview-qa-products' = N
   const qaCount = USE_MOCK ? Number(localStorage.getItem("peerreview-qa-products")) || 0 : 0;
   const products = USE_MOCK ? (qaCount ? genProducts(qaCount) : MY_PRODUCTS) : realProducts;
+  const dedupById = (arr) => { const seen = new Set(); return arr.filter(p => !seen.has(p.productId) && seen.add(p.productId)); };
   const incoming = USE_MOCK
     ? INCOMING_REVIEWS.map(r => ({
         ...r,
         state: mockVerified.includes(r.id) ? "verified" : mockFlagged.includes(r.id) ? "flagged" : "pending",
       }))
-    : realIncoming;
+    : realIncoming.map(r => (opt.incoming[r.id] ? { ...r, state: opt.incoming[r.id] } : r));
   // the open pool of products this member can review right now, split from the
-  // ones they've parked in "Not interested"
+  // ones they've parked in "Not interested" — overlay applied so optimistic
+  // moves stay put until the server confirms them
   const reviewablePool = USE_MOCK
     ? REVIEW_POOL.filter(p => !mockReviewed.includes(p.productId) && !mockSkipped.includes(p.productId))
-    : realPool;
+    : dedupById([...Object.values(opt.poolShow), ...realPool]).filter(p => !opt.poolHide[p.productId]);
   const skippedPool = USE_MOCK
     ? REVIEW_POOL.filter(p => mockSkipped.includes(p.productId) && !mockReviewed.includes(p.productId))
-    : realSkipped;
+    : dedupById([...Object.values(opt.skipShow), ...realSkipped]).filter(p => !opt.skipHide[p.productId]);
   const reviewSubmitted = USE_MOCK ? mockReviewed.length > 0 : realSubmitted;
   const history = USE_MOCK ? REVIEW_HISTORY : realHistory;
 
@@ -140,48 +164,47 @@ export function AppStateProvider({ children }) {
       setTimeout(() => { setMockVerified(v => [...v, id]); setStampAnimating(null); }, 500);
       return;
     }
-    // Optimistic: flip the card to verified immediately. The incoming list is
-    // read from an eventually-consistent GSI, so a refetch right after the
-    // write can still report 'submitted' — the local flip is what makes the
-    // button respond without a reload. loadData reconciles in the background.
-    setRealIncoming(list => list.map(r => r.id === id ? { ...r, state: "verified" } : r));
+    // Optimistic overlay: force this card to 'verified' until the server (read
+    // from an eventually-consistent GSI) reports the same, so it neither needs
+    // a reload nor flashes back to 'submitted'.
+    setOpt(o => ({ ...o, incoming: { ...o.incoming, [id]: "verified" } }));
     try { await api.verifyReview(id, rating); }
-    catch (e) { setSaveError(e.message); await loadData(true); } // revert on failure
+    catch (e) { setSaveError(e.message); setOpt(o => ({ ...o, incoming: omit(o.incoming, id) })); } // revert
     finally { setStampAnimating(null); }
     loadData(true);
   };
 
   const flagReview = async (id, reason) => {
     if (USE_MOCK) { setMockFlagged(f => [...f, id]); return; }
-    setRealIncoming(list => list.map(r => r.id === id ? { ...r, state: "flagged" } : r));
+    setOpt(o => ({ ...o, incoming: { ...o.incoming, [id]: "flagged" } }));
     try { await api.flagReview(id, reason); }
-    catch (e) { setSaveError(e.message); await loadData(true); }
+    catch (e) { setSaveError(e.message); setOpt(o => ({ ...o, incoming: omit(o.incoming, id) })); }
     loadData(true);
   };
 
   const submitReview = async (productId, ownerId, link, text) => {
     if (USE_MOCK) { setMockReviewed(r => [...r, productId]); return; }
-    // Optimistic: drop the reviewed product from both lists right away so it
-    // can't be submitted twice while the write is in flight.
-    setRealPool(pool => pool.filter(p => p.productId !== productId));
-    setRealSkipped(list => list.filter(p => p.productId !== productId));
-    await api.submitReview(productId, ownerId, link, text);
-    await loadData(true);
+    // Overlay: hide from both lists until the server confirms; can't be
+    // submitted twice while in flight and won't flash back on the next refetch.
+    setOpt(o => ({ ...o, poolHide: { ...o.poolHide, [productId]: true }, skipHide: { ...o.skipHide, [productId]: true }, poolShow: omit(o.poolShow, productId), skipShow: omit(o.skipShow, productId) }));
+    try { await api.submitReview(productId, ownerId, link, text); }
+    catch (e) { setOpt(o => ({ ...o, poolHide: omit(o.poolHide, productId) })); throw e; } // let the card surface the error + restore
+    loadData(true);
   };
 
   // "Not interested": park a product (hides it from the queue, dings Trust
-  // Score) or move it back. Optimistic so the tabs update instantly.
+  // Score) or move it back. Overlay keeps the move stable until confirmed.
   const skipProduct = async (product) => {
-    if (USE_MOCK) { setMockSkipped(s => [...s, product.productId]); return; }
-    setRealPool(pool => pool.filter(p => p.productId !== product.productId));
-    setRealSkipped(list => [product, ...list.filter(p => p.productId !== product.productId)]);
-    try { await api.skipProduct(product.productId, false); } finally { loadData(true); }
+    const id = product.productId;
+    if (USE_MOCK) { setMockSkipped(s => [...s, id]); return; }
+    setOpt(o => ({ ...o, poolHide: { ...o.poolHide, [id]: true }, skipShow: { ...o.skipShow, [id]: product }, poolShow: omit(o.poolShow, id), skipHide: omit(o.skipHide, id) }));
+    try { await api.skipProduct(id, false); } finally { loadData(true); }
   };
   const unskipProduct = async (product) => {
-    if (USE_MOCK) { setMockSkipped(s => s.filter(id => id !== product.productId)); return; }
-    setRealSkipped(list => list.filter(p => p.productId !== product.productId));
-    setRealPool(pool => [product, ...pool.filter(p => p.productId !== product.productId)]);
-    try { await api.skipProduct(product.productId, true); } finally { loadData(true); }
+    const id = product.productId;
+    if (USE_MOCK) { setMockSkipped(s => s.filter(x => x !== id)); return; }
+    setOpt(o => ({ ...o, skipHide: { ...o.skipHide, [id]: true }, poolShow: { ...o.poolShow, [id]: product }, skipShow: omit(o.skipShow, id), poolHide: omit(o.poolHide, id) }));
+    try { await api.skipProduct(id, true); } finally { loadData(true); }
   };
 
   const saveProduct = async (form) => {

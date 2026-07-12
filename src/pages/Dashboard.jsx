@@ -31,7 +31,13 @@ export default function Dashboard() {
           <h1 style={{ fontFamily: "Playfair Display, serif", fontSize: 32, fontWeight: 700, color: c.text, letterSpacing: "-0.02em" }}>{greeting()}, {account.name}</h1>
           <p style={{ fontSize: 14, color: c.textMuted, marginTop: 8, lineHeight: 1.6 }}>Here's where your exchange stands.</p>
         </div>
-        <TrustRing score={account.score} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <TrustRing score={account.score} />
+          <span data-tip="Your Trust Score blends verified reviews, your give/get ratio, and owner ratings. Products you leave in ‘Not interested’ lower it — move them back and review them to recover."
+            style={{ fontSize: 11, color: c.textMuted, cursor: "help", borderBottom: `1px dotted ${c.textMuted}55`, whiteSpace: "nowrap" }}>
+            What affects this?
+          </span>
+        </div>
       </div>
 
       <StatBar className="fade-up-d1" style={{ marginBottom: 20 }} items={[
