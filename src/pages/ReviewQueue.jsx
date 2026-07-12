@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import SealMark from "../components/SealMark";
+import SearchBox from "../components/SearchBox";
 import { Card, Input, GoldButton, GhostButton, PageTitle } from "../components/ui";
 
 const openUrl = (url) => window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
@@ -66,6 +67,15 @@ export default function ReviewQueue() {
   const { c } = useTheme();
   const { reviewablePool, reviewSubmitted, submitReview } = useAppState();
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [cat, setCat] = useState("all");
+
+  const categories = [...new Set(reviewablePool.map(p => p.category).filter(Boolean))].sort();
+  const q = search.trim().toLowerCase();
+  const filtered = reviewablePool.filter(p =>
+    (cat === "all" || p.category === cat) &&
+    (!q || [p.name, p.description, p.platform, p.developer].some(f => (f || "").toLowerCase().includes(q)))
+  );
 
   return (
     <>
@@ -90,12 +100,42 @@ export default function ReviewQueue() {
         </Card>
       ) : (
         <>
-          <div className="fade-up" style={{ fontSize: 12, color: c.textMuted, marginBottom: 16 }}>
-            {reviewablePool.length} product{reviewablePool.length === 1 ? "" : "s"} waiting for a review
+          <div className="fade-up-d1">
+            <SearchBox value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products by name, platform, or developer…" />
           </div>
-          {reviewablePool.map((p, i) => (
-            <ReviewCard key={p.productId} product={p} index={i} onSubmit={submitReview} />
-          ))}
+
+          {categories.length > 1 && (
+            <div className="fade-up-d1" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+              {["all", ...categories].map(k => (
+                <button key={k} onClick={() => setCat(k)}
+                  style={{
+                    background: cat === k ? c.goldGlow : "transparent",
+                    border: `1px solid ${cat === k ? c.gold : c.border}`,
+                    color: cat === k ? c.gold : c.textMuted,
+                    borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.2s",
+                  }}>{k === "all" ? "All categories" : k}</button>
+              ))}
+            </div>
+          )}
+
+          <div className="fade-up" style={{ fontSize: 12, color: c.textMuted, marginBottom: 16 }}>
+            {filtered.length === reviewablePool.length
+              ? `${reviewablePool.length} product${reviewablePool.length === 1 ? "" : "s"} waiting for a review`
+              : `${filtered.length} of ${reviewablePool.length} shown`}
+          </div>
+
+          {filtered.length === 0 ? (
+            <Card className="fade-up" style={{ textAlign: "center", padding: "44px 24px" }}>
+              <div style={{ display: "inline-block", marginBottom: 14, opacity: 0.6 }}><SealMark size={48} gold={c.textMuted} /></div>
+              <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 8 }}>No products match</h3>
+              <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 16 }}>Try a different search or category.</p>
+              <GhostButton onClick={() => { setSearch(""); setCat("all"); }}>Clear filters</GhostButton>
+            </Card>
+          ) : (
+            filtered.map((p, i) => (
+              <ReviewCard key={p.productId} product={p} index={i} onSubmit={submitReview} />
+            ))
+          )}
         </>
       )}
     </>
