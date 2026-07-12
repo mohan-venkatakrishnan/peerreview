@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import SealMark from "../components/SealMark";
-import SearchBox from "../components/SearchBox";
+import DatePicker from "../components/DatePicker";
 import { Card, Input, GoldButton, GhostButton, PageTitle } from "../components/ui";
 
 const openUrl = (url) => window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
@@ -127,16 +127,7 @@ export default function ReviewQueue() {
     )
     .sort((a, b) => (sortDir === "newest" ? ts(b) - ts(a) : ts(a) - ts(b)));
 
-  const rangeChip = (active) => ({
-    background: active ? c.goldGlow : "transparent",
-    border: `1px solid ${active ? c.gold : c.border}`,
-    color: active ? c.gold : c.textMuted,
-    borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.2s",
-  });
-  const dateInput = {
-    background: c.bg, border: `1px solid ${c.border}`, color: c.text,
-    borderRadius: 8, padding: "7px 10px", fontSize: 13, colorScheme: isDark ? "dark" : "light",
-  };
+  const sel = { background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 10, padding: "9px 12px", fontSize: 13, cursor: "pointer", colorScheme: isDark ? "dark" : "light" };
 
   const Tab = ({ id, label, count }) => (
     <button onClick={() => { setTab(id); setCat("all"); }}
@@ -196,46 +187,39 @@ export default function ReviewQueue() {
             </div>
           )}
 
-          <div className="fade-up-d1">
-            <SearchBox value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products by name, platform, or developer…" />
-          </div>
-
-          {categories.length > 0 && (
-            <div className="fade-up-d1" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-              {["all", ...categories].map(k => (
-                <button key={k} onClick={() => setCat(k)}
-                  style={{
-                    background: cat === k ? c.goldGlow : "transparent",
-                    border: `1px solid ${cat === k ? c.gold : c.border}`,
-                    color: cat === k ? c.gold : c.textMuted,
-                    borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.2s",
-                  }}>{k === "all" ? "All categories" : k}</button>
-              ))}
+          {/* one compact toolbar: search + category + date + sort */}
+          <div className="fade-up-d1" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: range === "custom" ? 12 : 18 }}>
+            <div style={{ flex: "1 1 200px", minWidth: 160, display: "flex", alignItems: "center", gap: 10, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: "9px 14px" }}>
+              <span style={{ color: c.textMuted, fontSize: 14 }}>⌕</span>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products…"
+                style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 13, color: c.text }} />
+              {search && <span onClick={() => setSearch("")} style={{ cursor: "pointer", color: c.textMuted, fontSize: 12 }}>✕</span>}
             </div>
-          )}
-
-          {/* time controls: date-range filter + sort */}
-          <div className="fade-up-d1" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: range === "custom" ? 12 : 18 }}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {[["all", "All time"], ["day", "Today"], ["week", "This week"], ["month", "This month"], ["custom", "Custom"]].map(([k, label]) => (
-                <button key={k} onClick={() => setRange(k)} style={rangeChip(range === k)}>{label}</button>
-              ))}
-            </div>
-            <button onClick={() => setSortDir(d => d === "newest" ? "oldest" : "newest")}
-              data-tip="Sort by when the product was listed"
-              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.textSub, borderRadius: 20, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
-              {sortDir === "newest" ? "↓ Newest first" : "↑ Oldest first"}
-            </button>
+            <select value={cat} onChange={e => setCat(e.target.value)} style={sel} aria-label="Category">
+              <option value="all">All categories</option>
+              {categories.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+            <select value={range} onChange={e => setRange(e.target.value)} style={sel} aria-label="Date listed">
+              <option value="all">Any time</option>
+              <option value="day">Today</option>
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+              <option value="custom">Custom…</option>
+            </select>
+            <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={sel} aria-label="Sort by listing date">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
           </div>
 
           {range === "custom" && (
             <div className="fade-up" style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
-              <label style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
-                From <input type="date" value={from} max={to || undefined} onChange={e => setFrom(e.target.value)} style={dateInput} />
-              </label>
-              <label style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
-                To <input type="date" value={to} min={from || undefined} onChange={e => setTo(e.target.value)} style={dateInput} />
-              </label>
+              <span style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                From <DatePicker value={from} max={to || undefined} onChange={setFrom} />
+              </span>
+              <span style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                To <DatePicker value={to} min={from || undefined} onChange={setTo} />
+              </span>
               {(from || to) && (
                 <button onClick={() => { setFrom(""); setTo(""); }} style={{ background: "transparent", border: "none", color: c.textMuted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>Clear dates</button>
               )}
