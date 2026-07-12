@@ -1,13 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import SealMark from "../components/SealMark";
 import StateBadge from "../components/StateBadge";
 import SearchBox from "../components/SearchBox";
-import { Card, PageTitle, StatBar } from "../components/ui";
+import { Card, PageTitle, StatBar, GhostButton } from "../components/ui";
 
 export default function MyProduct() {
   const { c } = useTheme();
+  const navigate = useNavigate();
   const { incoming, products, stats, stampAnimating, verifyReview, flagReview } = useAppState();
   const [reviewsSearch, setReviewsSearch] = useState("");
   const [productFilter, setProductFilter] = useState("all");
@@ -54,10 +56,22 @@ export default function MyProduct() {
       {visible.length === 0 && (
         <Card className="fade-up-d2" style={{ textAlign: "center", padding: "48px 24px" }}>
           <div className="float" style={{ display: "inline-block", marginBottom: 16 }}><SealMark size={56} animated gold={c.gold} /></div>
-          <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 20, fontWeight: 700, color: c.text, marginBottom: 8 }}>No reviews yet</h3>
-          <p style={{ fontSize: 13, color: c.textMuted, lineHeight: 1.7, maxWidth: 400, margin: "0 auto" }}>
-            Your product is in the pool. When someone reviews it, it appears here for you to verify or flag.
-          </p>
+          {products.length === 0 ? (
+            <>
+              <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 20, fontWeight: 700, color: c.text, marginBottom: 8 }}>No product listed yet</h3>
+              <p style={{ fontSize: 13, color: c.textMuted, lineHeight: 1.7, maxWidth: 400, margin: "0 auto 18px" }}>
+                List a product with a live store listing and it joins the review pool. Reviews it receives show up here for you to verify or flag.
+              </p>
+              <GhostButton onClick={() => navigate("/app/products")}>+ List your product</GhostButton>
+            </>
+          ) : (
+            <>
+              <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 20, fontWeight: 700, color: c.text, marginBottom: 8 }}>No reviews yet</h3>
+              <p style={{ fontSize: 13, color: c.textMuted, lineHeight: 1.7, maxWidth: 400, margin: "0 auto" }}>
+                Your product is in the pool. When someone reviews it, it appears here for you to verify or flag.
+              </p>
+            </>
+          )}
         </Card>
       )}
 

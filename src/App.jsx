@@ -22,7 +22,7 @@ import AppShell from "./components/AppShell";
 
 /* Global keyframes + resets. Rendered once; only c.gold varies with theme. */
 function GlobalStyles() {
-  const { c } = useTheme();
+  const { c, isDark } = useTheme();
   const css = `
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -63,6 +63,14 @@ function GlobalStyles() {
     ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
     input, select, textarea { font-family: 'Inter', sans-serif; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: ${c.gold} !important; }
+    /* Native date inputs follow the theme: picker popup + spinners match, and the
+       calendar glyph is tinted so it isn't invisible on the dark surface. */
+    input[type="date"] { color-scheme: ${isDark ? "dark" : "light"}; }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: ${isDark ? "invert(0.8) sepia(0.4) saturate(3) hue-rotate(5deg)" : "none"};
+      opacity: 0.7; cursor: pointer;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
     .fx-lite .fade-up, .fx-lite .fade-up-d1, .fx-lite .fade-up-d2, .fx-lite .fade-up-d3 { animation: none; opacity: 1; }
     .fx-lite .float, .fx-lite .stamp-in { animation: none; }
     /* overflow-x: clip, NEVER hidden — hidden silently kills position:sticky */
