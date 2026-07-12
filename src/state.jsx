@@ -30,6 +30,8 @@ export function AppStateProvider({ children }) {
   const [me, setMe] = useState(null);
   const [realProducts, setRealProducts] = useState([]);
   const [realPool, setRealPool] = useState([]);
+  const [realSkipped, setRealSkipped] = useState([]);
+  const [mockSkipped, setMockSkipped] = useState([]); // productIds parked (mock)
   const [realSubmitted, setRealSubmitted] = useState(false);
   const [realIncoming, setRealIncoming] = useState([]);
   const [realHistory, setRealHistory] = useState([]);
@@ -72,6 +74,7 @@ export function AppStateProvider({ children }) {
       if (meVersion.current === version) setMe(meData);
       setRealProducts(products);
       setRealPool(assignment.pool);
+      setRealSkipped(assignment.skipped ?? []);
       setRealSubmitted(assignment.submitted);
       setRealHistory(assignment.history);
       setRealIncoming(incoming);
@@ -105,10 +108,14 @@ export function AppStateProvider({ children }) {
         state: mockVerified.includes(r.id) ? "verified" : mockFlagged.includes(r.id) ? "flagged" : "pending",
       }))
     : realIncoming;
-  // the open pool of products this member can review right now
+  // the open pool of products this member can review right now, split from the
+  // ones they've parked in "Not interested"
   const reviewablePool = USE_MOCK
-    ? REVIEW_POOL.filter(p => !mockReviewed.includes(p.productId))
+    ? REVIEW_POOL.filter(p => !mockReviewed.includes(p.productId) && !mockSkipped.includes(p.productId))
     : realPool;
+  const skippedPool = USE_MOCK
+    ? REVIEW_POOL.filter(p => mockSkipped.includes(p.productId) && !mockReviewed.includes(p.productId))
+    : realSkipped;
   const reviewSubmitted = USE_MOCK ? mockReviewed.length > 0 : realSubmitted;
   const history = USE_MOCK ? REVIEW_HISTORY : realHistory;
 
@@ -154,11 +161,27 @@ export function AppStateProvider({ children }) {
 
   const submitReview = async (productId, ownerId, link, text) => {
     if (USE_MOCK) { setMockReviewed(r => [...r, productId]); return; }
-    // Optimistic: drop the reviewed product from the pool right away so it
+    // Optimistic: drop the reviewed product from both lists right away so it
     // can't be submitted twice while the write is in flight.
     setRealPool(pool => pool.filter(p => p.productId !== productId));
+    setRealSkipped(list => list.filter(p => p.productId !== productId));
     await api.submitReview(productId, ownerId, link, text);
     await loadData(true);
+  };
+
+  // "Not interested": park a product (hides it from the queue, dings Trust
+  // Score) or move it back. Optimistic so the tabs update instantly.
+  const skipProduct = async (product) => {
+    if (USE_MOCK) { setMockSkipped(s => [...s, product.productId]); return; }
+    setRealPool(pool => pool.filter(p => p.productId !== product.productId));
+    setRealSkipped(list => [product, ...list.filter(p => p.productId !== product.productId)]);
+    try { await api.skipProduct(product.productId, false); } finally { loadData(true); }
+  };
+  const unskipProduct = async (product) => {
+    if (USE_MOCK) { setMockSkipped(s => s.filter(id => id !== product.productId)); return; }
+    setRealSkipped(list => list.filter(p => p.productId !== product.productId));
+    setRealPool(pool => [product, ...pool.filter(p => p.productId !== product.productId)]);
+    try { await api.skipProduct(product.productId, true); } finally { loadData(true); }
   };
 
   const saveProduct = async (form) => {
@@ -249,7 +272,7 @@ export function AppStateProvider({ children }) {
       // data
       account: unifiedAccount, me, stats,
       badges: USE_MOCK ? ["seal", "box", "quill", "stack", "bolt", "shield"] : (me?.badges ?? []),
-      products, reviewablePool, incoming, history, reviewSubmitted,
+      products, reviewablePool, skippedPool, incoming, history, reviewSubmitted,
       leaderboard: leaderboardRows,
       privacy: USE_MOCK ? privacy : (me?.privacy ?? privacy),
       plan: USE_MOCK ? plan : (me?.plan ?? "free"),
@@ -259,7 +282,7 @@ export function AppStateProvider({ children }) {
       flaggedIds: incoming.filter(r => r.state === "flagged").map(r => r.id),
       stampAnimating,
       // actions
-      verifyReview, flagReview, submitReview, saveProduct,
+      verifyReview, flagReview, submitReview, skipProduct, unskipProduct, saveProduct,
       updateProfile, setPrivacy, setMatching, switchAccount, signOut, setPlan,
       // ui state
       reviewLinkPasted, setReviewLinkPasted,

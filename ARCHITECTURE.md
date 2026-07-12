@@ -73,6 +73,16 @@ as the audit trail. Revisit only if disputes demand a ledger.
 > everything they can review and pick for themselves. The subsections below marked
 > *(legacy)* describe the old design and are kept for context only.
 
+**Not-interested (skip) + Trust penalty (2026-07-12):** a member can park a
+product they can't/won't review via `POST /assignment/skip {productId}` (and undo
+with `{productId, undo:true}` — reuses the existing route, no new infra). Parked
+ids live in a string set `skippedProductIds` on the user. `buildQueue` returns
+`{pool, skipped}` and excludes parked ids from the pool. Parking dings Trust
+Score: `computeTrust` (identical in lambda/assignment and lambda/incoming) applies
+`penalty = min(0.15, count(skippedProductIds) × 0.03)` as `trust × (1 − penalty)`
+— capped at 15%, fully recovered by moving items back. Recomputed on skip/undo
+and on every verify/flag.
+
 **Open-pool model (current):**
 1. A listing is queued (`poolStatus=queued`) when created and **stays queued while
    active** — re-enqueued after every verify/flag/skip/expire. Products never leave

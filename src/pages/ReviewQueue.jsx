@@ -8,9 +8,10 @@ import { Card, Input, GoldButton, GhostButton, PageTitle } from "../components/u
 
 const openUrl = (url) => window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
 
-/* One product in the pool. Module-level (never nested) so its input keeps
-   focus across the parent's re-renders. */
-function ReviewCard({ product, index, onSubmit }) {
+/* One product. Module-level (never nested) so its input keeps focus across the
+   parent's re-renders. `parked` switches it between the queue and the
+   Not-interested list. */
+function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
   const { c } = useTheme();
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
@@ -27,7 +28,7 @@ function ReviewCard({ product, index, onSubmit }) {
   };
 
   return (
-    <Card className={index === 0 ? "fade-up-d1" : "fade-up-d2"} style={{ marginBottom: 16 }}>
+    <Card className={index === 0 ? "fade-up-d1" : "fade-up-d2"} style={{ marginBottom: 16, opacity: parked ? 0.9 : 1 }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
         <div style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 11, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{product.name[0]}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -37,27 +38,39 @@ function ReviewCard({ product, index, onSubmit }) {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
-        <GoldButton onClick={() => openUrl(product.url)}>Open listing ↗</GoldButton>
-        <GhostButton onClick={() => setOpen(o => !o)}>{open ? "Hide" : "I've left my review →"}</GhostButton>
-        <span style={{ fontSize: 11, color: c.textMuted, alignSelf: "center" }}>
-          by {product.developer}{product.devScore ? ` · ★ ${product.devScore}` : ""}
-        </span>
-      </div>
-
-      {open && (
-        <div className="fade-up" style={{ marginTop: 18, paddingTop: 18, borderTop: `1px solid ${c.border}` }}>
-          <Input label="Your review link" mono placeholder={`Paste the URL of your review on ${product.platform}…`} value={link} onChange={e => setLink(e.target.value)} />
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: c.textSub, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Review text <span style={{ color: c.textMuted, fontWeight: 400, textTransform: "none" }}>(optional — helps faster verification)</span></label>
-            <textarea placeholder="Paste your review text here…" rows={3} value={text} onChange={e => setText(e.target.value)}
-              style={{ width: "100%", background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: "12px 14px", fontSize: 13, color: c.text, resize: "vertical", lineHeight: 1.6 }} />
-          </div>
-          {error && <div className="fade-up" style={{ fontSize: 12, color: c.flagged, marginBottom: 12 }}>⚠ {error}</div>}
-          <GoldButton full disabled={!ready || busy} onClick={submit}>
-            {busy ? "Submitting…" : "Submit for verification"}
-          </GoldButton>
+      {parked ? (
+        <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
+          <GoldButton onClick={() => onUnskip(product)}>Move back to queue</GoldButton>
+          <GhostButton onClick={() => openUrl(product.url)}>Open listing ↗</GhostButton>
+          <span style={{ fontSize: 11, color: c.textMuted, alignSelf: "center" }}>by {product.developer}{product.devScore ? ` · ★ ${product.devScore}` : ""}</span>
         </div>
+      ) : (
+        <>
+          <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
+            <GoldButton onClick={() => openUrl(product.url)}>Open listing ↗</GoldButton>
+            <GhostButton onClick={() => setOpen(o => !o)}>{open ? "Hide" : "I've left my review →"}</GhostButton>
+            <button onClick={() => onSkip(product)} data-tip="Moves this to Not interested. Skipping lowers your Trust Score — you can move it back anytime."
+              style={{ background: "transparent", border: `1px solid ${c.border}`, borderRadius: 10, padding: "9px 14px", color: c.textMuted, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+              Not interested
+            </button>
+            <span style={{ fontSize: 11, color: c.textMuted, alignSelf: "center" }}>by {product.developer}{product.devScore ? ` · ★ ${product.devScore}` : ""}</span>
+          </div>
+
+          {open && (
+            <div className="fade-up" style={{ marginTop: 18, paddingTop: 18, borderTop: `1px solid ${c.border}` }}>
+              <Input label="Your review link" mono placeholder={`Paste the URL of your review on ${product.platform}…`} value={link} onChange={e => setLink(e.target.value)} />
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: c.textSub, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Review text <span style={{ color: c.textMuted, fontWeight: 400, textTransform: "none" }}>(optional — helps faster verification)</span></label>
+                <textarea placeholder="Paste your review text here…" rows={3} value={text} onChange={e => setText(e.target.value)}
+                  style={{ width: "100%", background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: "12px 14px", fontSize: 13, color: c.text, resize: "vertical", lineHeight: 1.6 }} />
+              </div>
+              {error && <div className="fade-up" style={{ fontSize: 12, color: c.flagged, marginBottom: 12 }}>⚠ {error}</div>}
+              <GoldButton full disabled={!ready || busy} onClick={submit}>
+                {busy ? "Submitting…" : "Submit for verification"}
+              </GoldButton>
+            </div>
+          )}
+        </>
       )}
     </Card>
   );
@@ -65,16 +78,30 @@ function ReviewCard({ product, index, onSubmit }) {
 
 export default function ReviewQueue() {
   const { c } = useTheme();
-  const { reviewablePool, reviewSubmitted, submitReview } = useAppState();
+  const { reviewablePool, skippedPool, reviewSubmitted, submitReview, skipProduct, unskipProduct } = useAppState();
   const navigate = useNavigate();
+  const [tab, setTab] = useState("review"); // 'review' | 'parked'
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
 
-  const categories = [...new Set(reviewablePool.map(p => p.category).filter(Boolean))].sort();
+  const source = tab === "parked" ? skippedPool : reviewablePool;
+  const categories = [...new Set(source.map(p => p.category).filter(Boolean))].sort();
   const q = search.trim().toLowerCase();
-  const filtered = reviewablePool.filter(p =>
+  const filtered = source.filter(p =>
     (cat === "all" || p.category === cat) &&
     (!q || [p.name, p.description, p.platform, p.developer].some(f => (f || "").toLowerCase().includes(q)))
+  );
+
+  const Tab = ({ id, label, count }) => (
+    <button onClick={() => { setTab(id); setCat("all"); }}
+      style={{
+        background: "transparent", border: "none", cursor: "pointer",
+        padding: "0 2px 10px", fontSize: 14, fontWeight: 600,
+        color: tab === id ? c.gold : c.textMuted,
+        borderBottom: `2px solid ${tab === id ? c.gold : "transparent"}`,
+      }}>
+      {label} <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12, opacity: 0.8 }}>{count}</span>
+    </button>
   );
 
   return (
@@ -85,21 +112,44 @@ export default function ReviewQueue() {
         sub="Everything you can review right now. Pick any one, leave a genuine review on its store listing, then paste your review link — every review you give earns one back."
       />
 
-      {reviewablePool.length === 0 ? (
+      <div className="fade-up" style={{ display: "flex", gap: 22, borderBottom: `1px solid ${c.border}`, marginBottom: 22 }}>
+        <Tab id="review" label="To review" count={reviewablePool.length} />
+        <Tab id="parked" label="Not interested" count={skippedPool.length} />
+      </div>
+
+      {source.length === 0 ? (
         <Card className="fade-up-d1" style={{ textAlign: "center", padding: "56px 24px" }}>
           <div className="float" style={{ display: "inline-block", marginBottom: 18 }}><SealMark size={64} animated gold={c.gold} /></div>
-          <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, color: c.text, marginBottom: 8 }}>
-            {reviewSubmitted ? "You're all caught up" : "Nothing to review yet"}
-          </h3>
-          <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 440, margin: "0 auto 20px" }}>
-            {reviewSubmitted
-              ? "You've reviewed every product in the pool. New listings appear here the moment they join."
-              : "As soon as another developer lists a product, it appears here for you to review."}
-          </p>
-          <GhostButton onClick={() => navigate("/app/products")}>List your product →</GhostButton>
+          {tab === "parked" ? (
+            <>
+              <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, color: c.text, marginBottom: 8 }}>Nothing set aside</h3>
+              <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 440, margin: "0 auto" }}>
+                Products you mark “Not interested” land here so you can revisit them later. Skipping lowers your Trust Score, so it’s best kept for products you genuinely can’t review.
+              </p>
+            </>
+          ) : (
+            <>
+              <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, color: c.text, marginBottom: 8 }}>
+                {reviewSubmitted ? "You're all caught up" : "Nothing to review yet"}
+              </h3>
+              <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 440, margin: "0 auto 20px" }}>
+                {reviewSubmitted
+                  ? "You've reviewed every product in the pool. New listings appear here the moment they join."
+                  : "As soon as another developer lists a product, it appears here for you to review."}
+              </p>
+              <GhostButton onClick={() => navigate("/app/products")}>List your product →</GhostButton>
+            </>
+          )}
         </Card>
       ) : (
         <>
+          {tab === "parked" && (
+            <div className="fade-up" style={{ display: "flex", alignItems: "flex-start", gap: 10, background: c.goldGlow, border: `1px solid ${c.borderGold}`, borderRadius: 10, padding: "12px 14px", marginBottom: 18, fontSize: 12.5, color: c.textSub, lineHeight: 1.6 }}>
+              <span style={{ color: c.pending }}>⚠</span>
+              <span>These count against your <strong style={{ color: c.text }}>Trust Score</strong> while they sit here. Move any back to your queue and review it to recover.</span>
+            </div>
+          )}
+
           <div className="fade-up-d1">
             <SearchBox value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products by name, platform, or developer…" />
           </div>
@@ -119,9 +169,9 @@ export default function ReviewQueue() {
           )}
 
           <div className="fade-up" style={{ fontSize: 12, color: c.textMuted, marginBottom: 16 }}>
-            {filtered.length === reviewablePool.length
-              ? `${reviewablePool.length} product${reviewablePool.length === 1 ? "" : "s"} waiting for a review`
-              : `${filtered.length} of ${reviewablePool.length} shown`}
+            {filtered.length === source.length
+              ? `${source.length} product${source.length === 1 ? "" : "s"}${tab === "parked" ? " set aside" : " waiting for a review"}`
+              : `${filtered.length} of ${source.length} shown`}
           </div>
 
           {filtered.length === 0 ? (
@@ -133,7 +183,8 @@ export default function ReviewQueue() {
             </Card>
           ) : (
             filtered.map((p, i) => (
-              <ReviewCard key={p.productId} product={p} index={i} onSubmit={submitReview} />
+              <ReviewCard key={p.productId} product={p} index={i} parked={tab === "parked"}
+                onSubmit={submitReview} onSkip={skipProduct} onUnskip={unskipProduct} />
             ))
           )}
         </>

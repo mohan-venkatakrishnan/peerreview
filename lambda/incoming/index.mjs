@@ -21,12 +21,18 @@ async function notify(to, subject, body) {
 
 const lambda = new LambdaClient({});
 
-/* Trust Score — ARCHITECTURE.md §5, locked formula */
+/* Trust Score — ARCHITECTURE.md §5, plus a bounded "not-interested" penalty:
+   each product parked in the member's Not-interested list gently lowers the
+   score (capped 15%); moving items back restores it. Kept identical to
+   lambda/assignment so verify/flag and skip agree. */
+const skipSize = (v) => (v ? (v.size ?? (Array.isArray(v) ? v.length : 0)) : 0);
 const computeTrust = (u) => {
   const V = ((u.verifiedGiven ?? 0) + 2) / ((u.verifiedGiven ?? 0) + (u.flaggedGiven ?? 0) + 4);
   const R = (u.ratingCount ?? 0) > 0 ? (u.ratingSum / u.ratingCount) / 5 : 0.70;
   const G = Math.min((u.given ?? 0) / Math.max(u.received ?? 0, 1), 1.5) / 1.5;
-  return Math.round(5 * (0.45 * V + 0.35 * R + 0.20 * G) * 10) / 10;
+  const base = 0.45 * V + 0.35 * R + 0.20 * G;
+  const penalty = Math.min(0.15, skipSize(u.skippedProductIds) * 0.03);
+  return Math.round(5 * base * (1 - penalty) * 10) / 10;
 };
 
 const maskName = (name = '') => name.split(' ')

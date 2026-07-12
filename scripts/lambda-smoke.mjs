@@ -58,6 +58,8 @@ const cases = [
   ["incoming  POST /flag", "../lambda/incoming/index.mjs", ev("POST", "/incoming/flag", { assignmentId: "a1", reason: "spam" }, "owner1"), 200],
   ["assignment GET  /assignment", "../lambda/assignment/index.mjs", ev("GET", "/assignment", null, "rev1"), 200],
   ["assignment POST /submit", "../lambda/assignment/index.mjs", ev("POST", "/assignment/submit", { productId: "p1", ownerId: "owner1", link: CHROME_REVIEW, text: "nice" }, "rev1"), 200],
+  ["assignment POST /skip", "../lambda/assignment/index.mjs", ev("POST", "/assignment/skip", { productId: "p1" }, "rev1"), 200],
+  ["assignment POST /skip undo", "../lambda/assignment/index.mjs", ev("POST", "/assignment/skip", { productId: "p1", undo: true }, "rev1"), 200],
   ["me        GET  /me", "../lambda/me/index.mjs", ev("GET", "/me", null, "rev1"), 200],
 ];
 

@@ -71,20 +71,22 @@ export const saveProduct = (form) => apiFetch("/products", {
 export const deleteProduct = (id) => apiFetch(`/products/${id}`, { method: "DELETE" });
 
 /* ---- assignment: the open pool of products this member can review ---- */
+const shapePoolItem = (p) => ({
+  productId: p.productId,
+  ownerId: p.ownerId,
+  name: p.name,
+  developer: p.ownerName ?? "a fellow developer", // per the owner privacy choice
+  devScore: p.ownerScore ?? null,
+  category: p.category,
+  platform: p.platform,
+  description: p.description,
+  url: p.url,
+});
 export const getAssignment = async () => {
-  const { pool = [], history = [] } = await apiFetch("/assignment");
+  const { pool = [], skipped = [], history = [] } = await apiFetch("/assignment");
   return {
-    pool: pool.map(p => ({
-      productId: p.productId,
-      ownerId: p.ownerId,
-      name: p.name,
-      developer: p.ownerName ?? "a fellow developer", // per the owner privacy choice
-      devScore: p.ownerScore ?? null,
-      category: p.category,
-      platform: p.platform,
-      description: p.description,
-      url: p.url,
-    })),
+    pool: pool.map(shapePoolItem),
+    skipped: skipped.map(shapePoolItem),
     submitted: !!history.find(h => h.state === "submitted"),
     history: history.map((h, i) => ({
       id: h.assignmentId ?? i,
@@ -98,6 +100,8 @@ export const getAssignment = async () => {
 };
 export const submitReview = (productId, ownerId, link, text) =>
   apiFetch("/assignment/submit", { method: "POST", body: JSON.stringify({ productId, ownerId, link, text }) });
+export const skipProduct = (productId, undo = false) =>
+  apiFetch("/assignment/skip", { method: "POST", body: JSON.stringify({ productId, undo }) });
 
 /* ---- incoming (mock INCOMING_REVIEWS shape) ---- */
 export const getIncoming = async () => (await apiFetch("/incoming")).map(r => ({
