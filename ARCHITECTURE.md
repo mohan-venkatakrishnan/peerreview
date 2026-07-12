@@ -79,7 +79,8 @@ as the audit trail. Revisit only if disputes demand a ledger.
    the pool except when the owner removes them.
 2. `lambda/assignment` `buildPool(userId)` returns the member's queue: all queued
    products where `P.owner ≠ me`, `me ∉ P.reviewerIds`, and
-   (`P.matching = open` OR the member's categories include `P.category`).
+   (`P.matching = open` OR the member has no categories of their own OR the
+   member's categories include `P.category` — a product-less reviewer sees all).
 3. `POST /assignment/submit {productId, ownerId, link, text}` creates a `submitted`
    assignment directly and atomically adds the member to `P.reviewerIds`
    (`ConditionExpression: NOT contains(reviewerIds, me)` blocks double-submit).

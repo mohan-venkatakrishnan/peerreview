@@ -74,11 +74,15 @@ const buildPool = async (userId, myCategories = []) => {
     ScanIndexForward: true, // oldest listings first
     Limit: 60,
   }));
+  const cats = myCategories ?? [];
   const eligible = queued.filter(p =>
     p.userId !== userId &&
     (p.status ?? 'active') === 'active' &&
     !(p.reviewerIds ?? []).includes(userId) &&
-    (((p.matching ?? 'category') !== 'category') || !p.category || (myCategories ?? []).includes(p.category))
+    // Category-matched products are limited to reviewers in that category —
+    // EXCEPT a reviewer with no categories of their own (e.g. someone here just
+    // to review, no product listed yet) sees everything.
+    ((p.matching ?? 'category') !== 'category' || !p.category || cats.length === 0 || cats.includes(p.category))
   );
   // masked owner identity — one lookup per distinct owner
   const owners = {};
