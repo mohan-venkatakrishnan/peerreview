@@ -12,7 +12,7 @@ const SECTIONS = [
   { h: "Email", p: "We send a small number of transactional emails about your own activity — when your product receives a review and when your review is verified. These are tied to your account, not marketing. To stop them, email us and we'll turn them off for you." },
   { h: "Data you control", p: "You can edit your name and photo, change what's public, and remove your photo any time in Settings. To delete your account and everything tied to it (products, reviews, reputation), email us and we'll remove it within 48 hours. Self-serve deletion is coming." },
   { h: "Infrastructure", p: "PeerReview runs on AWS (Cognito for sign-in, Lambda + DynamoDB for data), all within a single account under the tapdot umbrella. Your Google identity is used solely for account access." },
-  { h: "Contact", p: "Questions, or want your data removed? Email mohan@tapdot.org." },
+  { h: "Contact", p: "Questions, or want your data removed? Email ceo@tapdot.org." },
 ];
 
 export default function Privacy() {

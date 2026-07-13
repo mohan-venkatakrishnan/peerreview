@@ -124,7 +124,7 @@ export default function Settings() {
             <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Delete account</div>
             <div style={{ fontSize: 12, color: c.textMuted }}>Removes your products, reviews, and reputation permanently.</div>
           </div>
-          <button data-tip="Self-serve deletion ships before public launch. Until then, email mohan@tapdot.org and your account, products, and reviews are removed within 48h."
+          <button data-tip="Self-serve deletion ships before public launch. Until then, email ceo@tapdot.org and your account, products, and reviews are removed within 48h."
             style={{ background: "transparent", border: `1px solid ${c.flagged}50`, borderRadius: 8, padding: "8px 16px", color: c.flagged, fontSize: 13, fontWeight: 600, cursor: "not-allowed", opacity: 0.65 }}>Delete</button>
         </div>
       </Card>
