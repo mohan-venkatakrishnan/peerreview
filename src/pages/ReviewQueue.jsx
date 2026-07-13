@@ -10,6 +10,16 @@ import { Card, Input, GoldButton, GhostButton, PageTitle } from "../components/u
 
 const openUrl = (url) => window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
 
+// Module-level so it isn't recreated each render (which would remount the tabs).
+function Tab({ c, active, onClick, label, count }) {
+  return (
+    <button onClick={onClick}
+      style={{ background: "transparent", border: "none", cursor: "pointer", padding: "0 2px 10px", fontSize: 14, fontWeight: 600, color: active ? c.gold : c.textMuted, borderBottom: `2px solid ${active ? c.gold : "transparent"}` }}>
+      {label} <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12, opacity: 0.8 }}>{count}</span>
+    </button>
+  );
+}
+
 const ts = (p) => (p.createdAt ? new Date(p.createdAt).getTime() : 0);
 const formatAgo = (iso) => {
   if (!iso) return "recently";
@@ -42,7 +52,7 @@ function ReviewCard({ product, index, parked, featured, onSubmit, onSkip, onUnsk
   };
 
   return (
-    <Card className={index === 0 ? "fade-up-d1" : "fade-up-d2"} style={{ marginBottom: 16, opacity: parked ? 0.9 : 1, border: featured ? `1px solid ${c.gold}` : undefined, boxShadow: featured ? `0 0 0 1px ${c.gold}22, 0 8px 28px ${c.gold}12` : undefined, position: "relative" }}>
+    <Card style={{ marginBottom: 16, opacity: parked ? 0.9 : 1, border: featured ? `1px solid ${c.gold}` : undefined, boxShadow: featured ? `0 0 0 1px ${c.gold}22, 0 8px 28px ${c.gold}12` : undefined, position: "relative" }}>
       {featured && (
         <div style={{ position: "absolute", top: -9, left: 18, background: c.gold, color: c.bg, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 6, padding: "2px 8px" }}>✦ Featured</div>
       )}
@@ -137,17 +147,7 @@ export default function ReviewQueue() {
     .sort((a, b) => (sortDir === "newest" ? ts(b) - ts(a) : ts(a) - ts(b)));
 
 
-  const Tab = ({ id, label, count }) => (
-    <button onClick={() => { setTab(id); setCat("all"); }}
-      style={{
-        background: "transparent", border: "none", cursor: "pointer",
-        padding: "0 2px 10px", fontSize: 14, fontWeight: 600,
-        color: tab === id ? c.gold : c.textMuted,
-        borderBottom: `2px solid ${tab === id ? c.gold : "transparent"}`,
-      }}>
-      {label} <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12, opacity: 0.8 }}>{count}</span>
-    </button>
-  );
+  const selectTab = (id) => { setTab(id); setCat("all"); };
 
   return (
     <>
@@ -158,13 +158,13 @@ export default function ReviewQueue() {
       />
 
       <div className="fade-up" style={{ display: "flex", gap: 22, borderBottom: `1px solid ${c.border}`, marginBottom: 22, flexWrap: "wrap" }}>
-        <Tab id="featured" label="✦ Featured" count={featuredPool.length} />
-        <Tab id="review" label="To review" count={featuredPool.length + reviewablePool.length} />
-        <Tab id="parked" label="Not interested" count={skippedPool.length} />
+        <Tab c={c} active={tab === "featured"} onClick={() => selectTab("featured")} label="✦ Featured" count={featuredPool.length} />
+        <Tab c={c} active={tab === "review"} onClick={() => selectTab("review")} label="To review" count={featuredPool.length + reviewablePool.length} />
+        <Tab c={c} active={tab === "parked"} onClick={() => selectTab("parked")} label="Not interested" count={skippedPool.length} />
       </div>
 
       {tabTotal === 0 ? (
-        <Card className="fade-up-d1" style={{ textAlign: "center", padding: "56px 24px" }}>
+        <Card style={{ textAlign: "center", padding: "56px 24px" }}>
           <div className="float" style={{ display: "inline-block", marginBottom: 18 }}><SealMark size={64} animated gold={c.gold} /></div>
           {tab === "parked" ? (
             <>
@@ -197,7 +197,7 @@ export default function ReviewQueue() {
         </Card>
       ) : tab === "featured" ? (
         <>
-          <p className="fade-up" style={{ fontSize: 12.5, color: c.textMuted, marginBottom: 16, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 12.5, color: c.textMuted, marginBottom: 16, lineHeight: 1.6 }}>
             One product each from the members who give the most reviews. <span style={{ color: c.textSub }}>Give more reviews to feature yours here and earn the Featured badge.</span>
           </p>
           {featuredPool.map((p, i) => (
@@ -207,7 +207,7 @@ export default function ReviewQueue() {
       ) : (
         <>
           {tab === "parked" && (
-            <div className="fade-up" style={{ display: "flex", alignItems: "flex-start", gap: 10, background: c.goldGlow, border: `1px solid ${c.borderGold}`, borderRadius: 10, padding: "12px 14px", marginBottom: 18, fontSize: 12.5, color: c.textSub, lineHeight: 1.6 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: c.goldGlow, border: `1px solid ${c.borderGold}`, borderRadius: 10, padding: "12px 14px", marginBottom: 18, fontSize: 12.5, color: c.textSub, lineHeight: 1.6 }}>
               <span style={{ color: c.pending }}>⚠</span>
               <span>These count against your <strong style={{ color: c.text }}>Trust Score</strong> while they sit here. Move any back to your queue and review it to recover.</span>
             </div>
@@ -216,7 +216,7 @@ export default function ReviewQueue() {
           {/* one compact toolbar: search + category + date + sort. relative+zIndex
               lifts it (and its dropdown/date popovers) above the cards below —
               the fade-up transform otherwise traps popovers in a stacking context */}
-          <div className="fade-up-d1" style={{ position: "relative", zIndex: 30, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: range === "custom" ? 12 : 18 }}>
+          <div style={{ position: "relative", zIndex: 30, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: range === "custom" ? 12 : 18 }}>
             <div style={{ flex: "1 1 200px", minWidth: 160, display: "flex", alignItems: "center", gap: 10, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: "9px 14px" }}>
               <span style={{ color: c.textMuted, fontSize: 14 }}>⌕</span>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products…"
@@ -232,7 +232,7 @@ export default function ReviewQueue() {
           </div>
 
           {range === "custom" && (
-            <div className="fade-up" style={{ position: "relative", zIndex: 30, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
+            <div style={{ position: "relative", zIndex: 30, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
               <span style={{ fontSize: 12, color: c.textMuted, display: "inline-flex", alignItems: "center", gap: 8 }}>
                 From <DatePicker value={from} max={to || undefined} onChange={setFrom} />
               </span>
@@ -245,14 +245,14 @@ export default function ReviewQueue() {
             </div>
           )}
 
-          <div className="fade-up" style={{ fontSize: 12, color: c.textMuted, marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: c.textMuted, marginBottom: 16 }}>
             {filtered.length === source.length
               ? `${source.length} product${source.length === 1 ? "" : "s"}${tab === "parked" ? " set aside" : " waiting for a review"}`
               : `${filtered.length} of ${source.length} shown`}
           </div>
 
           {filtered.length === 0 ? (
-            <Card className="fade-up" style={{ textAlign: "center", padding: "44px 24px" }}>
+            <Card style={{ textAlign: "center", padding: "44px 24px" }}>
               <div style={{ display: "inline-block", marginBottom: 14, opacity: 0.6 }}><SealMark size={48} gold={c.textMuted} /></div>
               <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 8 }}>No products match</h3>
               <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 16 }}>Try a different search or category.</p>
