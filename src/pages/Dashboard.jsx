@@ -62,7 +62,7 @@ export default function Dashboard() {
               {stats.received > 0 ? `Your ${products.length === 1 ? "product has" : "products have"} received ${stats.received} review${stats.received === 1 ? "" : "s"} — give some back` : "Give a review to get the exchange going"}
             </div>
             <p style={{ fontSize: 13, color: c.textSub, lineHeight: 1.6 }}>
-              Reviewing others lifts your Trust Score, climbs you up the leaderboard, and keeps the pool active for everyone. <strong style={{ color: c.gold }}>{queueCount}</strong> product{queueCount === 1 ? " is" : "s are"} waiting in your queue.
+              Reviewing others lifts your Trust Score, climbs you up the leaderboard, and keeps the pool active for everyone. <strong style={{ color: c.gold, whiteSpace: "nowrap" }}>{queueCount} product{queueCount === 1 ? "" : "s"}</strong> {queueCount === 1 ? "is" : "are"} waiting in your queue.
             </p>
           </div>
           <GoldButton onClick={() => navigate("/app/review")}>Review products →</GoldButton>
