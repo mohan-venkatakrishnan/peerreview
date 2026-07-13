@@ -62,6 +62,7 @@ const cases = [
   ["assignment POST /skip undo", "../lambda/assignment/index.mjs", ev("POST", "/assignment/skip", { productId: "p1", undo: true }, "rev1"), 200],
   ["me        GET  /me", "../lambda/me/index.mjs", ev("GET", "/me", null, "rev1"), 200],
   ["products  POST /products", "../lambda/products/index.mjs", ev("POST", "/products", { name: "Test", url: "https://chromewebstore.google.com/detail/abc123", category: "Chrome Extension", matching: "open" }, "rev1"), 200],
+  ["member    GET  /member/:id", "../lambda/member/index.mjs", { ...ev("GET", "/member/owner1", null, "rev1"), pathParameters: { id: "owner1" } }, 200],
 ];
 
 let failures = 0;

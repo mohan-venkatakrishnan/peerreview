@@ -37,6 +37,13 @@ const formatAgo = (iso) => {
    Not-interested list. */
 function ReviewCard({ product, index, parked, featured, onSubmit, onSkip, onUnskip }) {
   const { c } = useTheme();
+  const navigate = useNavigate();
+  const byLine = (
+    <span style={{ fontSize: 11, color: c.textMuted, alignSelf: "center" }}>
+      by <span onClick={(e) => { e.stopPropagation(); if (product.ownerId) navigate(`/app/member/${product.ownerId}`); }}
+        style={{ color: c.gold, cursor: product.ownerId ? "pointer" : "default", textDecoration: product.ownerId ? "underline" : "none", textDecorationColor: c.borderGold, textUnderlineOffset: 2 }}>{product.developer}</span>{product.devScore ? ` · ★ ${product.devScore}` : ""}
+    </span>
+  );
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
   const [text, setText] = useState("");
@@ -72,7 +79,7 @@ function ReviewCard({ product, index, parked, featured, onSubmit, onSkip, onUnsk
         <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
           <GoldButton onClick={() => onUnskip(product)}>Move back to queue</GoldButton>
           <GhostButton onClick={() => openUrl(product.url)}>Open listing ↗</GhostButton>
-          <span style={{ fontSize: 11, color: c.textMuted, alignSelf: "center" }}>by {product.developer}{product.devScore ? ` · ★ ${product.devScore}` : ""}</span>
+          {byLine}
         </div>
       ) : (
         <>
@@ -83,7 +90,7 @@ function ReviewCard({ product, index, parked, featured, onSubmit, onSkip, onUnsk
               style={{ background: "transparent", border: `1px solid ${c.border}`, borderRadius: 10, padding: "9px 14px", color: c.textMuted, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
               Not interested
             </button>
-            <span style={{ fontSize: 11, color: c.textMuted, alignSelf: "center" }}>by {product.developer}{product.devScore ? ` · ★ ${product.devScore}` : ""}</span>
+            {byLine}
           </div>
 
           {open && (

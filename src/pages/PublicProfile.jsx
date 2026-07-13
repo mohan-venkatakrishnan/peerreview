@@ -7,7 +7,10 @@ import { getMember } from "../data/api";
 import SealMark from "../components/SealMark";
 import Loader from "../components/Loader";
 import BadgeIcon from "../components/BadgeIcon";
+import ProductIcon from "../components/ProductIcon";
 import { Card, GhostButton, StatBar } from "../components/ui";
+
+const openUrl = (url) => url && window.open(/^https?:\/\//.test(url) ? url : `https://${url}`, "_blank", "noopener");
 
 const maskName = (name) => {
   const parts = name.split(" ");
@@ -36,6 +39,10 @@ export default function PublicProfile() {
     shares = p.rank === 1 ? { showName: true, showEmail: true, showPhoto: true } : { showName: p.rank % 2 === 0, showEmail: false, showPhoto: p.rank % 2 === 0 };
     email = p.name.split(" ")[0].toLowerCase().replace(/[^a-z]/g, "") + "@gmail.com";
     displayName = shares.showName ? p.name : maskName(p.name);
+    p.products = [
+      { productId: "mp1", name: "CommentIQ", platform: "Chrome Web Store", category: "Chrome Extension", icon: null, url: "chromewebstore.google.com/detail/commentiq", reviews: 4 },
+      { productId: "mp2", name: "FloatDeck", platform: "Chrome Web Store", category: "Chrome Extension", icon: null, url: "chromewebstore.google.com/detail/floatdeck", reviews: 2 },
+    ];
   } else {
     if (member === null) return <Loader label="Loading member…" />;
     if (member === undefined) return <div style={{ padding: 48, textAlign: "center", color: c.textMuted, fontSize: 14 }}>Member not found.</div>;
@@ -52,6 +59,7 @@ export default function PublicProfile() {
     email = member.email; // pre-masked server-side unless shared
     displayName = member.name;
     p.avatarData = member.avatarData; // null unless the member shares it
+    p.products = member.products ?? [];
   }
   const maskedEmail = useMock ? (shares.showEmail ? email : maskEmail(email)) : email;
 
@@ -107,6 +115,29 @@ export default function PublicProfile() {
         { label: "Verified", value: String(p.verified), sub: `${Math.round((p.verified / Math.max(p.given, 1)) * 100)}% of given` },
         { label: "Give/get ratio", value: (p.given / Math.max(p.received, 1)).toFixed(1) },
       ]} />
+
+      {/* Products this member has listed (public), with reviews each has received */}
+      {p.products?.length > 0 && (
+        <Card className="fade-up-d2" style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+            {displayName.split(" ")[0]}'s products <span style={{ color: c.textMuted, fontFamily: "JetBrains Mono, monospace" }}>{p.products.length}</span>
+          </div>
+          {p.products.map((prod, i) => (
+            <div key={prod.productId} onClick={() => openUrl(prod.url)} title="Open the store listing"
+              style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 0", borderTop: i > 0 ? `1px solid ${c.border}` : "none", cursor: prod.url ? "pointer" : "default" }}>
+              <ProductIcon name={prod.name} icon={prod.icon} size={40} radius={10} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: c.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.name}</div>
+                <div style={{ fontSize: 11, color: c.textMuted }}>{prod.category ? `${prod.category} · ` : ""}{prod.platform}</div>
+              </div>
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: c.gold, fontFamily: "JetBrains Mono, monospace" }}>{prod.reviews}</div>
+                <div style={{ fontSize: 10, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>review{prod.reviews === 1 ? "" : "s"}</div>
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
 
       {/* Badge trophy case */}
       <Card className="fade-up-d3">

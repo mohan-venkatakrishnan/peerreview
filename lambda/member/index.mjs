@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
@@ -31,6 +31,27 @@ export const handler = async (event) => {
   const showName = privacy.showName ?? true;
   const showPhoto = privacy.showPhoto ?? true;
   const showEmail = privacy.showEmail ?? false;
+
+  // Product listings are public (they're in the review pool for everyone), so
+  // no masking — show what this member has listed and how many reviews each got.
+  const { Items: prods = [] } = await client.send(new QueryCommand({
+    TableName: process.env.PRODUCTS_TABLE,
+    KeyConditionExpression: 'userId = :u',
+    ExpressionAttributeValues: { ':u': memberId },
+  })).catch(() => ({ Items: [] }));
+  const products = prods
+    .filter(p => (p.status ?? 'active') === 'active')
+    .map(p => ({
+      productId: p.productId,
+      name: p.name,
+      platform: p.platform,
+      category: p.category,
+      icon: p.icon ?? null,
+      url: p.url,
+      reviews: p.receivedCount ?? 0,               // verified reviews received
+      reviewers: (p.reviewerIds ?? []).length,     // total who reviewed it
+    }));
+
   return respond(200, {
     userId: u.userId,
     name: (self || showName) ? u.name : maskName(u.name),
@@ -46,6 +67,7 @@ export const handler = async (event) => {
     badges: u.badges ?? [],
     categories: u.categories ?? [],
     memberSince: u.createdAt,
+    products,
   });
 };
 
