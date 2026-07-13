@@ -27,10 +27,12 @@ export default function Onboarding() {
     reader.onload = () => {
       const img = new Image();
       img.onload = () => {
-        const S = 128;
+        const S = 256; // 256px gives retina headroom (tiles render up to ~52px @ 3x)
         const canvas = document.createElement("canvas");
         canvas.width = S; canvas.height = S;
         const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high"; // sharper downscale, less aliasing
         const side = Math.min(img.width, img.height);
         ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
         // PNG keeps transparency — a JPEG turns transparent icons into a black square
