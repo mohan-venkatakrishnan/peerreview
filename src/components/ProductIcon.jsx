@@ -5,10 +5,11 @@ import { useTheme } from "../tokens/theme";
 export default function ProductIcon({ name = "", icon, size = 46, radius = 11 }) {
   const { c } = useTheme();
   if (icon) {
-    // backgroundColor shows through any transparency so a transparent icon looks
-    // the same on every card (not blended into a gold-tinted featured card).
+    // No border on a real icon — the outline read as a hard/pixelated edge.
+    // backgroundColor shows through any transparency so it looks consistent
+    // across cards (not blended into a gold-tinted featured card).
     return (
-      <div style={{ width: size, height: size, flexShrink: 0, borderRadius: radius, backgroundColor: c.bg, backgroundImage: `url(${icon})`, backgroundSize: "cover", backgroundPosition: "center", border: `1px solid ${c.borderGold}` }} />
+      <div style={{ width: size, height: size, flexShrink: 0, borderRadius: radius, backgroundColor: c.bg, backgroundImage: `url(${icon})`, backgroundSize: "cover", backgroundPosition: "center" }} />
     );
   }
   return (
