@@ -14,12 +14,12 @@ export default function StatsPanel({ stats, title = "The exchange, live", style 
     { label: "Developers", value: fmt(s.members) },
   ];
   return (
-    <div style={{ background: c.surface, border: `1px solid ${c.borderGold}`, borderRadius: 16, padding: "22px 24px", ...style }}>
+    <div style={{ background: c.surface, border: `1px solid ${c.borderGold}`, borderRadius: 16, padding: "22px 24px", display: "flex", flexDirection: "column", ...style }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 20 }}>
         <span className="live-dot" style={{ width: 8, height: 8, borderRadius: "50%", background: c.verified, flexShrink: 0 }} />
         <span style={{ fontSize: 11, fontWeight: 700, color: c.gold, textTransform: "uppercase", letterSpacing: "0.12em" }}>{title}</span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 4 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 4, flex: 1, alignContent: "center" }}>
         {items.map((it, i) => (
           <div key={it.label} style={{ padding: "6px 12px", textAlign: "center", borderLeft: i > 0 ? `1px solid ${c.border}` : "none" }}>
             <div style={{ fontFamily: "Playfair Display, serif", fontSize: 30, fontWeight: 700, color: c.gold, lineHeight: 1.1 }}>{it.value}</div>

@@ -152,7 +152,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent activity + live exchange stats fill the row */}
-      <div className="grid-main" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20, marginTop: 20, alignItems: "start" }}>
+      <div className="grid-main" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20, marginTop: 20 }}>
         <Card className="fade-up-d3" style={{ padding: 0, overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: `1px solid ${c.border}` }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>Recent activity</span>
