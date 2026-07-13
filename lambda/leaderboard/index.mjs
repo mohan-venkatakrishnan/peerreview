@@ -28,7 +28,7 @@ export const handler = async () => {
     .map((u, i) => ({
       rank: i + 1,
       userId: u.userId,
-      name: u.privacy?.showName ? u.name : maskName(u.name),
+      name: (u.privacy?.showName ?? true) ? u.name : maskName(u.name),
       given: u.given ?? 0,
       received: u.received ?? 0,
       verified: u.verifiedGiven ?? 0,

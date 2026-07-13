@@ -9,7 +9,7 @@ const NEW_USER = (userId, email, name) => ({
   name: name || email.split('@')[0],
   plan: 'free',
   matching: 'category',
-  privacy: { showName: false, showEmail: false, showPhoto: false },
+  privacy: { showName: true, showEmail: false, showPhoto: true }, // name+photo public by default; email opt-in
   creditBalance: 0,
   given: 0,
   received: 0,

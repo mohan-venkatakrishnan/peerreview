@@ -98,11 +98,11 @@ export default function Settings() {
       </Card>
       <Card className="fade-up-d2" style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Public profile privacy</div>
-        <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 16, lineHeight: 1.6 }}>Everything is masked by default. You choose what other members see when they visit your profile.</p>
+        <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 16, lineHeight: 1.6 }}>Your name and photo are shown by default so members know who reviewed them; your email stays private unless you turn it on. Toggle anything off to mask it.</p>
         {[
-          ["showName", "Show my full name", "Otherwise shown as M••••n"],
-          ["showEmail", "Show my email", "Otherwise shown as m•••@•••.com"],
-          ["showPhoto", "Show my profile photo", "Otherwise your initial is shown"],
+          ["showName", "Show my full name", "Turn off to appear as M••••n"],
+          ["showEmail", "Show my email", "Off by default — shown as m•••@•••.com"],
+          ["showPhoto", "Show my profile photo", "Turn off to show your initial instead"],
         ].map(([key, label, hint], i) => (
           <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i < 2 ? `1px solid ${c.border}` : "none" }}>
             <div>

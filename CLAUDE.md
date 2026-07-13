@@ -60,7 +60,7 @@ Never market this as "get store reviews/ratings." Google prohibits incentivised 
 
 - **Privacy by architecture**: browser-side processing wherever possible; no third-party data transmission; no trackers.
 - Google sign-in is used **only** for account identity — call this out in UI copy on the sign-in page.
-- **Privacy masked by default**: on public profiles, name / email / photo are masked unless the member explicitly toggles sharing on (Settings → Public profile privacy).
+- **Public profile visibility** (updated 2026-07-13, supersedes "masked by default"): **name and photo are shown by default** so members know who reviewed them; **email is masked by default** and opt-in. Members can mask any field — or unmask their email — in Settings → Public profile privacy. Masking is still enforced **server-side** (privacy by architecture): a masked value never leaves the server. Defaults live in `lambda/me` seed and each masking site uses `privacy?.showName ?? true` (name/photo) / `?? false` (email).
 - Honest UX copy: explain limitations plainly (see LaunchPad / Electron app precedent).
 - Infrastructure: free tiers preferred (GitHub Pages, Cloudflare KV / Web Analytics). Not-for-profit cost constraints apply.
 - Analytics, if any: Cloudflare Web Analytics (cookieless, script-tag only).

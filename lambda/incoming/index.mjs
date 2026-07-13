@@ -94,8 +94,9 @@ export const handler = async (event) => {
         submittedAt: a.submittedAt,
         ownerRating: a.ownerRating,
         reviewer: reviewer ? {
-          // privacy by architecture: masking happens HERE, server-side
-          name: reviewer.privacy?.showName ? reviewer.name : maskName(reviewer.name),
+          // privacy by architecture: masking happens HERE, server-side.
+          // Name is shown by default; a member can mask it in Settings.
+          name: (reviewer.privacy?.showName ?? true) ? reviewer.name : maskName(reviewer.name),
           trustScore: reviewer.trustScore,
           given: reviewer.given,
         } : { name: 'Former member', trustScore: null, given: 0 },

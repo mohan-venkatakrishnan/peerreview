@@ -19,7 +19,7 @@ export function AppStateProvider({ children }) {
   const [mockVerified, setMockVerified] = useState([]);
   const [mockFlagged, setMockFlagged] = useState([]);
   const [mockReviewed, setMockReviewed] = useState([]); // productIds reviewed this session
-  const [privacy, setPrivacyState] = useState({ showName: false, showEmail: false, showPhoto: false });
+  const [privacy, setPrivacyState] = useState({ showName: true, showEmail: false, showPhoto: true });
   const [plan, setPlanState] = useState(() => localStorage.getItem("peerreview-plan") || "free");
   const [account, setAccountState] = useState(() => {
     try { return JSON.parse(localStorage.getItem("peerreview-account")) || { ...ACCOUNTS[0], avatar: null }; }

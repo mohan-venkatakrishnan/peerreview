@@ -122,7 +122,7 @@ const buildQueue = async (userId, myCategories = [], skipped) => {
       description: p.description,
       icon: p.icon ?? null,
       // owner name only if they opted to show it; trust score is public
-      ownerName: o?.privacy?.showName ? o.name : 'a fellow developer',
+      ownerName: (o?.privacy?.showName ?? true) ? o?.name : 'a fellow developer',
       ownerScore: o?.trustScore ?? null,
       createdAt: p.createdAt ?? p.enqueuedAt ?? null, // when the listing was created
       enqueuedAt: p.enqueuedAt,

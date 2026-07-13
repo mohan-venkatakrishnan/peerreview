@@ -25,16 +25,20 @@ export const handler = async (event) => {
   const privacy = u.privacy ?? {};
   const self = callerId === memberId;
 
-  // Privacy by architecture: masked values are computed here — the raw
-  // name/email of a member who hasn't opted in NEVER leaves the server.
+  // Privacy by architecture: masked values are computed here — the raw value of
+  // a member who has masked a field NEVER leaves the server. Name & photo are
+  // shown by default; email is masked by default (opt-in to show).
+  const showName = privacy.showName ?? true;
+  const showPhoto = privacy.showPhoto ?? true;
+  const showEmail = privacy.showEmail ?? false;
   return respond(200, {
     userId: u.userId,
-    name: (self || privacy.showName) ? u.name : maskName(u.name),
-    nameShared: !!privacy.showName,
-    email: (self || privacy.showEmail) ? u.email : maskEmail(u.email),
-    emailShared: !!privacy.showEmail,
-    photoShared: !!privacy.showPhoto,
-    avatarData: (self || privacy.showPhoto) ? (u.avatarData ?? null) : null,
+    name: (self || showName) ? u.name : maskName(u.name),
+    nameShared: showName,
+    email: (self || showEmail) ? u.email : maskEmail(u.email),
+    emailShared: showEmail,
+    photoShared: showPhoto,
+    avatarData: (self || showPhoto) ? (u.avatarData ?? null) : null,
     trustScore: u.trustScore,
     given: u.given ?? 0,
     received: u.received ?? 0,

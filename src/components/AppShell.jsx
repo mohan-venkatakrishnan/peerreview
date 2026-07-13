@@ -5,6 +5,7 @@ import { useAppState } from "../state";
 import { PLANS, ACCOUNTS } from "../data/mock";
 import SealMark from "./SealMark";
 import BadgeCelebration from "./BadgeCelebration";
+import FeedbackModal from "./FeedbackModal";
 import ParallaxBackdrop from "./ParallaxBackdrop";
 import NavIcon from "./NavIcon";
 import { Avatar, SwitchAccountDialog } from "./ui";
@@ -35,7 +36,7 @@ function activeFromPath(pathname) {
 }
 
 /* Account popover opened from the sidebar footer */
-function AccountMenu({ onClose, onSwitchGoogle }) {
+function AccountMenu({ onClose, onSwitchGoogle, onFeedback }) {
   const { c } = useTheme();
   const { account, switchAccount, signOut, useMock } = useAppState();
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ function AccountMenu({ onClose, onSwitchGoogle }) {
       <div className="fade-up" style={{ position: "absolute", bottom: 96, left: 10, right: 10, zIndex: 50, background: c.surface, border: `1px solid ${c.borderGold}`, borderRadius: 12, padding: 6, boxShadow: "0 16px 48px rgba(0,0,0,0.45)" }}>
         <Item icon="✦" onClick={() => go(() => navigate("/app/profile"))}>View profile</Item>
         <Item icon="✎" onClick={() => go(() => navigate("/app/settings"))}>Edit name &amp; photo</Item>
+        <Item icon="✉" onClick={() => go(onFeedback)}>Send feedback</Item>
         <div style={{ borderTop: `1px solid ${c.border}`, margin: "6px 4px", paddingTop: 6 }}>
           <div style={{ fontSize: 9, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", padding: "2px 8px 6px" }}>Switch account</div>
           {!useMock && (
@@ -89,6 +91,7 @@ export default function AppShell() {
   const { pathname } = useLocation();
   const active = activeFromPath(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
 
   const awaiting = incoming.filter(r => r.state === "pending" || r.state === "submitted").length;
@@ -134,7 +137,7 @@ export default function AppShell() {
             </div>
           ))}
         </nav>
-        {menuOpen && <AccountMenu onClose={() => setMenuOpen(false)} onSwitchGoogle={() => setSwitchOpen(true)} />}
+        {menuOpen && <AccountMenu onClose={() => setMenuOpen(false)} onSwitchGoogle={() => setSwitchOpen(true)} onFeedback={() => setFeedbackOpen(true)} />}
         <div className="side-footer" style={{ borderTop: `1px solid ${c.border}`, padding: "14px 8px 0" }}>
           <div onClick={() => setMenuOpen(o => !o)} role="button" title="Account menu" aria-expanded={menuOpen}
             style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", borderRadius: 10, padding: "6px 6px", margin: "-6px -6px 0", transition: "background 0.15s" }}
@@ -151,6 +154,7 @@ export default function AppShell() {
         </div>
       </aside>
       <SwitchAccountDialog open={switchOpen} onClose={() => setSwitchOpen(false)} onSwitch={signOut} />
+      <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       {/* Main — only this pane changes when navigating in-app */}
       <main className="main-pane" style={{ marginLeft: 232, flex: 1, padding: "40px 48px", maxWidth: 1100, position: "relative", zIndex: 1 }}>
         {saveError && (
