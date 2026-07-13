@@ -36,10 +36,11 @@ const FRIENDLY = {
 const timeAgo = (iso) => {
   if (!iso) return "";
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (s < 3600) return `${Math.max(1, Math.round(s / 60))} min ago`;
-  if (s < 86400) return `${Math.round(s / 3600)} hours ago`;
-  if (s < 1209600) return `${Math.round(s / 86400)} days ago`;
-  return `${Math.round(s / 604800)} weeks ago`;
+  const ago = (n, w) => `${n} ${w}${n === 1 ? "" : "s"} ago`; // "1 day ago", "2 days ago"
+  if (s < 3600) return ago(Math.max(1, Math.round(s / 60)), "min");
+  if (s < 86400) return ago(Math.round(s / 3600), "hour");
+  if (s < 1209600) return ago(Math.round(s / 86400), "day");
+  return ago(Math.round(s / 604800), "week");
 };
 
 const daysLeft = (iso) => {

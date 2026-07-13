@@ -100,11 +100,14 @@ export function AppStateProvider({ children }) {
       // Drop overlay entries the server now confirms; keep the rest so a still-
       // stale read can't flash the old state back.
       const poolIds = new Set(assignment.pool.map(p => p.productId));
+      const featIds = new Set((assignment.featured ?? []).map(p => p.productId));
       const skipIds = new Set((assignment.skipped ?? []).map(p => p.productId));
       const incState = Object.fromEntries(incoming.map(r => [r.id, r.state]));
       const prune = (o, keep) => Object.fromEntries(Object.entries(o).filter(([k, v]) => keep(k, v)));
       setOpt(o => ({
-        poolHide: prune(o.poolHide, id => poolIds.has(id)),   // still hiding? only while server still lists it
+        // keep hiding while the server still lists it anywhere (pool OR featured);
+        // a submitted/featured card must not flash back on a still-stale read
+        poolHide: prune(o.poolHide, id => poolIds.has(id) || featIds.has(id)),
         poolShow: prune(o.poolShow, id => !poolIds.has(id)),  // still injecting? only until server lists it
         skipHide: prune(o.skipHide, id => skipIds.has(id)),
         skipShow: prune(o.skipShow, id => !skipIds.has(id)),
