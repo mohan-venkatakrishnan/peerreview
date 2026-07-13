@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import { CATEGORIES, detectPlatform } from "../data/mock";
 import SealMark from "../components/SealMark";
+import ProductIcon from "../components/ProductIcon";
 import ParallaxBackdrop from "../components/ParallaxBackdrop";
 import { Card, Input, GoldButton, GhostButton } from "../components/ui";
 
@@ -15,7 +16,30 @@ export default function Onboarding() {
   const [onboardStep, setOnboardStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const iconRef = useRef(null);
   const navigate = useNavigate();
+
+  // Optional product icon — resized to a 128px square so the record stays tiny.
+  const onIconPick = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const S = 128;
+        const canvas = document.createElement("canvas");
+        canvas.width = S; canvas.height = S;
+        const ctx = canvas.getContext("2d");
+        const side = Math.min(img.width, img.height);
+        ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+        setProductForm({ ...productForm, icon: canvas.toDataURL("image/jpeg", 0.85) });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
   const platform = detectPlatform(productForm.url);
   const editing = !!productForm.id;
   const step0Valid = productForm.name.trim().length > 0 && !!platform && !!productForm.category;
@@ -94,6 +118,20 @@ export default function Onboarding() {
               </div>
             </div>
             <Input label="One line description" placeholder="What does it do?" value={productForm.desc} onChange={e => setProductForm({ ...productForm, desc: e.target.value })} />
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: c.textSub, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Product icon <span style={{ color: c.textMuted, fontWeight: 400, textTransform: "none" }}>(optional)</span>
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <ProductIcon name={productForm.name} icon={productForm.icon} size={52} radius={12} />
+                <input ref={iconRef} type="file" accept="image/*" onChange={onIconPick} style={{ display: "none" }} />
+                <GhostButton size="sm" onClick={() => iconRef.current?.click()}>{productForm.icon ? "Change icon" : "Upload icon"}</GhostButton>
+                {productForm.icon && (
+                  <button onClick={() => setProductForm({ ...productForm, icon: null })}
+                    style={{ background: "transparent", border: "none", color: c.textMuted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>Remove</button>
+                )}
+              </div>
+            </div>
             <div style={{ marginTop: 8 }}>
               <GoldButton full disabled={!step0Valid} onClick={() => setOnboardStep(1)}>Continue →</GoldButton>
               {!step0Valid && (

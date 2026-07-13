@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import SealMark from "../components/SealMark";
+import ProductIcon from "../components/ProductIcon";
 import NavIcon from "../components/NavIcon";
 import StateBadge from "../components/StateBadge";
 import { Card, GoldButton, GhostButton, StatBar, TrustRing, MeterBar } from "../components/ui";
@@ -58,7 +59,7 @@ export default function Dashboard() {
                 <div style={{ fontSize: 11, color: c.textMuted }}><span style={{ color: c.text, fontWeight: 600, fontFamily: "JetBrains Mono, monospace" }}>{reviewablePool.length}</span> to review</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-                <div style={{ width: 52, height: 52, borderRadius: 12, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{next.name[0]}</div>
+                <ProductIcon name={next.name} icon={next.icon} size={52} radius={12} />
                 <div>
                   <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, color: c.text, lineHeight: 1.2 }}>{next.name}</h3>
                   <div style={{ fontSize: 12, color: c.textMuted, marginTop: 3 }}>{next.category} · {next.platform}</div>
@@ -91,7 +92,7 @@ export default function Dashboard() {
               {products.slice(0, 3).map((p, i) => (
                 <div key={p.id} style={{ marginBottom: i < Math.min(products.length, 3) - 1 ? 16 : 18 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 9, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{p.name[0]}</div>
+                    <ProductIcon name={p.name} icon={p.icon} size={34} radius={9} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 14, fontWeight: 700, color: c.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
                       <div style={{ fontSize: 10, color: c.textMuted }}>{p.platform}</div>

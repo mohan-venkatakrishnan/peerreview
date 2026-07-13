@@ -120,6 +120,7 @@ const buildQueue = async (userId, myCategories = [], skipped) => {
       category: p.category,
       url: p.url,
       description: p.description,
+      icon: p.icon ?? null,
       // owner name only if they opted to show it; trust score is public
       ownerName: o?.privacy?.showName ? o.name : 'a fellow developer',
       ownerScore: o?.trustScore ?? null,

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import SealMark from "../components/SealMark";
+import ProductIcon from "../components/ProductIcon";
 import DatePicker from "../components/DatePicker";
 import Select from "../components/Select";
 import { Card, Input, GoldButton, GhostButton, PageTitle } from "../components/ui";
@@ -43,7 +44,7 @@ function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
   return (
     <Card className={index === 0 ? "fade-up-d1" : "fade-up-d2"} style={{ marginBottom: 16, opacity: parked ? 0.9 : 1 }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-        <div style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 11, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{product.name[0]}</div>
+        <ProductIcon name={product.name} icon={product.icon} size={46} radius={11} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 19, fontWeight: 700, color: c.text, lineHeight: 1.2 }}>{product.name}</h3>
           <div style={{ fontSize: 12, color: c.textMuted, marginTop: 3 }}>

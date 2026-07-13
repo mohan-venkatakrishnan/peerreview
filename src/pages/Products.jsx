@@ -3,6 +3,7 @@ import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import { FREE_LIMIT } from "../data/mock";
 import SealMark from "../components/SealMark";
+import ProductIcon from "../components/ProductIcon";
 import { Card, GoldButton, GhostButton, PageTitle } from "../components/ui";
 
 export default function Products() {
@@ -37,7 +38,7 @@ export default function Products() {
       {products.map((p, i) => (
         <Card key={p.id} className={`fade-up-d${Math.min(i + 1, 3)}`} style={{ marginBottom: 16 }}>
           <div className="wrap-sm" style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 12, background: `linear-gradient(135deg, ${c.gold}25, ${c.gold}50)`, border: `1px solid ${c.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: c.gold, fontWeight: 700 }}>{p.name[0]}</div>
+            <ProductIcon name={p.name} icon={p.icon} size={52} radius={12} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: c.text }}>{p.name}</div>
               <div style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>{p.category} · {p.platform}</div>
@@ -58,7 +59,7 @@ export default function Products() {
                 {p.pending ? "◷ In pool" : "Not queued"}
               </span>
             </div>
-            <GhostButton size="sm" onClick={() => { setProductForm({ id: p.id, name: p.name, url: p.url, category: p.category, desc: p.description || "", platform: p.platform, matching: p.matching || "category" }); navigate("/onboarding"); }}>Edit</GhostButton>
+            <GhostButton size="sm" onClick={() => { setProductForm({ id: p.id, name: p.name, url: p.url, category: p.category, desc: p.description || "", platform: p.platform, matching: p.matching || "category", icon: p.icon ?? null }); navigate("/onboarding"); }}>Edit</GhostButton>
           </div>
         </Card>
       ))}

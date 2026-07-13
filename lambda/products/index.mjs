@@ -87,6 +87,9 @@ export const handler = async (event) => {
     }
 
     const now = new Date().toISOString();
+    // optional product icon: a small data: URL only (client resizes to 128px);
+    // guard the size so a product record can't bloat the table.
+    const icon = (typeof body.icon === 'string' && body.icon.startsWith('data:') && body.icon.length <= 80000) ? body.icon : null;
     const product = {
       userId,
       productId: editing ? body.productId : randomUUID(),
@@ -95,6 +98,7 @@ export const handler = async (event) => {
       platform,
       category: String(body.category ?? '').slice(0, 40),
       description: String(body.description ?? '').slice(0, 280),
+      icon,
       matching: body.matching === 'open' ? 'open' : 'category',
       status: 'active',
       receivedCount: editing ? existing.find(p => p.productId === body.productId).receivedCount ?? 0 : 0,

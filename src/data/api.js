@@ -59,6 +59,7 @@ export const getProducts = async () => (await apiFetch("/products")).map(p => ({
   category: p.category,
   url: p.url,
   description: p.description,
+  icon: p.icon ?? null,
   reviews: p.receivedCount ?? 0,
   pending: p.poolStatus === "queued" ? 1 : 0,
   verified: p.receivedCount ?? 0,
@@ -66,7 +67,7 @@ export const getProducts = async () => (await apiFetch("/products")).map(p => ({
 }));
 export const saveProduct = (form) => apiFetch("/products", {
   method: "POST",
-  body: JSON.stringify({ productId: form.id, name: form.name, url: form.url, category: form.category, description: form.desc ?? form.description, matching: form.matching }),
+  body: JSON.stringify({ productId: form.id, name: form.name, url: form.url, category: form.category, description: form.desc ?? form.description, matching: form.matching, icon: form.icon ?? null }),
 });
 export const deleteProduct = (id) => apiFetch(`/products/${id}`, { method: "DELETE" });
 
@@ -81,6 +82,7 @@ const shapePoolItem = (p) => ({
   platform: p.platform,
   description: p.description,
   url: p.url,
+  icon: p.icon ?? null,
   createdAt: p.createdAt ?? null, // ISO — for "listed X ago", sort, and date filters
 });
 export const getAssignment = async () => {

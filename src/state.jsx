@@ -13,7 +13,7 @@ export function AppStateProvider({ children }) {
   const [spotlightQuery, setSpotlightQuery] = useState("");
   const [stampAnimating, setStampAnimating] = useState(null);
   const [reviewLinkPasted, setReviewLinkPasted] = useState("");
-  const [productForm, setProductForm] = useState({ name: "", platform: "", url: "", category: "", desc: "", matching: "category" });
+  const [productForm, setProductForm] = useState({ name: "", platform: "", url: "", category: "", desc: "", matching: "category", icon: null });
 
   /* ---------- mock-mode interaction state ---------- */
   const [mockVerified, setMockVerified] = useState([]);
@@ -291,7 +291,7 @@ export function AppStateProvider({ children }) {
       loading, loadError, loadData,
       saveError, clearSaveError: () => setSaveError(null),
       saveStatus,
-      resetProductForm: () => setProductForm({ name: "", platform: "", url: "", category: "", desc: "", matching: productForm.matching }),
+      resetProductForm: () => setProductForm({ name: "", platform: "", url: "", category: "", desc: "", matching: productForm.matching, icon: null }),
       // data
       account: unifiedAccount, me, stats,
       badges: USE_MOCK ? ["seal", "box", "quill", "stack", "bolt", "shield"] : (me?.badges ?? []),
