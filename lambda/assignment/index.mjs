@@ -128,8 +128,22 @@ const buildQueue = async (userId, myCategories = [], skipped) => {
       enqueuedAt: p.enqueuedAt,
     };
   };
+  const notSkipped = eligible.filter(p => !skipHas(skipped, p.productId));
+  // Featured: the top 3 products whose owners give the most reviews (given > 0),
+  // pinned above everything. Only feature when there's a meaningful "rest" below.
+  let featured = [];
+  let rest = notSkipped;
+  if (notSkipped.length > 3) {
+    const ranked = notSkipped
+      .filter(p => (owners[p.userId]?.given ?? 0) > 0)
+      .sort((a, b) => (owners[b.userId].given - owners[a.userId].given) || String(a.enqueuedAt ?? '').localeCompare(String(b.enqueuedAt ?? '')));
+    featured = ranked.slice(0, 3);
+    const fids = new Set(featured.map(p => p.productId));
+    rest = notSkipped.filter(p => !fids.has(p.productId));
+  }
   return {
-    pool: eligible.filter(p => !skipHas(skipped, p.productId)).map(shape),
+    featured: featured.map(shape),
+    pool: rest.map(shape),
     skipped: eligible.filter(p => skipHas(skipped, p.productId)).map(shape),
   };
 };
@@ -145,7 +159,7 @@ export const handler = async (event) => {
     const { Item: meUser } = await client.send(new GetCommand({
       TableName: process.env.USERS_TABLE, Key: { userId },
     })).catch(() => ({ Item: null }));
-    const { pool, skipped } = await buildQueue(userId, meUser?.categories ?? [], meUser?.skippedProductIds);
+    const { featured, pool, skipped } = await buildQueue(userId, meUser?.categories ?? [], meUser?.skippedProductIds);
 
     // enrich history with the real product name (assignments only store ids)
     const enriched = [];
@@ -156,7 +170,7 @@ export const handler = async (event) => {
       })).catch(() => ({ Item: null }));
       enriched.push({ ...h, productName: p?.name ?? 'A product' });
     }
-    return respond(200, { pool, skipped, history: enriched });
+    return respond(200, { featured, pool, skipped, history: enriched });
   }
 
   // Not interested / undo — reuses the existing /assignment/skip route (no new

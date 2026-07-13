@@ -30,6 +30,7 @@ export function AppStateProvider({ children }) {
   const [me, setMe] = useState(null);
   const [realProducts, setRealProducts] = useState([]);
   const [realPool, setRealPool] = useState([]);
+  const [realFeatured, setRealFeatured] = useState([]);
   const [realSkipped, setRealSkipped] = useState([]);
   const [mockSkipped, setMockSkipped] = useState([]); // productIds parked (mock)
 
@@ -83,6 +84,7 @@ export function AppStateProvider({ children }) {
       if (meVersion.current === version) setMe(meData);
       setRealProducts(products);
       setRealPool(assignment.pool);
+      setRealFeatured(assignment.featured ?? []);
       setRealSkipped(assignment.skipped ?? []);
       setRealSubmitted(assignment.submitted);
       setRealHistory(assignment.history);
@@ -134,8 +136,12 @@ export function AppStateProvider({ children }) {
   // the open pool of products this member can review right now, split from the
   // ones they've parked in "Not interested" — overlay applied so optimistic
   // moves stay put until the server confirms them
+  // featured = top-3 from the most generous reviewers, pinned above the queue
+  const featuredPool = USE_MOCK
+    ? REVIEW_POOL.slice(0, 1).filter(p => !mockReviewed.includes(p.productId) && !mockSkipped.includes(p.productId))
+    : realFeatured.filter(p => !opt.poolHide[p.productId]);
   const reviewablePool = USE_MOCK
-    ? REVIEW_POOL.filter(p => !mockReviewed.includes(p.productId) && !mockSkipped.includes(p.productId))
+    ? REVIEW_POOL.slice(1).filter(p => !mockReviewed.includes(p.productId) && !mockSkipped.includes(p.productId))
     : dedupById([...Object.values(opt.poolShow), ...realPool]).filter(p => !opt.poolHide[p.productId]);
   const skippedPool = USE_MOCK
     ? REVIEW_POOL.filter(p => mockSkipped.includes(p.productId) && !mockReviewed.includes(p.productId))
@@ -295,7 +301,7 @@ export function AppStateProvider({ children }) {
       // data
       account: unifiedAccount, me, stats,
       badges: USE_MOCK ? ["seal", "box", "quill", "stack", "bolt", "shield"] : (me?.badges ?? []),
-      products, reviewablePool, skippedPool, incoming, history, reviewSubmitted,
+      products, reviewablePool, featuredPool, skippedPool, incoming, history, reviewSubmitted,
       leaderboard: leaderboardRows,
       privacy: USE_MOCK ? privacy : (me?.privacy ?? privacy),
       plan: USE_MOCK ? plan : (me?.plan ?? "free"),

@@ -16,10 +16,16 @@ const reviewSubmittedFromHistory = (history) => history.some(h => h.state === "p
 
 export default function Dashboard() {
   const { c } = useTheme();
-  const { reviewablePool, incoming, history, account, stats, products } = useAppState();
+  const { reviewablePool, featuredPool, incoming, history, account, stats, products } = useAppState();
   const navigate = useNavigate();
-  const next = reviewablePool[0] ?? null;
+  const queue = [...featuredPool, ...reviewablePool];
+  const queueCount = queue.length;
+  const next = queue[0] ?? null;
   const caughtUp = reviewSubmittedFromHistory(history);
+  // Nudge owners who've taken more than they've given (and have things to
+  // review). Reviewing lifts Trust Score + leaderboard rank and keeps the pool
+  // alive — all genuinely true, so the ask stays honest.
+  const showGiveBack = products.length > 0 && queueCount > 0 && stats.given <= stats.received;
   const awaiting = incoming.filter(r => r.state === "pending" || r.state === "submitted").length;
     const verifiedRate = stats.given > 0 ? Math.round((stats.verified / stats.given) * 100) : null;
 
@@ -48,6 +54,21 @@ export default function Dashboard() {
         { label: "Leaderboard", value: stats.rank ? `#${stats.rank}` : "—", sub: stats.rank ? "keep giving to climb" : "review to get ranked" },
       ]} />
 
+      {showGiveBack && (
+        <Card className="fade-up-d1" style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", borderColor: c.borderGold, background: c.goldGlow }}>
+          <div className="float" style={{ flexShrink: 0 }}><SealMark size={44} gold={c.gold} /></div>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: c.text, fontFamily: "Playfair Display, serif", marginBottom: 4 }}>
+              {stats.received > 0 ? `Your ${products.length === 1 ? "product has" : "products have"} received ${stats.received} review${stats.received === 1 ? "" : "s"} — give some back` : "Give a review to get the exchange going"}
+            </div>
+            <p style={{ fontSize: 13, color: c.textSub, lineHeight: 1.6 }}>
+              Reviewing others lifts your Trust Score, climbs you up the leaderboard, and keeps the pool active for everyone. <strong style={{ color: c.gold }}>{queueCount}</strong> product{queueCount === 1 ? " is" : "s are"} waiting in your queue.
+            </p>
+          </div>
+          <GoldButton onClick={() => navigate("/app/review")}>Review products →</GoldButton>
+        </Card>
+      )}
+
       <div className="grid-main" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
         {/* Review queue */}
         <Card className="fade-up-d2" style={{ position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -56,7 +77,7 @@ export default function Dashboard() {
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${c.gold}, transparent)` }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}><NavIcon name="review" size={13} color={c.gold} /> Your review queue</div>
-                <div style={{ fontSize: 11, color: c.textMuted }}><span style={{ color: c.text, fontWeight: 600, fontFamily: "JetBrains Mono, monospace" }}>{reviewablePool.length}</span> to review</div>
+                <div style={{ fontSize: 11, color: c.textMuted }}><span style={{ color: c.text, fontWeight: 600, fontFamily: "JetBrains Mono, monospace" }}>{queueCount}</span> to review</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
                 <ProductIcon name={next.name} icon={next.icon} size={52} radius={12} />
@@ -68,7 +89,7 @@ export default function Dashboard() {
               <p style={{ fontSize: 14, color: c.textSub, lineHeight: 1.7, marginBottom: 18, flex: 1 }}>{next.description}</p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                 <GoldButton onClick={() => navigate("/app/review")}>Start reviewing →</GoldButton>
-                <span style={{ fontSize: 11, color: c.textMuted }}>{reviewablePool.length > 1 ? `+${reviewablePool.length - 1} more in the queue` : "they verify your review"}</span>
+                <span style={{ fontSize: 11, color: c.textMuted }}>{queueCount > 1 ? `+${queueCount - 1} more in the queue` : "they verify your review"}</span>
               </div>
             </>
           ) : (

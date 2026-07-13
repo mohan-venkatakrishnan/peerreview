@@ -86,8 +86,9 @@ const shapePoolItem = (p) => ({
   createdAt: p.createdAt ?? null, // ISO — for "listed X ago", sort, and date filters
 });
 export const getAssignment = async () => {
-  const { pool = [], skipped = [], history = [] } = await apiFetch("/assignment");
+  const { featured = [], pool = [], skipped = [], history = [] } = await apiFetch("/assignment");
   return {
+    featured: featured.map(shapePoolItem),
     pool: pool.map(shapePoolItem),
     skipped: skipped.map(shapePoolItem),
     submitted: !!history.find(h => h.state === "submitted"),

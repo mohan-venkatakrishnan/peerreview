@@ -25,7 +25,7 @@ const formatAgo = (iso) => {
 /* One product. Module-level (never nested) so its input keeps focus across the
    parent's re-renders. `parked` switches it between the queue and the
    Not-interested list. */
-function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
+function ReviewCard({ product, index, parked, featured, onSubmit, onSkip, onUnskip }) {
   const { c } = useTheme();
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
@@ -42,7 +42,10 @@ function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
   };
 
   return (
-    <Card className={index === 0 ? "fade-up-d1" : "fade-up-d2"} style={{ marginBottom: 16, opacity: parked ? 0.9 : 1 }}>
+    <Card className={index === 0 ? "fade-up-d1" : "fade-up-d2"} style={{ marginBottom: 16, opacity: parked ? 0.9 : 1, border: featured ? `1px solid ${c.gold}` : undefined, boxShadow: featured ? `0 0 0 1px ${c.gold}22, 0 8px 28px ${c.gold}12` : undefined, position: "relative" }}>
+      {featured && (
+        <div style={{ position: "absolute", top: -9, left: 18, background: c.gold, color: c.bg, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 6, padding: "2px 8px" }}>✦ Featured</div>
+      )}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
         <ProductIcon name={product.name} icon={product.icon} size={46} radius={11} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -95,7 +98,7 @@ function ReviewCard({ product, index, parked, onSubmit, onSkip, onUnskip }) {
 
 export default function ReviewQueue() {
   const { c } = useTheme();
-  const { reviewablePool, skippedPool, reviewSubmitted, submitReview, skipProduct, unskipProduct } = useAppState();
+  const { reviewablePool, featuredPool, skippedPool, reviewSubmitted, submitReview, skipProduct, unskipProduct } = useAppState();
   const navigate = useNavigate();
   const [tab, setTab] = useState("review"); // 'review' | 'parked'
   const [search, setSearch] = useState("");
@@ -119,6 +122,8 @@ export default function ReviewQueue() {
   };
 
   const source = tab === "parked" ? skippedPool : reviewablePool;
+  // featured pins count toward "there's something here" on the review tab
+  const tabTotal = tab === "parked" ? skippedPool.length : featuredPool.length + reviewablePool.length;
   const categories = [...new Set(source.map(p => p.category).filter(Boolean))].sort();
   const q = search.trim().toLowerCase();
   const filtered = source
@@ -151,11 +156,26 @@ export default function ReviewQueue() {
       />
 
       <div className="fade-up" style={{ display: "flex", gap: 22, borderBottom: `1px solid ${c.border}`, marginBottom: 22 }}>
-        <Tab id="review" label="To review" count={reviewablePool.length} />
+        <Tab id="review" label="To review" count={featuredPool.length + reviewablePool.length} />
         <Tab id="parked" label="Not interested" count={skippedPool.length} />
       </div>
 
-      {source.length === 0 ? (
+      {/* Pinned featured picks — always on top, independent of search/sort/filters */}
+      {tab === "review" && featuredPool.length > 0 && (
+        <div className="fade-up" style={{ marginBottom: 26 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>✦ Featured picks</span>
+          </div>
+          <p style={{ fontSize: 12.5, color: c.textMuted, marginBottom: 14, lineHeight: 1.6 }}>
+            From the members who give the most reviews. <span style={{ color: c.textSub }}>Give more reviews to feature your product here.</span>
+          </p>
+          {featuredPool.map((p, i) => (
+            <ReviewCard key={p.productId} product={p} index={i} featured onSubmit={submitReview} onSkip={skipProduct} onUnskip={unskipProduct} />
+          ))}
+        </div>
+      )}
+
+      {tabTotal === 0 ? (
         <Card className="fade-up-d1" style={{ textAlign: "center", padding: "56px 24px" }}>
           <div className="float" style={{ display: "inline-block", marginBottom: 18 }}><SealMark size={64} animated gold={c.gold} /></div>
           {tab === "parked" ? (
@@ -179,7 +199,7 @@ export default function ReviewQueue() {
             </>
           )}
         </Card>
-      ) : (
+      ) : source.length > 0 ? (
         <>
           {tab === "parked" && (
             <div className="fade-up" style={{ display: "flex", alignItems: "flex-start", gap: 10, background: c.goldGlow, border: `1px solid ${c.borderGold}`, borderRadius: 10, padding: "12px 14px", marginBottom: 18, fontSize: 12.5, color: c.textSub, lineHeight: 1.6 }}>
@@ -240,7 +260,7 @@ export default function ReviewQueue() {
             ))
           )}
         </>
-      )}
+      ) : null}
     </>
   );
 }
