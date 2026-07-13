@@ -100,7 +100,7 @@ export default function ReviewQueue() {
   const { c } = useTheme();
   const { reviewablePool, featuredPool, skippedPool, reviewSubmitted, submitReview, skipProduct, unskipProduct } = useAppState();
   const navigate = useNavigate();
-  const [tab, setTab] = useState("review"); // 'review' | 'parked'
+  const [tab, setTab] = useState("featured"); // 'featured' | 'review' | 'parked'
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
   const [sortDir, setSortDir] = useState("newest"); // 'newest' | 'oldest'
@@ -121,9 +121,11 @@ export default function ReviewQueue() {
     return t >= now - days * 86400000;
   };
 
-  const source = tab === "parked" ? skippedPool : reviewablePool;
-  // featured pins count toward "there's something here" on the review tab
-  const tabTotal = tab === "parked" ? skippedPool.length : featuredPool.length + reviewablePool.length;
+  const featuredIds = new Set(featuredPool.map(p => p.productId));
+  const source = tab === "parked" ? skippedPool
+    : tab === "featured" ? featuredPool
+    : [...featuredPool, ...reviewablePool]; // "To review" includes the featured ones inline
+  const tabTotal = source.length;
   const categories = [...new Set(source.map(p => p.category).filter(Boolean))].sort();
   const q = search.trim().toLowerCase();
   const filtered = source
@@ -155,25 +157,11 @@ export default function ReviewQueue() {
         sub="Everything you can review right now. Pick any one, leave a genuine review on its store listing, then paste your review link — every review you give earns one back."
       />
 
-      <div className="fade-up" style={{ display: "flex", gap: 22, borderBottom: `1px solid ${c.border}`, marginBottom: 22 }}>
+      <div className="fade-up" style={{ display: "flex", gap: 22, borderBottom: `1px solid ${c.border}`, marginBottom: 22, flexWrap: "wrap" }}>
+        <Tab id="featured" label="✦ Featured" count={featuredPool.length} />
         <Tab id="review" label="To review" count={featuredPool.length + reviewablePool.length} />
         <Tab id="parked" label="Not interested" count={skippedPool.length} />
       </div>
-
-      {/* Pinned featured picks — always on top, independent of search/sort/filters */}
-      {tab === "review" && featuredPool.length > 0 && (
-        <div className="fade-up" style={{ marginBottom: 26 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: c.gold, textTransform: "uppercase", letterSpacing: "0.08em" }}>✦ Featured picks</span>
-          </div>
-          <p style={{ fontSize: 12.5, color: c.textMuted, marginBottom: 14, lineHeight: 1.6 }}>
-            From the members who give the most reviews. <span style={{ color: c.textSub }}>Give more reviews to feature your product here.</span>
-          </p>
-          {featuredPool.map((p, i) => (
-            <ReviewCard key={p.productId} product={p} index={i} featured onSubmit={submitReview} onSkip={skipProduct} onUnskip={unskipProduct} />
-          ))}
-        </div>
-      )}
 
       {tabTotal === 0 ? (
         <Card className="fade-up-d1" style={{ textAlign: "center", padding: "56px 24px" }}>
@@ -184,6 +172,14 @@ export default function ReviewQueue() {
               <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 440, margin: "0 auto" }}>
                 Products you mark “Not interested” land here so you can revisit them later. Skipping lowers your Trust Score, so it’s best kept for products you genuinely can’t review.
               </p>
+            </>
+          ) : tab === "featured" ? (
+            <>
+              <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 22, fontWeight: 700, color: c.text, marginBottom: 8 }}>No featured picks yet</h3>
+              <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 440, margin: "0 auto 20px" }}>
+                Featured shows one product each from the members who give the most reviews. Review a few and yours could earn a spot — plus the Featured badge.
+              </p>
+              <GhostButton onClick={() => setTab("review")}>Browse all products →</GhostButton>
             </>
           ) : (
             <>
@@ -199,7 +195,16 @@ export default function ReviewQueue() {
             </>
           )}
         </Card>
-      ) : source.length > 0 ? (
+      ) : tab === "featured" ? (
+        <>
+          <p className="fade-up" style={{ fontSize: 12.5, color: c.textMuted, marginBottom: 16, lineHeight: 1.6 }}>
+            One product each from the members who give the most reviews. <span style={{ color: c.textSub }}>Give more reviews to feature yours here and earn the Featured badge.</span>
+          </p>
+          {featuredPool.map((p, i) => (
+            <ReviewCard key={p.productId} product={p} index={i} featured onSubmit={submitReview} onSkip={skipProduct} onUnskip={unskipProduct} />
+          ))}
+        </>
+      ) : (
         <>
           {tab === "parked" && (
             <div className="fade-up" style={{ display: "flex", alignItems: "flex-start", gap: 10, background: c.goldGlow, border: `1px solid ${c.borderGold}`, borderRadius: 10, padding: "12px 14px", marginBottom: 18, fontSize: 12.5, color: c.textSub, lineHeight: 1.6 }}>
@@ -256,11 +261,12 @@ export default function ReviewQueue() {
           ) : (
             filtered.map((p, i) => (
               <ReviewCard key={p.productId} product={p} index={i} parked={tab === "parked"}
+                featured={tab === "review" && featuredIds.has(p.productId)}
                 onSubmit={submitReview} onSkip={skipProduct} onUnskip={unskipProduct} />
             ))
           )}
         </>
-      ) : null}
+      )}
     </>
   );
 }

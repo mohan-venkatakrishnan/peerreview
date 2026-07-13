@@ -137,9 +137,28 @@ const buildQueue = async (userId, myCategories = [], skipped) => {
     const ranked = notSkipped
       .filter(p => (owners[p.userId]?.given ?? 0) > 0)
       .sort((a, b) => (owners[b.userId].given - owners[a.userId].given) || String(a.enqueuedAt ?? '').localeCompare(String(b.enqueuedAt ?? '')));
-    featured = ranked.slice(0, 3);
+    const seenOwners = new Set();
+    for (const p of ranked) {
+      if (seenOwners.has(p.userId)) continue; // ONE featured slot per owner
+      seenOwners.add(p.userId);
+      featured.push(p);
+      if (featured.length === 3) break;
+    }
     const fids = new Set(featured.map(p => p.productId));
     rest = notSkipped.filter(p => !fids.has(p.productId));
+    // Award the Featured badge to owners who made the cut (idempotent).
+    for (const p of featured) {
+      const o = owners[p.userId];
+      if (o && !(o.badges ?? []).includes('spotlight')) {
+        await client.send(new UpdateCommand({
+          TableName: process.env.USERS_TABLE,
+          Key: { userId: p.userId },
+          UpdateExpression: 'SET badges = list_append(if_not_exists(badges, :empty), :b)',
+          ConditionExpression: 'attribute_not_exists(badges) OR NOT contains(badges, :bs)',
+          ExpressionAttributeValues: { ':empty': [], ':b': ['spotlight'], ':bs': 'spotlight' },
+        })).catch(() => {});
+      }
+    }
   }
   return {
     featured: featured.map(shape),

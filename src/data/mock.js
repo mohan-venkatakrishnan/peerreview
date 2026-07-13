@@ -94,6 +94,7 @@ export const BADGE_DEFS = {
   comet: { name: "Comet", desc: "52-week review streak", how: "A full year of unbroken weekly reviews.", group: "Speed & Streaks" },
   // Community
   crown: { name: "Top Reviewer", desc: "#1 on a monthly leaderboard", how: "Finish a calendar month ranked #1 on the leaderboard.", group: "Community" },
+  spotlight: { name: "Featured", desc: "Product featured for giving the most reviews", how: "Give enough reviews to reach the Featured picks — the top reviewers' products pinned at the top of the queue. One slot per reviewer.", group: "Community" },
   handshake: { name: "Good Neighbor", desc: "Prompt verifier", how: "Verify 10 incoming reviews within 48 hours of submission.", group: "Community" },
   scale: { name: "Fair Judge", desc: "25 owner ratings given", how: "Rate the helpfulness of 25 incoming reviews.", group: "Community" },
   heart: { name: "Giver", desc: "Gives more than receives", how: "Keep a give/get ratio of 1.5+ across 20 reviews.", group: "Community" },
