@@ -33,7 +33,8 @@ export default function Onboarding() {
         const ctx = canvas.getContext("2d");
         const side = Math.min(img.width, img.height);
         ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
-        setProductForm({ ...productForm, icon: canvas.toDataURL("image/jpeg", 0.85) });
+        // PNG keeps transparency — a JPEG turns transparent icons into a black square
+        setProductForm({ ...productForm, icon: canvas.toDataURL("image/png") });
       };
       img.src = reader.result;
     };
