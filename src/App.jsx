@@ -57,6 +57,8 @@ function GlobalStyles() {
     .badge-ring { animation: badgeRing 9s linear infinite; }
     @keyframes loaderDraw { 0% { stroke-dashoffset: 182; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -182; } }
     .loader-ring { animation: loaderDraw 1.5s ease-in-out infinite; }
+    @keyframes toastIn { 0% { opacity: 0; transform: translateY(16px); } 100% { opacity: 1; transform: translateY(0); } }
+    .toast-in { animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
     .fx-lite .loader-ring { animation: none; stroke-dashoffset: 64; }
     .badge-pulse { animation: badgePulse 2.4s ease-in-out infinite; }
     .fx-lite .badge-pop { animation: none; opacity: 1; }

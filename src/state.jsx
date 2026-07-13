@@ -42,6 +42,15 @@ export function AppStateProvider({ children }) {
   // change is stable from click until confirmed, with no flicker.
   const [opt, setOpt] = useState({ poolHide: {}, poolShow: {}, skipHide: {}, skipShow: {}, incoming: {} });
   const omit = (obj, k) => { const { [k]: _drop, ...rest } = obj; return rest; };
+
+  /* Transient toast for action confirmations (submit / verify / flag). */
+  const [toast, setToastState] = useState(null);
+  const toastTimer = useRef(null);
+  const showToast = (message, tone = "gold") => {
+    setToastState({ message, tone, key: Date.now() });
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToastState(null), 2800);
+  };
   const [realSubmitted, setRealSubmitted] = useState(false);
   const [realIncoming, setRealIncoming] = useState([]);
   const [realHistory, setRealHistory] = useState([]);
@@ -187,34 +196,35 @@ export function AppStateProvider({ children }) {
   const verifyReview = async (id, rating = 5) => {
     setStampAnimating(id);
     if (USE_MOCK) {
-      setTimeout(() => { setMockVerified(v => [...v, id]); setStampAnimating(null); }, 500);
+      setTimeout(() => { setMockVerified(v => [...v, id]); setStampAnimating(null); showToast("Review marked verified", "verified"); }, 500);
       return;
     }
     // Optimistic overlay: force this card to 'verified' until the server (read
     // from an eventually-consistent GSI) reports the same, so it neither needs
     // a reload nor flashes back to 'submitted'.
     setOpt(o => ({ ...o, incoming: { ...o.incoming, [id]: "verified" } }));
-    try { await api.verifyReview(id, rating); }
+    try { await api.verifyReview(id, rating); showToast("Review marked verified", "verified"); }
     catch (e) { setSaveError(e.message); setOpt(o => ({ ...o, incoming: omit(o.incoming, id) })); } // revert
     finally { setStampAnimating(null); }
     loadData(true);
   };
 
   const flagReview = async (id, reason) => {
-    if (USE_MOCK) { setMockFlagged(f => [...f, id]); return; }
+    if (USE_MOCK) { setMockFlagged(f => [...f, id]); showToast("Review flagged", "flagged"); return; }
     setOpt(o => ({ ...o, incoming: { ...o.incoming, [id]: "flagged" } }));
-    try { await api.flagReview(id, reason); }
+    try { await api.flagReview(id, reason); showToast("Review flagged", "flagged"); }
     catch (e) { setSaveError(e.message); setOpt(o => ({ ...o, incoming: omit(o.incoming, id) })); }
     loadData(true);
   };
 
   const submitReview = async (productId, ownerId, link, text) => {
-    if (USE_MOCK) { setMockReviewed(r => [...r, productId]); return; }
+    if (USE_MOCK) { setMockReviewed(r => [...r, productId]); showToast("Review sent for verification"); return; }
     // Overlay: hide from both lists until the server confirms; can't be
     // submitted twice while in flight and won't flash back on the next refetch.
     setOpt(o => ({ ...o, poolHide: { ...o.poolHide, [productId]: true }, skipHide: { ...o.skipHide, [productId]: true }, poolShow: omit(o.poolShow, productId), skipShow: omit(o.skipShow, productId) }));
     try { await api.submitReview(productId, ownerId, link, text); }
     catch (e) { setOpt(o => ({ ...o, poolHide: omit(o.poolHide, productId) })); throw e; } // let the card surface the error + restore
+    showToast("Review sent for verification");
     loadData(true);
   };
 
@@ -317,6 +327,7 @@ export function AppStateProvider({ children }) {
       loading, loadError, loadData,
       saveError, clearSaveError: () => setSaveError(null),
       saveStatus,
+      toast, showToast,
       resetProductForm: () => setProductForm({ name: "", platform: "", url: "", category: "", desc: "", matching: productForm.matching, icon: null }),
       // data
       account: unifiedAccount, me, stats,

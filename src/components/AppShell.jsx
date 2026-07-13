@@ -6,6 +6,7 @@ import { PLANS, ACCOUNTS } from "../data/mock";
 import SealMark from "./SealMark";
 import Loader from "./Loader";
 import BadgeCelebration from "./BadgeCelebration";
+import Toast from "./Toast";
 import FeedbackModal from "./FeedbackModal";
 import ParallaxBackdrop from "./ParallaxBackdrop";
 import NavIcon from "./NavIcon";
@@ -105,6 +106,7 @@ export default function AppShell() {
     <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
       <ParallaxBackdrop intensity={0.7} />
       <BadgeCelebration />
+      <Toast />
       {/* Sidebar */}
       <aside className="side-nav" style={{ width: 232, background: c.surface, borderRight: `1px solid ${c.border}`, padding: "24px 16px", position: "fixed", top: 0, bottom: 0, display: "flex", flexDirection: "column", zIndex: 5 }}>
         <div className="side-brand" style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 20, cursor: "pointer" }} onClick={() => navigate("/")}>
