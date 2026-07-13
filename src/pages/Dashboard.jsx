@@ -3,6 +3,7 @@ import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import SealMark from "../components/SealMark";
 import ProductIcon from "../components/ProductIcon";
+import StatsPanel from "../components/StatsPanel";
 import NavIcon from "../components/NavIcon";
 import StateBadge from "../components/StateBadge";
 import { Card, GoldButton, GhostButton, StatBar, TrustRing, MeterBar } from "../components/ui";
@@ -16,7 +17,7 @@ const reviewSubmittedFromHistory = (history) => history.some(h => h.state === "p
 
 export default function Dashboard() {
   const { c } = useTheme();
-  const { reviewablePool, featuredPool, incoming, history, account, stats, products } = useAppState();
+  const { reviewablePool, featuredPool, incoming, history, account, stats, products, platformStats } = useAppState();
   const navigate = useNavigate();
   const queue = [...featuredPool, ...reviewablePool];
   const queueCount = queue.length;
@@ -150,27 +151,30 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Recent activity */}
-      <Card className="fade-up-d3" style={{ marginTop: 20, padding: 0, overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: `1px solid ${c.border}` }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>Recent activity</span>
-          <span onClick={() => navigate("/app/profile")} style={{ fontSize: 12, color: c.textMuted, cursor: "pointer" }}>Full history →</span>
-        </div>
-        {history.length === 0 && (
-          <div style={{ padding: "24px", textAlign: "center", fontSize: 13, color: c.textMuted }}>No reviews yet — your first assignment starts the story.</div>
-        )}
-        {history.slice(0, 3).map((r, i, arr) => (
-          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 24px", borderBottom: i < arr.length - 1 ? `1px solid ${c.border}` : "none" }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{r.product[0]}</div>
-            <div style={{ flex: 1 }}>
-              <span style={{ fontSize: 13, color: c.text }}>You reviewed <strong>{r.product}</strong></span>
-              {r.rating && <span style={{ fontSize: 11, color: c.gold, marginLeft: 8 }}>rated ★ {r.rating}</span>}
-            </div>
-            <span style={{ fontSize: 11, color: c.textMuted, fontFamily: "JetBrains Mono, monospace" }}>{r.time}</span>
-            <StateBadge state={r.state} />
+      {/* Recent activity + live exchange stats fill the row */}
+      <div className="grid-main" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20, marginTop: 20, alignItems: "start" }}>
+        <Card className="fade-up-d3" style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: `1px solid ${c.border}` }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>Recent activity</span>
+            <span onClick={() => navigate("/app/profile")} style={{ fontSize: 12, color: c.textMuted, cursor: "pointer" }}>Full history →</span>
           </div>
-        ))}
-      </Card>
+          {history.length === 0 && (
+            <div style={{ padding: "24px", textAlign: "center", fontSize: 13, color: c.textMuted }}>No reviews yet — your first review starts the story.</div>
+          )}
+          {history.slice(0, 3).map((r, i, arr) => (
+            <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 24px", borderBottom: i < arr.length - 1 ? `1px solid ${c.border}` : "none" }}>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: c.gold, fontFamily: "Playfair Display, serif", fontWeight: 700 }}>{r.product[0]}</div>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: 13, color: c.text }}>You reviewed <strong>{r.product}</strong></span>
+                {r.rating && <span style={{ fontSize: 11, color: c.gold, marginLeft: 8 }}>rated ★ {r.rating}</span>}
+              </div>
+              <span style={{ fontSize: 11, color: c.textMuted, fontFamily: "JetBrains Mono, monospace" }}>{r.time}</span>
+              <StateBadge state={r.state} />
+            </div>
+          ))}
+        </Card>
+        <StatsPanel stats={platformStats} />
+      </div>
     </>
   );
 }

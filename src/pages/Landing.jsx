@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../tokens/theme";
-import { PLATFORMS, LANDING_STATS, HOW_IT_WORKS, TESTIMONIALS } from "../data/mock";
+import { PLATFORMS, HOW_IT_WORKS, TESTIMONIALS } from "../data/mock";
 import SealMark from "../components/SealMark";
 import StateBadge from "../components/StateBadge";
+import StatsPanel from "../components/StatsPanel";
 import ParallaxBackdrop from "../components/ParallaxBackdrop";
 import { LeaderTable } from "./Leaderboard";
-import { USE_MOCK } from "../state";
+import { USE_MOCK, useAppState } from "../state";
 import { isAuthed } from "../data/auth";
 import { Card, GoldButton, GhostButton } from "../components/ui";
 
@@ -88,20 +89,15 @@ function Hero() {
   );
 }
 
-/* ---- Stats bar ---- */
+/* ---- Stats bar (live from the exchange) ---- */
 function StatsBar() {
-  const { c } = useTheme();
+  const { platformStats } = useAppState();
   return (
     <Section style={{ padding: "40px 24px 96px" }}>
       <Reveal>
-        <Card style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 0, padding: 0, overflow: "hidden" }}>
-          {LANDING_STATS.map((s, i) => (
-            <div key={s.label} style={{ padding: "28px 24px", textAlign: "center", borderLeft: i > 0 ? `1px solid ${c.border}` : "none" }}>
-              <div style={{ fontFamily: "Playfair Display, serif", fontSize: 34, fontWeight: 700, color: c.gold }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: c.textMuted, marginTop: 6 }}>{s.label}</div>
-            </div>
-          ))}
-        </Card>
+        <div style={{ maxWidth: 860, margin: "0 auto" }}>
+          <StatsPanel stats={platformStats} title="The exchange, live" />
+        </div>
       </Reveal>
     </Section>
   );

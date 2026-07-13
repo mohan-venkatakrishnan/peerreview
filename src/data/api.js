@@ -128,19 +128,14 @@ export const flagReview = (assignmentId, reason = "") => apiFetch("/incoming/fla
 /* ---- community ---- */
 export const getMember = (id) => apiFetch(`/member/${id}`);
 export const getLeaderboard = async () => {
-  // public endpoint — no auth header needed
+  // public endpoint — no auth header needed. Returns { rows, stats }.
   const res = await fetch(`${API}/leaderboard`);
-  const rows = await res.json();
-  return rows.map(r => ({
-    rank: r.rank,
-    userId: r.userId,
-    name: r.name,
-    given: r.given,
-    received: r.received,
-    verified: r.verified,
-    score: r.score,
-    streak: 0,
-    category: r.category,
-    badges: r.badges,
+  const body = await res.json();
+  const rawRows = Array.isArray(body) ? body : (body.rows ?? []);
+  const rows = rawRows.map(r => ({
+    rank: r.rank, userId: r.userId, name: r.name,
+    given: r.given, received: r.received, verified: r.verified,
+    score: r.score, streak: 0, category: r.category, badges: r.badges,
   }));
+  return { rows, stats: (Array.isArray(body) ? null : body.stats) ?? null };
 };

@@ -55,6 +55,7 @@ export function AppStateProvider({ children }) {
   const [realIncoming, setRealIncoming] = useState([]);
   const [realHistory, setRealHistory] = useState([]);
   const [leaderboardRows, setLeaderboardRows] = useState(USE_MOCK ? LEADERBOARD_FULL : []);
+  const [platformStats, setPlatformStats] = useState(null);
   const [loading, setLoading] = useState(!USE_MOCK);
   const [loadError, setLoadError] = useState(null);
   const [saveError, setSaveError] = useState(null); // background writes: banner, never a full-screen takeover
@@ -88,7 +89,7 @@ export function AppStateProvider({ children }) {
     loadingRef.current = true;
     // Live never shows sample rows — real leaderboard or an honest empty state.
     api.getLeaderboard()
-      .then(lb => setLeaderboardRows(lb))
+      .then(({ rows, stats }) => { setLeaderboardRows(rows); if (stats) setPlatformStats(stats); })
       .catch(() => setLeaderboardRows([]));
     if (!isAuthed()) { setLoading(false); loadingRef.current = false; return; }
     if (!silent) { setLoading(true); setLoadError(null); }
@@ -334,6 +335,7 @@ export function AppStateProvider({ children }) {
       badges: USE_MOCK ? ["seal", "box", "quill", "stack", "bolt", "shield"] : (me?.badges ?? []),
       products, reviewablePool, featuredPool, skippedPool, incoming, history, reviewSubmitted,
       leaderboard: leaderboardRows,
+      platformStats: USE_MOCK ? { members: 24, products: 31, reviewsExchanged: 128, avgReceived: 4.1 } : platformStats,
       privacy: USE_MOCK ? privacy : (me?.privacy ?? privacy),
       plan: USE_MOCK ? plan : (me?.plan ?? "free"),
       matching: USE_MOCK ? productForm.matching : (me?.matching ?? "category"),

@@ -37,13 +37,40 @@ export const handler = async () => {
       category: (u.categories ?? [])[0] ?? '',
     }));
 
+  // Aggregate "state of the exchange" stats for the dashboard + landing panels.
+  const real = users.filter(u => !String(u.userId).startsWith('pending#'));
+  const members = real.length;
+  const reviewsExchanged = real.reduce((s, u) => s + (u.given ?? 0), 0);
+  const totalReceived = real.reduce((s, u) => s + (u.received ?? 0), 0);
+
+  let products = 0, pKey;
+  do {
+    const pg = await client.send(new ScanCommand({
+      TableName: process.env.PRODUCTS_TABLE,
+      Select: 'COUNT',
+      FilterExpression: '#s = :active',
+      ExpressionAttributeNames: { '#s': 'status' },
+      ExpressionAttributeValues: { ':active': 'active' },
+      ExclusiveStartKey: pKey,
+    }));
+    products += pg.Count ?? 0;
+    pKey = pg.LastEvaluatedKey;
+  } while (pKey);
+
+  const stats = {
+    members,
+    products,
+    reviewsExchanged,
+    avgReceived: products ? Math.round((totalReceived / products) * 10) / 10 : 0,
+  };
+
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'public, max-age=300', // 5 min — cheap and fresh enough
+      'Cache-Control': 'public, max-age=30', // ~live for the stats panels
     },
-    body: JSON.stringify(rows),
+    body: JSON.stringify({ rows, stats }),
   };
 };
