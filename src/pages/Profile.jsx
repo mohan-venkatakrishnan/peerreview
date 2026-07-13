@@ -12,7 +12,15 @@ import { Card, GhostButton, StatBar } from "../components/ui";
 export default function Profile() {
   const { c } = useTheme();
   const { account, history, stats, badges } = useAppState();
-  const ratio = stats.received > 0 ? (stats.given / stats.received).toFixed(1) : "—";
+  // Give/get ratio is given ÷ received. With 0 received it's undefined — show ∞
+  // when you've given but received nothing yet (great for ranking), else "—".
+  const ratio = stats.received > 0 ? (stats.given / stats.received).toFixed(1) : (stats.given > 0 ? "∞" : "—");
+  const ratioSub = stats.received > 0 ? "givers rank higher" : (stats.given > 0 ? "all give, no get yet" : "givers rank higher");
+  const ratioTip = stats.received > 0
+    ? "Reviews given ÷ reviews received. Giving more than you receive keeps it high — and lifts your Trust Score and rank."
+    : (stats.given > 0
+        ? "You've given reviews but received none yet, so the ratio is effectively infinite (∞) — the best it can be. It'll show a number once your products start getting reviewed."
+        : "Reviews given ÷ reviews received. It appears once you've given or received a review.");
   const [historySearch, setHistorySearch] = useState("");
   const filteredHistory = history.filter(r => !historySearch ||
     r.product.toLowerCase().includes(historySearch.toLowerCase()) ||
@@ -46,7 +54,7 @@ export default function Profile() {
         { label: "Reviews given", value: String(stats.given) },
         { label: "Reviews received", value: String(stats.received) },
         { label: "Trust Score", value: `★ ${account.score}`, color: c.gold },
-        { label: "Give/get ratio", value: ratio, sub: "givers rank higher" },
+        { label: "Give/get ratio", value: ratio, sub: ratioSub, tip: ratioTip },
       ]} />
 
       <Card className="fade-up-d2" style={{ marginBottom: 20 }}>

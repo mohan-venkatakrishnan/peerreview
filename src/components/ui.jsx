@@ -63,7 +63,7 @@ export function StatBar({ items, className, style }) {
     <Card className={`statbar ${className ?? ""}`} style={{ padding: 0, overflow: "hidden", display: "grid", gridTemplateColumns: `repeat(${items.length}, 1fr)`, ...style }}>
       {items.map((s, i) => (
         <div key={s.label} style={{ padding: "20px 24px", borderLeft: i > 0 ? `1px solid ${c.border}` : "none" }}>
-          <div style={{ fontSize: 10, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{s.label}</div>
+          <div data-tip={s.tip || undefined} style={{ fontSize: 10, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, cursor: s.tip ? "help" : undefined, display: "inline-flex", alignItems: "center", gap: 5 }}>{s.label}{s.tip && <span style={{ fontSize: 11, opacity: 0.7 }}>ⓘ</span>}</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 26, fontWeight: 500, color: s.color || c.text, lineHeight: 1, letterSpacing: "-0.02em" }}>{s.value}</span>
             {s.delta && <span style={{ fontSize: 10, fontWeight: 600, color: c.verified, background: c.verified + "14", border: `1px solid ${c.verified}30`, borderRadius: 8, padding: "2px 7px" }}>{s.delta}</span>}

@@ -5,6 +5,7 @@ import { useAppState } from "../state";
 import { BADGE_DEFS } from "../data/mock";
 import { getMember } from "../data/api";
 import SealMark from "../components/SealMark";
+import Loader from "../components/Loader";
 import BadgeIcon from "../components/BadgeIcon";
 import { Card, GhostButton, StatBar } from "../components/ui";
 
@@ -36,7 +37,7 @@ export default function PublicProfile() {
     email = p.name.split(" ")[0].toLowerCase().replace(/[^a-z]/g, "") + "@gmail.com";
     displayName = shares.showName ? p.name : maskName(p.name);
   } else {
-    if (member === null) return <div style={{ padding: 48, textAlign: "center", color: c.textMuted, fontSize: 14 }}>Loading member…</div>;
+    if (member === null) return <Loader label="Loading member…" />;
     if (member === undefined) return <div style={{ padding: 48, textAlign: "center", color: c.textMuted, fontSize: 14 }}>Member not found.</div>;
     /* server already masked what the member keeps private */
     p = {
@@ -128,7 +129,7 @@ export default function PublicProfile() {
           ))}
         </div>
         <div style={{ marginTop: 20, padding: "12px 16px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, fontSize: 12, color: c.textMuted, lineHeight: 1.6 }}>
-          🔒 This member controls what's visible here. Name, email, and photo are masked by default — each is shown only if they've chosen to share it.
+          🔒 This member controls what's visible here. Name and photo are shown by default; email is masked unless they've chosen to share it.
         </div>
       </Card>
     </>

@@ -67,13 +67,21 @@ export function AppStateProvider({ children }) {
   // silent=true for background refreshes (poll / tab focus): update data in
   // place with no loading takeover and no error screen — the initial load is
   // the only one that shows the spinner.
+  const loadingRef = useRef(false);  // a load is in flight
+  const pendingRef = useRef(false);  // another was requested while in flight
+  const lastLoadAt = useRef(0);
   const loadData = async (silent = false) => {
     if (USE_MOCK) return;
+    // Coalesce overlapping loads (mount + focus + poll firing together caused the
+    // list to render twice). If one is running, remember we want a fresh one and
+    // run it once the current finishes — no double fetch, no double render.
+    if (loadingRef.current) { pendingRef.current = true; return; }
+    loadingRef.current = true;
     // Live never shows sample rows — real leaderboard or an honest empty state.
     api.getLeaderboard()
       .then(lb => setLeaderboardRows(lb))
       .catch(() => setLeaderboardRows([]));
-    if (!isAuthed()) { setLoading(false); return; }
+    if (!isAuthed()) { setLoading(false); loadingRef.current = false; return; }
     if (!silent) { setLoading(true); setLoadError(null); }
     const version = meVersion.current;
     try {
@@ -102,11 +110,14 @@ export function AppStateProvider({ children }) {
         skipShow: prune(o.skipShow, id => !skipIds.has(id)),
         incoming: prune(o.incoming, (id, st) => incState[id] !== st), // override until server agrees
       }));
+      lastLoadAt.current = Date.now();
       if (!silent) setLoadError(null);
     } catch (e) {
       if (!silent) setLoadError(e.message); // background failures keep stale data, no takeover
     } finally {
       if (!silent) setLoading(false);
+      loadingRef.current = false;
+      if (pendingRef.current) { pendingRef.current = false; loadData(true); } // run the coalesced refresh
     }
   };
 
@@ -114,9 +125,10 @@ export function AppStateProvider({ children }) {
     loadData();
     if (USE_MOCK) return;
     // Keep the queue/incoming fresh without a manual reload: poll every 30s,
-    // and refetch the moment the tab regains focus.
+    // and refetch when the tab regains focus — but not if we just loaded (avoids
+    // a redundant refetch right after navigation/first paint).
     const iv = setInterval(() => { if (isAuthed()) loadData(true); }, 30000);
-    const onFocus = () => { if (document.visibilityState === 'visible' && isAuthed()) loadData(true); };
+    const onFocus = () => { if (document.visibilityState === 'visible' && isAuthed() && Date.now() - lastLoadAt.current > 5000) loadData(true); };
     document.addEventListener('visibilitychange', onFocus);
     window.addEventListener('focus', onFocus);
     return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onFocus); window.removeEventListener('focus', onFocus); };

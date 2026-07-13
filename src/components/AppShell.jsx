@@ -4,6 +4,7 @@ import { useTheme } from "../tokens/theme";
 import { useAppState } from "../state";
 import { PLANS, ACCOUNTS } from "../data/mock";
 import SealMark from "./SealMark";
+import Loader from "./Loader";
 import BadgeCelebration from "./BadgeCelebration";
 import FeedbackModal from "./FeedbackModal";
 import ParallaxBackdrop from "./ParallaxBackdrop";
@@ -168,10 +169,7 @@ export default function AppShell() {
             error with a human sentence + Retry, then content. Nothing
             plan-dependent renders before the data is known. */}
         {loading ? (
-          <div className="pane-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18 }}>
-            <div className="float"><SealMark size={56} animated gold={c.gold} /></div>
-            <div style={{ fontSize: 14, color: c.textMuted }}>Loading your exchange…</div>
-          </div>
+          <Loader fullPane label="Loading your exchange…" />
         ) : loadError ? (
           <div className="pane-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, textAlign: "center", padding: 24 }}>
             <SealMark size={48} gold={c.flagged} />

@@ -55,6 +55,9 @@ function GlobalStyles() {
     .badge-pop { animation: badgeIn 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
     .badge-pop.leaving { animation: badgeOut 0.4s ease forwards; }
     .badge-ring { animation: badgeRing 9s linear infinite; }
+    @keyframes loaderDraw { 0% { stroke-dashoffset: 182; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -182; } }
+    .loader-ring { animation: loaderDraw 1.5s ease-in-out infinite; }
+    .fx-lite .loader-ring { animation: none; stroke-dashoffset: 64; }
     .badge-pulse { animation: badgePulse 2.4s ease-in-out infinite; }
     .fx-lite .badge-pop { animation: none; opacity: 1; }
     .fx-lite .badge-ring, .fx-lite .badge-pulse { animation: none; }
