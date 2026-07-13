@@ -60,13 +60,35 @@ export const handler = async () => {
     })).catch(() => null);
   }
 
-  /* ---- 2. Auto-assign is retired ----
-     PeerReview now runs an OPEN POOL: members browse everything they can
-     review and pick for themselves (see lambda/assignment buildPool), so the
-     matcher no longer pushes one-at-a-time assignments or removes products
-     from the pool. It stays scheduled purely to expire stale legacy
-     'assigned' rows above. Remove this early return to re-enable push-matching. */
-  return { assigned: 0, expired: active.length, mode: 'open-pool' };
+  /* ---- 2. Self-heal the open pool ----
+     Every ACTIVE product should be queued so members can keep reviewing it.
+     Re-queue any that fell out (legacy state, or an interrupted write) so a
+     product can never get silently stranded and unreviewable. */
+  let requeued = 0;
+  try {
+    const { Items: stray = [] } = await client.send(new ScanCommand({
+      TableName: process.env.PRODUCTS_TABLE,
+      FilterExpression: '#s = :active AND (attribute_not_exists(poolStatus) OR poolStatus <> :q)',
+      ExpressionAttributeNames: { '#s': 'status' },
+      ExpressionAttributeValues: { ':active': 'active', ':q': 'queued' },
+    }));
+    for (const p of stray) {
+      await client.send(new UpdateCommand({
+        TableName: process.env.PRODUCTS_TABLE,
+        Key: { userId: p.userId, productId: p.productId },
+        UpdateExpression: 'SET poolStatus = :q, enqueuedAt = if_not_exists(enqueuedAt, :n)',
+        ExpressionAttributeValues: { ':q': 'queued', ':n': nowIso },
+      })).catch(() => null);
+      requeued += 1;
+    }
+  } catch (e) { console.log('pool self-heal skipped:', e.message); }
+
+  /* ---- 3. Auto-assign is retired ----
+     PeerReview now runs an OPEN POOL: members browse everything they can review
+     and pick for themselves (see lambda/assignment buildPool), so the matcher
+     no longer pushes one-at-a-time assignments. Remove this early return to
+     re-enable push-matching. */
+  return { assigned: 0, expired: active.length, requeued, mode: 'open-pool' };
 
   /* eslint-disable no-unreachable */
   const { Items: pool = [] } = await client.send(new QueryCommand({
