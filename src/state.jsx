@@ -122,13 +122,18 @@ export function AppStateProvider({ children }) {
   };
 
   useEffect(() => {
+    // Treat the mount as a fresh load so the browser's initial 'focus' event
+    // doesn't immediately trigger a second fetch (that caused the queue to
+    // render, then re-render ~1s later — the "loads twice" flicker).
+    lastLoadAt.current = Date.now();
     loadData();
     if (USE_MOCK) return;
-    // Keep the queue/incoming fresh without a manual reload: poll every 30s,
-    // and refetch when the tab regains focus — but not if we just loaded (avoids
-    // a redundant refetch right after navigation/first paint).
+    // Keep the queue/incoming fresh without a manual reload: poll every 30s, and
+    // refetch when the tab regains focus — but not while a load is in flight and
+    // not if we loaded within the last 15s (avoids a redundant refetch right
+    // after navigation/first paint).
     const iv = setInterval(() => { if (isAuthed()) loadData(true); }, 30000);
-    const onFocus = () => { if (document.visibilityState === 'visible' && isAuthed() && Date.now() - lastLoadAt.current > 5000) loadData(true); };
+    const onFocus = () => { if (document.visibilityState === 'visible' && isAuthed() && !loadingRef.current && Date.now() - lastLoadAt.current > 15000) loadData(true); };
     document.addEventListener('visibilitychange', onFocus);
     window.addEventListener('focus', onFocus);
     return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onFocus); window.removeEventListener('focus', onFocus); };
