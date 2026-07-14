@@ -96,7 +96,7 @@ function StatsBar() {
     <Section style={{ padding: "40px 24px 96px" }}>
       <Reveal>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
-          <StatsPanel stats={platformStats} title="The exchange, live" />
+          <StatsPanel stats={platformStats} title="The exchange, live" poolStatus />
         </div>
       </Reveal>
     </Section>
