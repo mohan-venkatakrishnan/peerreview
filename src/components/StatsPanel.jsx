@@ -4,7 +4,7 @@ const fmt = (n) => (n == null ? "—" : (Number.isInteger(n) ? n.toLocaleString(
 
 /* "State of the exchange" — live aggregate stats. Used on the dashboard and the
    landing page. Pass `stats` = { products, reviewsExchanged, avgReceived, members }. */
-export default function StatsPanel({ stats, title = "The exchange, live", style }) {
+export default function StatsPanel({ stats, title = "The exchange, live", style, poolStatus = false }) {
   const { c } = useTheme();
   const s = stats || {};
   const items = [
@@ -28,18 +28,33 @@ export default function StatsPanel({ stats, title = "The exchange, live", style 
         ))}
       </div>
 
-      {/* Public give/get health — aggregate only, never names anyone */}
-      {s.givers != null && (s.givers + s.takers) > 0 && (
-        <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: c.textMuted, marginBottom: 7 }}>
-            <span><strong style={{ color: c.verified }}>{s.givers}</strong> give as much as they take</span>
-            <span><strong style={{ color: c.textSub }}>{s.takers}</strong> taking more</span>
+      {/* Public give/get health — aggregate only, never names anyone. With the
+          'open pool status' deterrent when poolStatus is on (logged-in view). */}
+      {s.givers != null && (s.givers + s.takers) > 0 && (() => {
+        const total = s.givers + s.takers;
+        const giverPct = Math.round((s.givers / total) * 100);
+        const healthy = s.givers >= s.takers;
+        return (
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: c.textMuted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Open pool status</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: healthy ? c.verified : c.flagged }}>{healthy ? "🔓 Open" : "⚠ Locking risk"}</span>
+            </div>
+            <div style={{ position: "relative", height: 8, borderRadius: 5, background: c.pending + "33", overflow: "hidden" }}>
+              <div style={{ width: `${giverPct}%`, height: "100%", background: healthy ? c.verified : c.flagged, transition: "width 0.4s" }} />
+              <div style={{ position: "absolute", left: "50%", top: -2, bottom: -2, width: 2, background: c.text, opacity: 0.45 }} title="tipping point" />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: c.textMuted, marginTop: 6 }}>
+              <span>{s.givers} giving fairly</span><span>{s.takers} taking more</span>
+            </div>
+            {poolStatus && (
+              <div style={{ fontSize: 11, color: c.textSub, marginTop: 11, lineHeight: 1.6 }}>
+                The pool stays open while givers lead. <strong style={{ color: c.text }}>Every review you give keeps it open for everyone</strong> — if takers overtake givers, the exchange locks to a strict one-for-one queue.
+              </div>
+            )}
           </div>
-          <div style={{ height: 6, borderRadius: 4, background: c.border, overflow: "hidden" }}>
-            <div style={{ width: `${Math.round((s.givers / Math.max(s.givers + s.takers, 1)) * 100)}%`, height: "100%", background: c.verified }} />
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -174,7 +174,7 @@ export default function Dashboard() {
             </div>
           ))}
         </Card>
-        <StatsPanel stats={platformStats} />
+        <StatsPanel stats={platformStats} poolStatus />
       </div>
 
       {/* Admin-only: give/get fairness — decide if the open pool ever needs tightening */}
@@ -182,36 +182,54 @@ export default function Dashboard() {
         const total = Math.max(fairness.givers + fairness.takers, 1);
         const giverPct = Math.round((fairness.givers / total) * 100);
         const healthy = fairness.givers >= fairness.takers;
+        const tile = (val, label, color) => (
+          <div style={{ flex: "1 1 90px", textAlign: "center", padding: "12px 8px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10 }}>
+            <div style={{ fontFamily: "Playfair Display, serif", fontSize: 24, fontWeight: 700, color, lineHeight: 1 }}>{val}</div>
+            <div style={{ fontSize: 10, color: c.textMuted, marginTop: 6 }}>{label}</div>
+          </div>
+        );
         return (
           <Card className="fade-up-d3" style={{ marginTop: 20, border: `1px solid ${c.borderGold}` }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>Fairness · admin</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: healthy ? c.verified : c.pending }}>{healthy ? "✓ Healthy — givers ≥ takers" : "⚠ Watch — takers are catching up"}</span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                <span style={{ fontSize: 13 }}>⚖</span> Fairness · admin only
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: healthy ? c.verified : c.flagged, background: (healthy ? c.verified : c.flagged) + "18", border: `1px solid ${(healthy ? c.verified : c.flagged)}40`, borderRadius: 20, padding: "4px 12px" }}>
+                {healthy ? "🔓 Open pool — healthy" : "⚠ Locking risk — takers ahead"}
+              </span>
             </div>
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 14 }}>
-              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.verified }}>{fairness.givers}</div><div style={{ fontSize: 11, color: c.textMuted }}>givers (give ≥ get)</div></div>
-              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.pending }}>{fairness.takers}</div><div style={{ fontSize: 11, color: c.textMuted }}>takers (get &gt; give)</div></div>
-              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.text }}>{fairness.totalGiven}</div><div style={{ fontSize: 11, color: c.textMuted }}>reviews given</div></div>
-              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.text }}>{fairness.totalReceived}</div><div style={{ fontSize: 11, color: c.textMuted }}>reviews received</div></div>
+
+            {/* the "doomsday" meter — how far from the tipping point */}
+            <div style={{ position: "relative", height: 12, borderRadius: 7, background: c.flagged + "2A", overflow: "hidden", marginBottom: 6 }}>
+              <div style={{ width: `${giverPct}%`, height: "100%", background: `linear-gradient(90deg, ${c.verified}, ${healthy ? c.verified : c.flagged})`, transition: "width 0.4s" }} />
+              <div style={{ position: "absolute", left: "50%", top: -2, bottom: -2, width: 2, background: c.text, opacity: 0.5 }} />
             </div>
-            <div style={{ height: 8, borderRadius: 6, background: c.pending + "40", overflow: "hidden", marginBottom: 16 }}>
-              <div style={{ width: `${giverPct}%`, height: "100%", background: c.verified }} />
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: c.textMuted, marginBottom: 18 }}>
+              <span style={{ color: c.verified }}>◀ givers</span>
+              <span>tipping point</span>
+              <span style={{ color: c.flagged }}>takers ▶</span>
             </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
+              {tile(fairness.givers, "givers (give ≥ get)", c.verified)}
+              {tile(fairness.takers, "takers (get > give)", c.flagged)}
+              {tile(fairness.totalGiven, "reviews given", c.text)}
+              {tile(fairness.totalReceived, "reviews received", c.text)}
+            </div>
+
             {fairness.watchlist?.length > 0 && (
-              <>
-                <div style={{ fontSize: 11, color: c.textMuted, marginBottom: 8 }}>Taking more than giving — watch if this list grows:</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {fairness.watchlist.map((w, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: c.textSub }}>
-                      <span>{w.name}</span>
-                      <span style={{ fontFamily: "JetBrains Mono, monospace" }}>gave {w.given} · got {w.received}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
+              <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: c.textMuted, marginBottom: 10 }}>Taking more than giving — watch if this list grows:</div>
+                {fairness.watchlist.map((w, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12.5, color: c.text, padding: "5px 0", borderTop: i > 0 ? `1px solid ${c.border}` : "none" }}>
+                    <span>{w.name}</span>
+                    <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11.5, color: c.textMuted }}>gave <strong style={{ color: c.textSub }}>{w.given}</strong> · got <strong style={{ color: c.pending }}>{w.received}</strong></span>
+                  </div>
+                ))}
+              </div>
             )}
-            <div style={{ fontSize: 11, color: c.textMuted, marginTop: 14, lineHeight: 1.6, paddingTop: 12, borderTop: `1px solid ${c.border}` }}>
-              Open pool stays healthy while givers ≥ takers. If takers grow, add <strong style={{ color: c.textSub }}>soft reciprocity</strong> (give-weighted pool priority) before ever considering strict one-for-one.
+            <div style={{ fontSize: 11, color: c.textMuted, marginTop: 14, lineHeight: 1.6 }}>
+              Members see an "Open pool status" meter with the same message: <strong style={{ color: c.textSub }}>give reviews or the exchange locks to strict one-for-one.</strong> If takers ever pull ahead, add soft reciprocity (give-weighted pool priority) before flipping the switch.
             </div>
           </Card>
         );
