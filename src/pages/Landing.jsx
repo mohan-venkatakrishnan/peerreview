@@ -5,6 +5,7 @@ import { PLATFORMS, HOW_IT_WORKS, TESTIMONIALS } from "../data/mock";
 import SealMark from "../components/SealMark";
 import StateBadge from "../components/StateBadge";
 import StatsPanel from "../components/StatsPanel";
+import PoolStatus from "../components/PoolStatus";
 import ParallaxBackdrop from "../components/ParallaxBackdrop";
 import { LeaderTable } from "./Leaderboard";
 import { USE_MOCK, useAppState } from "../state";
@@ -95,8 +96,9 @@ function StatsBar() {
   return (
     <Section style={{ padding: "40px 24px 96px" }}>
       <Reveal>
-        <div style={{ maxWidth: 860, margin: "0 auto" }}>
-          <StatsPanel stats={platformStats} title="The exchange, live" poolStatus />
+        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+          <StatsPanel stats={platformStats} title="The exchange, live" />
+          <PoolStatus givers={platformStats?.givers} takers={platformStats?.takers} />
         </div>
       </Reveal>
     </Section>
