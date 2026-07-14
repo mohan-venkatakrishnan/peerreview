@@ -1,7 +1,39 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, DeleteCommand, GetCommand, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, DeleteCommand, GetCommand, PutCommand, QueryCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+
+// Owner accounts that get the fairness readout on their dashboard.
+const ADMIN_IDS = new Set((process.env.ADMIN_IDS ?? 'f4f81438-4011-7015-e5ba-b013540f1a79').split(',').map(s => s.trim()).filter(Boolean));
+
+/* Give/get health: are members giving as much as they take? Lets us decide if
+   the open pool ever needs tightening — watch the symptom, not a user count. */
+async function computeFairness() {
+  const users = [];
+  let key;
+  do {
+    const page = await client.send(new ScanCommand({ TableName: process.env.USERS_TABLE, ExclusiveStartKey: key, Limit: 500 }));
+    users.push(...(page.Items ?? []));
+    key = page.LastEvaluatedKey;
+  } while (key && users.length < 5000);
+  const real = users.filter(u => !String(u.userId).startsWith('pending#'));
+  const active = real.filter(u => (u.given ?? 0) + (u.received ?? 0) > 0);
+  const givers = active.filter(u => (u.given ?? 0) >= (u.received ?? 0)).length;
+  const watchlist = active
+    .filter(u => (u.received ?? 0) > (u.given ?? 0))
+    .sort((a, b) => ((b.received ?? 0) - (b.given ?? 0)) - ((a.received ?? 0) - (a.given ?? 0)))
+    .slice(0, 6)
+    .map(u => ({ name: u.name, given: u.given ?? 0, received: u.received ?? 0 }));
+  return {
+    members: real.length,
+    active: active.length,
+    givers,
+    takers: active.length - givers,
+    totalGiven: real.reduce((s, u) => s + (u.given ?? 0), 0),
+    totalReceived: real.reduce((s, u) => s + (u.received ?? 0), 0),
+    watchlist,
+  };
+}
 
 const NEW_USER = (userId, email, name) => ({
   userId,
@@ -43,7 +75,11 @@ export const handler = async (event) => {
       TableName: process.env.USERS_TABLE,
       Key: { userId },
     }));
-    if (Item) return respond(200, PUBLIC_FIELDS(Item));
+    if (Item) {
+      const base = PUBLIC_FIELDS(Item);
+      if (ADMIN_IDS.has(userId)) base.fairness = await computeFairness().catch(() => null);
+      return respond(200, base);
+    }
 
     const fresh = NEW_USER(userId, claims.email ?? '', claims.name);
 

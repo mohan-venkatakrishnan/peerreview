@@ -138,9 +138,9 @@ export const LANDING_STATS = [
 
 export const HOW_IT_WORKS = [
   { n: "1", title: "List your product", desc: "Paste your live store listing. We detect the platform automatically — no listing, no entry." },
-  { n: "2", title: "Get an assignment", desc: "Another developer's product lands in your queue. Matched within your category, or open to anyone — your choice." },
+  { n: "2", title: "Pick from the pool", desc: "Browse every product you can review — filter by category or platform — and choose whatever interests you." },
   { n: "3", title: "Review it where it lives", desc: "Write a genuine review on the actual platform — that's where it's useful. Then paste the direct link back here." },
-  { n: "4", title: "Verify and earn", desc: "The owner reads your review and stamps it verified. You earn exactly one credit — someone is assigned your product next." },
+  { n: "4", title: "Verify and grow", desc: "The owner reads your review and stamps it verified. Reviewing lifts your Trust Score, climbs the leaderboard, and can feature your product." },
 ];
 
 /* Placeholder testimonials (model-neutral) until real ones are collected. */

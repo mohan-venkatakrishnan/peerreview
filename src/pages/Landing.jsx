@@ -108,8 +108,8 @@ function HowItWorks() {
   const { c } = useTheme();
   return (
     <Section id="how">
-      <SectionHeading eyebrow="How it works" title="A strict one-for-one exchange"
-        sub="Every review you give earns exactly one review of your product. No pools of karma, no shortcuts." />
+      <SectionHeading eyebrow="How it works" title="An open review exchange"
+        sub="Browse every product you can review, leave genuine feedback, and yours stays in the pool for the whole community. Give to get." />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 16 }}>
         {HOW_IT_WORKS.map((step, i) => (
           <Reveal key={step.n} delay={Math.min(i, 3)}>

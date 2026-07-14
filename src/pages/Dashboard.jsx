@@ -17,7 +17,8 @@ const reviewSubmittedFromHistory = (history) => history.some(h => h.state === "p
 
 export default function Dashboard() {
   const { c } = useTheme();
-  const { reviewablePool, featuredPool, incoming, history, account, stats, products, platformStats } = useAppState();
+  const { reviewablePool, featuredPool, incoming, history, account, stats, products, platformStats, me } = useAppState();
+  const fairness = me?.fairness;
   const navigate = useNavigate();
   const queue = [...featuredPool, ...reviewablePool];
   const queueCount = queue.length;
@@ -175,6 +176,46 @@ export default function Dashboard() {
         </Card>
         <StatsPanel stats={platformStats} />
       </div>
+
+      {/* Admin-only: give/get fairness — decide if the open pool ever needs tightening */}
+      {fairness && (() => {
+        const total = Math.max(fairness.givers + fairness.takers, 1);
+        const giverPct = Math.round((fairness.givers / total) * 100);
+        const healthy = fairness.givers >= fairness.takers;
+        return (
+          <Card className="fade-up-d3" style={{ marginTop: 20, border: `1px solid ${c.borderGold}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: c.gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>Fairness · admin</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: healthy ? c.verified : c.pending }}>{healthy ? "✓ Healthy — givers ≥ takers" : "⚠ Watch — takers are catching up"}</span>
+            </div>
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 14 }}>
+              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.verified }}>{fairness.givers}</div><div style={{ fontSize: 11, color: c.textMuted }}>givers (give ≥ get)</div></div>
+              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.pending }}>{fairness.takers}</div><div style={{ fontSize: 11, color: c.textMuted }}>takers (get &gt; give)</div></div>
+              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.text }}>{fairness.totalGiven}</div><div style={{ fontSize: 11, color: c.textMuted }}>reviews given</div></div>
+              <div><div style={{ fontFamily: "Playfair Display, serif", fontSize: 26, fontWeight: 700, color: c.text }}>{fairness.totalReceived}</div><div style={{ fontSize: 11, color: c.textMuted }}>reviews received</div></div>
+            </div>
+            <div style={{ height: 8, borderRadius: 6, background: c.pending + "40", overflow: "hidden", marginBottom: 16 }}>
+              <div style={{ width: `${giverPct}%`, height: "100%", background: c.verified }} />
+            </div>
+            {fairness.watchlist?.length > 0 && (
+              <>
+                <div style={{ fontSize: 11, color: c.textMuted, marginBottom: 8 }}>Taking more than giving — watch if this list grows:</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {fairness.watchlist.map((w, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: c.textSub }}>
+                      <span>{w.name}</span>
+                      <span style={{ fontFamily: "JetBrains Mono, monospace" }}>gave {w.given} · got {w.received}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            <div style={{ fontSize: 11, color: c.textMuted, marginTop: 14, lineHeight: 1.6, paddingTop: 12, borderTop: `1px solid ${c.border}` }}>
+              Open pool stays healthy while givers ≥ takers. If takers grow, add <strong style={{ color: c.textSub }}>soft reciprocity</strong> (give-weighted pool priority) before ever considering strict one-for-one.
+            </div>
+          </Card>
+        );
+      })()}
     </>
   );
 }
