@@ -18,8 +18,7 @@ const reviewSubmittedFromHistory = (history) => history.some(h => h.state === "p
 
 export default function Dashboard() {
   const { c } = useTheme();
-  const { reviewablePool, featuredPool, incoming, history, account, stats, products, platformStats, me } = useAppState();
-  const fairness = me?.fairness;
+  const { reviewablePool, featuredPool, incoming, history, account, stats, products, platformStats } = useAppState();
   const navigate = useNavigate();
   const queue = [...featuredPool, ...reviewablePool];
   const queueCount = queue.length;
@@ -178,8 +177,8 @@ export default function Dashboard() {
         <StatsPanel stats={platformStats} />
       </div>
 
-      {/* Open pool status — public meter + deterrent (watchlist names only for the owner) */}
-      <PoolStatus givers={platformStats?.givers} takers={platformStats?.takers} watchlist={fairness?.watchlist} style={{ marginTop: 20 }} />
+      {/* Open pool status — public meter + deterrent + public accountability list */}
+      <PoolStatus givers={platformStats?.givers} takers={platformStats?.takers} topGivers={platformStats?.topGivers} watchlist={platformStats?.watchlist} style={{ marginTop: 20 }} />
     </>
   );
 }

@@ -98,7 +98,7 @@ function StatsBar() {
       <Reveal>
         <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
           <StatsPanel stats={platformStats} title="The exchange, live" />
-          <PoolStatus givers={platformStats?.givers} takers={platformStats?.takers} />
+          <PoolStatus givers={platformStats?.givers} takers={platformStats?.takers} topGivers={platformStats?.topGivers} watchlist={platformStats?.watchlist} />
         </div>
       </Reveal>
     </Section>

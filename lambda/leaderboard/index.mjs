@@ -60,6 +60,18 @@ export const handler = async () => {
     pKey = pg.LastEvaluatedKey;
   } while (pKey);
 
+  // Public accountability lists (names masked for anyone who hid their name).
+  const nm = (u) => ({ name: (u.privacy?.showName ?? true) ? u.name : maskName(u.name), given: u.given ?? 0, received: u.received ?? 0 });
+  const net = (u) => (u.given ?? 0) - (u.received ?? 0);
+  const topGivers = activeMembers
+    .filter(u => (u.given ?? 0) > 0 && net(u) >= 0)
+    .sort((a, b) => net(b) - net(a) || (b.given ?? 0) - (a.given ?? 0))
+    .slice(0, 6).map(nm);
+  const watchlist = activeMembers
+    .filter(u => (u.received ?? 0) > (u.given ?? 0))
+    .sort((a, b) => net(a) - net(b))
+    .slice(0, 6).map(nm);
+
   const stats = {
     members,
     products,
@@ -67,6 +79,8 @@ export const handler = async () => {
     avgReceived: products ? Math.round((totalReceived / products) * 10) / 10 : 0,
     givers,
     takers: activeMembers.length - givers,
+    topGivers,
+    watchlist,
   };
 
   return {
