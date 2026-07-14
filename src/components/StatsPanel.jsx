@@ -27,6 +27,19 @@ export default function StatsPanel({ stats, title = "The exchange, live", style 
           </div>
         ))}
       </div>
+
+      {/* Public give/get health — aggregate only, never names anyone */}
+      {s.givers != null && (s.givers + s.takers) > 0 && (
+        <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: c.textMuted, marginBottom: 7 }}>
+            <span><strong style={{ color: c.verified }}>{s.givers}</strong> give as much as they take</span>
+            <span><strong style={{ color: c.textSub }}>{s.takers}</strong> taking more</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 4, background: c.border, overflow: "hidden" }}>
+            <div style={{ width: `${Math.round((s.givers / Math.max(s.givers + s.takers, 1)) * 100)}%`, height: "100%", background: c.verified }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

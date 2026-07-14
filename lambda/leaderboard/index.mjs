@@ -42,6 +42,9 @@ export const handler = async () => {
   const members = real.length;
   const reviewsExchanged = real.reduce((s, u) => s + (u.given ?? 0), 0);
   const totalReceived = real.reduce((s, u) => s + (u.received ?? 0), 0);
+  // Public give/get health — aggregate only (never names anyone; that stays admin).
+  const activeMembers = real.filter(u => (u.given ?? 0) + (u.received ?? 0) > 0);
+  const givers = activeMembers.filter(u => (u.given ?? 0) >= (u.received ?? 0)).length;
 
   let products = 0, pKey;
   do {
@@ -62,6 +65,8 @@ export const handler = async () => {
     products,
     reviewsExchanged,
     avgReceived: products ? Math.round((totalReceived / products) * 10) / 10 : 0,
+    givers,
+    takers: activeMembers.length - givers,
   };
 
   return {

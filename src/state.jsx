@@ -335,7 +335,7 @@ export function AppStateProvider({ children }) {
       badges: USE_MOCK ? ["seal", "box", "quill", "stack", "bolt", "shield"] : (me?.badges ?? []),
       products, reviewablePool, featuredPool, skippedPool, incoming, history, reviewSubmitted,
       leaderboard: leaderboardRows,
-      platformStats: USE_MOCK ? { members: 24, products: 31, reviewsExchanged: 128, avgReceived: 4.1 } : platformStats,
+      platformStats: USE_MOCK ? { members: 24, products: 31, reviewsExchanged: 128, avgReceived: 4.1, givers: 18, takers: 6 } : platformStats,
       privacy: USE_MOCK ? privacy : (me?.privacy ?? privacy),
       plan: USE_MOCK ? plan : (me?.plan ?? "free"),
       matching: USE_MOCK ? productForm.matching : (me?.matching ?? "category"),
