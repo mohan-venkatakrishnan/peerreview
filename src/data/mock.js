@@ -143,10 +143,12 @@ export const HOW_IT_WORKS = [
   { n: "4", title: "Verify and earn", desc: "The owner reads your review and stamps it verified. You earn exactly one credit — someone is assigned your product next." },
 ];
 
+/* Placeholder testimonials (model-neutral) until real ones are collected. */
 export const TESTIMONIALS = [
-  { name: "Priya K.", role: "Chrome extension developer", quote: "The review I got back found two bugs and a confusing empty state I'd stopped seeing. Feedback from someone who ships is different." },
-  { name: "Tom W.", role: "SaaS founder", quote: "I've written 38 reviews here. Reading that many products carefully changed how I build my own." },
-  { name: "Aisha M.", role: "Web app developer", quote: "One-for-one is the whole trick. Nobody can farm it — you give a genuine review, you get one back. That's it." },
+  { name: "Dana Whitfield", role: "Chrome extension developer", quote: "The review I got back caught two bugs and an empty state I'd gone blind to. Feedback from someone who actually ships hits different." },
+  { name: "Marco Reyes", role: "Indie SaaS founder", quote: "I've reviewed a couple dozen products here now. Reading other people's work carefully quietly changed how I build my own." },
+  { name: "Lena Kowalski", role: "Web app developer", quote: "It's genuine feedback from real builders, on the actual store page — not stars from strangers. That's the part that's useful." },
+  { name: "Sam Okonkwo", role: "Firefox add-on developer", quote: "Listed on a Monday, had three thoughtful reviews by the weekend. Trust Score keeps it honest — no drive-by five stars." },
 ];
 
 export const PRICING = [
