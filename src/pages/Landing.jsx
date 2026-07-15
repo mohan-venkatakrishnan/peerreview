@@ -193,7 +193,8 @@ function Testimonials() {
     <Section>
       <SectionHeading eyebrow="From the exchange" title="Feedback from people who ship"
         sub="Sample quotes that show the kind of feedback the exchange produces — we'll replace them with real ones as the community grows." />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+      {/* 2-up so 4 testimonials form a clean 2×2 (not 3 + a lone left-indented one) */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, maxWidth: 800, margin: "0 auto" }}>
         {TESTIMONIALS.map((t, i) => (
           <Reveal key={t.name} delay={Math.min(i + 1, 3)}>
             <Card style={{ height: "100%", display: "flex", flexDirection: "column", gap: 18 }}>
